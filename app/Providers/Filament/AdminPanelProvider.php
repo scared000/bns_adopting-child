@@ -29,6 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->registration()
+            ->brandName('BNS & Adopting A Child')
             ->colors([
                 'primary' => Color::Amber,
             ])
