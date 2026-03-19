@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -10,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class AdoptedChild extends Model
 {
     use HasFactory;
+    protected $appends = ['age'];
 
     protected $fillable = [
         'firstname',
@@ -18,6 +21,9 @@ class AdoptedChild extends Model
         'suffix',
         'profile_path',
         'birthdate',
+        'sex',
+        'height_cm',
+        'weight_kg',
         'birthplace',
         'nutritional_status',
         'lcr_registered',
@@ -27,6 +33,16 @@ class AdoptedChild extends Model
         'actual_weight',
         'actual_height'
     ];
+
+
+    protected function age(): Attribute
+    {
+        return Attribute::make(
+            get: fn () => $this->birthdate
+                ? Carbon::parse($this->birthdate)->age
+                : null,
+        );
+    }
 
     public function familyProfiles(): HasMany
     {

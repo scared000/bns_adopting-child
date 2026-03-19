@@ -12,6 +12,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -42,7 +43,25 @@ class AdoptedChildrenTable
                 TextColumn::make('firstname')
                     ->label('Name')
                     ->searchable(['firstname', 'lastname'])
-                    ->formatStateUsing(fn ($record) => $record->firstname. ' ' .$record->middlename. ' ' .$record->lastname )
+                    ->formatStateUsing(fn ($record) => $record->firstname. ' ' .$record->lastname ),
+
+                TextColumn::make('birthdate')
+                    ->label('Age')
+                    ->formatStateUsing(fn ($record) =>
+                    $record->birthdate
+                        ? \Carbon\Carbon::parse($record->birthdate)->age . ' yrs old'
+                        : 'N/A'
+                    ),
+                TextColumn::make('height_cm')
+                    ->label('Height')
+                    ->suffix('cm')
+                    ->numeric(),
+
+                TextColumn::make('weight_kg')
+                    ->label('Weight')
+                    ->suffix('kg')
+                    ->numeric(),
+
             ])
             ->filters([
                 //
@@ -75,10 +94,49 @@ class AdoptedChildrenTable
                                             ->label('Suffix'),
                                         DatePicker::make('birthdate')
                                             ->label('Date of Birth')
-                                            ->required(),
+                                            ->required()
+                                            ->live()
+                                            ->afterStateUpdated(function ($state, Set $set) {
+                                                if ($state) {
+                                                    $age = \Carbon\Carbon::parse($state)->diff(now());
+                                                    $months = $age->y * 12 + $age->m;
+                                                    $set('age_months', $months);
+                                                    $set('age_display', $age->y . 'y ' . $age->m . 'm');
+                                                }
+                                            }),
                                         TextInput::make('birthplace')
                                             ->label('Place of Birth')
                                             ->required(),
+                                        Select::make('sex')
+                                            ->label('Sex')
+                                            ->required()
+                                            ->options([
+                                                'male' => 'Male',
+                                                'female' => 'Female',
+                                            ]),
+                                    ]),
+                                Grid::make(3)
+                                    ->schema([
+                                        TextInput::make('age_display')
+                                            ->label('Age')
+                                            ->disabled()
+                                            ->dehydrated(false)
+                                            ->placeholder('Auto-computed from birthdate'),
+
+                                        TextInput::make('height_cm')
+                                            ->label('Height')
+                                            ->suffix('cm')
+                                            ->numeric()
+                                            ->required()
+                                            ->live(),
+
+                                        TextInput::make('weight_kg')
+                                            ->label('Weight')
+                                            ->suffix('kg')
+                                            ->numeric()
+                                            ->required()
+                                            ->live(),
+
                                     ]),
                                 FileUpload::make('profile_path')
                                     ->label('Profile Picture')
