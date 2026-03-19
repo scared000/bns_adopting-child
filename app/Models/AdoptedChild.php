@@ -18,7 +18,7 @@ class AdoptedChild extends Model
         'suffix',
         'profile_path',
         'birthdate',
-        'Birthplace',
+        'birthplace',
         'nutritional_status',
         'lcr_registered',
         'breastfed',
@@ -47,5 +47,21 @@ class AdoptedChild extends Model
     public function officeAssignments(): HasMany
     {
         return $this->hasMany(OfficeChildAssign::class, 'adopted_id');
+    }
+    public function motherProfile(): HasOne
+    {
+        return $this->hasOne(FamilyProfile::class, 'child_id')
+            ->where('type', 'mother');
+    }
+
+    public function fatherProfile(): HasOne
+    {
+        return $this->hasOne(FamilyProfile::class, 'child_id')
+            ->where('type', 'father');
+    }
+    public function familyMembers(): HasMany
+    {
+        return $this->hasMany(FamilyProfile::class, 'child_id')
+            ->where('type', 'member');
     }
 }

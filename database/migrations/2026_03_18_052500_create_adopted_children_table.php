@@ -10,13 +10,13 @@ return new class extends Migration
     {
         Schema::create('adopted_children', function (Blueprint $table) {
             $table->id();
-            $table->string('firstname')->nullable();
-            $table->string('lastname')->nullable();
+            $table->string('firstname');
+            $table->string('lastname');
             $table->string('middlename')->nullable();
             $table->string('suffix')->nullable();
             $table->string('profile_path')->nullable();
             $table->date('birthdate')->nullable();
-            $table->text('Birthplace')->nullable();
+            $table->text('birthplace')->nullable();
             $table->string('nutritional_status')->nullable();
             $table->boolean('lcr_registered')->default(false);
             $table->boolean('breastfed')->default(false);

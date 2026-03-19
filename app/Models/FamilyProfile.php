@@ -12,16 +12,18 @@ class FamilyProfile extends Model
 
     protected $fillable = [
         'child_id',
+        'type',
         'firstname',
         'lastname',
         'middlename',
         'suffix',
-        'relationship',
+        'relation',
         'birthdate',
-        'highest_grade',
+        'educational_attainment',
         'occupation',
-        'actual_weight',
-        'nutrietion_status'
+        'fam_member_fullname',
+        'fam_member_actual_weight',
+        'fam_member_nutrition_status'
     ];
 
     public function adoptedChild(): BelongsTo
