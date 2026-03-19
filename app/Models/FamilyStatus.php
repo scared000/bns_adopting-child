@@ -13,7 +13,7 @@ class FamilyStatus extends Model
     protected $fillable = [
         'child_id',
         'status',
-        'type_of_marraige',
+        'type_of_marriage',
         'monthly_income',
         'source_income',
         'phil_member',

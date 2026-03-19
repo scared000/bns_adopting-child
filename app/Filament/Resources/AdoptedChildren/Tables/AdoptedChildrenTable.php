@@ -66,11 +66,11 @@ class AdoptedChildrenTable
                                     ->maxLength(255),
                                 Grid::make(2)
                                     ->schema([
+                                        TextInput::make('middlename')
+                                            ->label('Middle Name'),
                                         TextInput::make('lastname')
                                             ->label('Last Name')
                                             ->required(),
-                                        TextInput::make('middlename')
-                                            ->label('Middle Name'),
                                         TextInput::make('suffix')
                                             ->label('Suffix'),
                                         DatePicker::make('birthdate')
@@ -99,11 +99,11 @@ class AdoptedChildrenTable
                                                     ->required(),
                                                 Grid::make(2)
                                                     ->schema([
-                                                        TextInput::make('mother_lastname')
-                                                            ->label('Last Name')
-                                                            ->required(),
                                                         TextInput::make('mother_middlename')
                                                             ->label('Middle Name')
+                                                            ->required(),
+                                                        TextInput::make('mother_lastname')
+                                                            ->label('Last Name')
                                                             ->required(),
                                                         TextInput::make('mother_suffix')
                                                             ->label('Suffix'),
@@ -173,11 +173,11 @@ class AdoptedChildrenTable
                                                     ->required(),
                                                 Grid::make(2)
                                                     ->schema([
-                                                        TextInput::make('father_lastname')
-                                                            ->label('Last Name')
-                                                            ->required(),
                                                         TextInput::make('father_middlename')
                                                             ->label('Middle Name')
+                                                            ->required(),
+                                                        TextInput::make('father_lastname')
+                                                            ->label('Last Name')
                                                             ->required(),
                                                         TextInput::make('father_suffix')
                                                             ->label('Suffix'),
@@ -279,6 +279,122 @@ class AdoptedChildrenTable
                                     ->collapsible()
                                     ->defaultItems(0),
                             ]),
+                        Step::make('Family Status')
+                            ->icon('heroicon-o-home')
+                            ->schema([
+                                Grid::make(2)
+                                    ->schema([
+                                        Select::make('civil_status')
+                                            ->label('Civil Status')
+                                            ->options([
+                                                'single'   => 'Single',
+                                                'married'  => 'Married',
+                                                'widowed'  => 'Widowed',
+                                                'separated'=> 'Separated',
+                                                'cohabiting'=> 'Live-in / Cohabiting',
+                                            ])
+                                            ->native(false)
+                                            ->required(),
+                                        Select::make('type_of_marriage')
+                                            ->label('Type of Marriage')
+                                            ->options([
+                                                'civil'     => 'Civil',
+                                                'church'    => 'Church / Religious',
+                                                'common_law'=> 'Common Law',
+                                                'none'      => 'N/A',
+                                            ])
+                                            ->native(false),
+                                        Select::make('monthly_income')
+                                            ->label('Monthly Income')
+                                            ->options([
+                                                'below_5000'  => 'Below ₱5,000',
+                                                '5000_9999'   => '₱5,000 - ₱9,999',
+                                                '10000_14999' => '₱10,000 - ₱14,999',
+                                                '15000_19999' => '₱15,000 - ₱19,999',
+                                                '20000_above' => '₱20,000 and above',
+                                            ])
+                                            ->native(false),
+                                        TextInput::make('source_income')
+                                            ->label('Source of Income'),
+                                        Select::make('family_plan_method')
+                                            ->label('Family Planning Method')
+                                            ->options([
+                                                'natural'    => 'Natural',
+                                                'pills'      => 'Pills',
+                                                'condom'     => 'Condom',
+                                                'iud'        => 'IUD',
+                                                'ligation'   => 'Ligation',
+                                                'vasectomy'  => 'Vasectomy',
+                                                'none'       => 'None',
+                                            ])
+                                            ->native(false),
+                                        Select::make('phil_member')
+                                            ->label('PhilHealth Member?')
+                                            ->options([
+                                                '1' => 'Yes',
+                                                '0' => 'No',
+                                            ])
+                                            ->native(false),
+                                    ]),
+
+                                Section::make('Housing Information')
+                                    ->schema([
+                                        Grid::make(2)
+                                            ->schema([
+                                                Select::make('have_electricity')
+                                                    ->label('Has Electricity?')
+                                                    ->options(['1' => 'Yes', '0' => 'No'])
+                                                    ->native(false),
+                                                Select::make('water_source')
+                                                    ->label('Source of Water')
+                                                    ->options([
+                                                        'tap'       => 'Tap / Piped Water',
+                                                        'well'      => 'Deep Well',
+                                                        'spring'    => 'Spring',
+                                                        'river'     => 'River / Stream',
+                                                        'rain'      => 'Rainwater',
+                                                        'delivered' => 'Delivered Water',
+                                                    ])
+                                                    ->native(false),
+                                                Select::make('toilet_facility')
+                                                    ->label('Toilet Facility')
+                                                    ->options([
+                                                        'flush'       => 'Water-sealed / Flush',
+                                                        'pit'         => 'Pit Latrine',
+                                                        'open'        => 'Open Defecation',
+                                                        'shared'      => 'Shared Toilet',
+                                                    ])
+                                                    ->native(false),
+                                                Select::make('roofing')
+                                                    ->label('Roofing Material')
+                                                    ->options([
+                                                        'galvanized' => 'Galvanized Iron',
+                                                        'concrete'   => 'Concrete',
+                                                        'nipa'       => 'Nipa / Cogon',
+                                                        'wood'       => 'Wood',
+                                                    ])
+                                                    ->native(false),
+                                                Select::make('walls')
+                                                    ->label('Wall Material')
+                                                    ->options([
+                                                        'concrete' => 'Concrete / Hollow Blocks',
+                                                        'wood'     => 'Wood',
+                                                        'bamboo'   => 'Bamboo',
+                                                        'mixed'    => 'Mixed Materials',
+                                                    ])
+                                                    ->native(false),
+                                                Select::make('flooring')
+                                                    ->label('Flooring Material')
+                                                    ->options([
+                                                        'concrete' => 'Concrete',
+                                                        'wood'     => 'Wood',
+                                                        'earth'    => 'Earth / Soil',
+                                                        'tile'     => 'Tile',
+                                                    ])
+                                                    ->native(false),
+                                            ]),
+                                    ]),
+                            ]),
                     ])
                     ->after(function ($record, array $data) {
                         // Mother
@@ -318,6 +434,20 @@ class AdoptedChildrenTable
                                 ]);
                             }
                         }
+                        $record->familyStatus()->create([
+                            'status'              => $data['civil_status'],
+                            'type_of_marriage'    => $data['type_of_marriage'],
+                            'monthly_income'      => $data['monthly_income'],
+                            'source_income'       => $data['source_income'],
+                            'phil_member'         => $data['phil_member'],
+                            'family_plan_method'  => $data['family_plan_method'],
+                            'have_electricity'    => $data['have_electricity'],
+                            'water_source'        => $data['water_source'],
+                            'toilet_facility'     => $data['toilet_facility'],
+                            'roofing'             => $data['roofing'],
+                            'walls'               => $data['walls'],
+                            'flooring'            => $data['flooring'],
+                        ]);
                     })
             ])
             ->toolbarActions([

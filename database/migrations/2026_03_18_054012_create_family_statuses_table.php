@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('child_id')->constrained('adopted_children')->cascadeOnDelete();
             $table->string('status')->nullable();
-            $table->string('type_of_marriage')->nullable(); // Spelling from ERD
+            $table->string('type_of_marriage')->nullable();
             $table->string('monthly_income')->nullable();
             $table->string('source_income')->nullable();
             $table->boolean('phil_member')->default(false);
