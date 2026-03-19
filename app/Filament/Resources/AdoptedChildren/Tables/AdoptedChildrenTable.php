@@ -12,6 +12,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Wizard\Step;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -54,76 +55,64 @@ class AdoptedChildrenTable
                     ->icon('heroicon-s-plus')
                     ->createAnother(false)
                     ->modalSubmitActionLabel('Save')
-                    ->modalCancelActionLabel('Cancel')
-                    ->schema([
-                        Section::make('Adopted children Profile')
-                        ->schema([
-                            TextInput::make('firstname')
-                                ->label('First Name')
-                                ->required()
-                                ->maxLength(255),
-                            Grid::make(2)
-                                ->schema([
-                                    TextInput::make('middlename')
-                                        ->label('Middle Name')
-                                        ->required()
-                                        ->maxLength(255),
-                                    TextInput::make('lastname')
-                                        ->label('Last Name')
-                                        ->required()
-                                        ->maxLength(255),
-                                    TextInput::make('suffix')
-                                        ->label('Suffix')
-                                        ->placeholder('e.g. Jr.')
-                                        ->suffix('Jr./Sr.'),
-                                    DatePicker::make('birthdate')
-                                        ->label('Date Of Birth')
-                                        ->required(),
-                                    TextInput::make('birthplace')
-                                        ->label('Place of Birth')
-                                        ->required(),
+                    ->modalCancelActionLabel('Discard')
+                    ->steps([
+                        Step::make('Child Information')
+                            ->icon('heroicon-o-user')
+                            ->schema([
+                                TextInput::make('firstname')
+                                    ->label('First Name')
+                                    ->required()
+                                    ->maxLength(255),
+                                Grid::make(2)
+                                    ->schema([
+                                        TextInput::make('lastname')
+                                            ->label('Last Name')
+                                            ->required(),
+                                        TextInput::make('middlename')
+                                            ->label('Middle Name'),
+                                        TextInput::make('suffix')
+                                            ->label('Suffix'),
+                                        DatePicker::make('birthdate')
+                                            ->label('Date of Birth')
+                                            ->required(),
+                                        TextInput::make('birthplace')
+                                            ->label('Place of Birth')
+                                            ->required(),
+                                    ]),
+                                FileUpload::make('profile_path')
+                                    ->label('Profile Picture')
+                                    ->disk('public')
+                                    ->directory('child/adopted-children')
+                                    ->visibility('public'),
+                            ]),
 
-
-                                ]),
-                            FileUpload::make('profile_path')
-                                ->label('Adopted Children Picture')
-                                ->disk('public')
-                                ->directory('child/adopted-children')
-                                ->visibility('public'),
-                        ]),
-
-                        Section::make('Guardian Profile')
+                        Step::make('Guardian Information')
+                            ->icon('heroicon-o-users')
                             ->schema([
                                 Grid::make(2)
                                     ->schema([
-                                        Section::make('Mother Profile ')
+                                        Section::make('Mother Profile')
                                             ->schema([
                                                 TextInput::make('mother_firstname')
                                                     ->label('First Name')
-                                                    ->required()
-                                                    ->maxLength(255),
+                                                    ->required(),
                                                 Grid::make(2)
                                                     ->schema([
-                                                        TextInput::make('mother_middlename')
-                                                            ->label('Middle Name')
-                                                            ->required()
-                                                            ->maxLength(255),
                                                         TextInput::make('mother_lastname')
                                                             ->label('Last Name')
-                                                            ->required()
-                                                            ->maxLength(255),
+                                                            ->required(),
+                                                        TextInput::make('mother_middlename')
+                                                            ->label('Middle Name')
+                                                            ->required(),
                                                         TextInput::make('mother_suffix')
-                                                            ->label('Suffix')
-                                                            ->placeholder('e.g. Jr.')
-                                                            ->suffix('Jr./Sr.'),
+                                                            ->label('Suffix'),
                                                         DatePicker::make('mother_birthdate')
                                                             ->label('Birth Date')
                                                             ->required(),
                                                         Select::make('mother_relation')
                                                             ->label('Relationship to Child')
-                                                            ->required()
                                                             ->options([
-                                                                // Biological
                                                                 'biological_mother'     => 'Biological Mother',
 
                                                                 // Adoptive
@@ -144,10 +133,9 @@ class AdoptedChildrenTable
                                                             ])
                                                             ->searchable(),
                                                         TextInput::make('mother_occupation')
-                                                            ->label('Occupation & Skills')
-                                                            ->required(),
+                                                            ->label('Occupation & Skills'),
                                                         Select::make('mother_educational_attainment')
-                                                            ->label('Educational Attainment')
+                                                            ->label('Highest Educational Attainment')
                                                             ->options([
                                                                 // No Formal Education
                                                                 'no_formal_education'       => 'No Formal Education',
@@ -175,38 +163,29 @@ class AdoptedChildrenTable
                                                                 'masters'                   => "Master's Degree",
                                                                 'doctorate'                 => 'Doctorate Degree',
                                                             ])
-                                                            ->searchable()
                                                             ->native(false),
-
                                                     ]),
-
                                             ]),
-                                        Section::make('Father Profile ')
+                                        Section::make('Father Profile')
                                             ->schema([
                                                 TextInput::make('father_firstname')
                                                     ->label('First Name')
-                                                    ->required()
-                                                    ->maxLength(255),
+                                                    ->required(),
                                                 Grid::make(2)
                                                     ->schema([
                                                         TextInput::make('father_lastname')
                                                             ->label('Last Name')
-                                                            ->required()
-                                                            ->maxLength(255),
+                                                            ->required(),
                                                         TextInput::make('father_middlename')
                                                             ->label('Middle Name')
-                                                            ->required()
-                                                            ->maxLength(255),
+                                                            ->required(),
                                                         TextInput::make('father_suffix')
-                                                            ->label('Suffix')
-                                                            ->placeholder('e.g. Jr.')
-                                                            ->suffix('Jr./Sr.'),
+                                                            ->label('Suffix'),
                                                         DatePicker::make('father_birthdate')
                                                             ->label('Birth Date')
                                                             ->required(),
                                                         Select::make('father_relation')
                                                             ->label('Relationship to Child')
-                                                            ->required()
                                                             ->options([
                                                                 // Biological
                                                                 'biological_father'     => 'Biological Father',
@@ -229,10 +208,9 @@ class AdoptedChildrenTable
                                                             ])
                                                             ->searchable(),
                                                         TextInput::make('father_occupation')
-                                                            ->label('Occupation & Skills')
-                                                            ->required(),
+                                                            ->label('Occupation & Skills'),
                                                         Select::make('father_educational_attainment')
-                                                            ->label('Educational Attainment')
+                                                            ->label('Highest Educational Attainment')
                                                             ->options([
                                                                 // No Formal Education
                                                                 'no_formal_education'       => 'No Formal Education',
@@ -260,77 +238,87 @@ class AdoptedChildrenTable
                                                                 'masters'                   => "Master's Degree",
                                                                 'doctorate'                 => 'Doctorate Degree',
                                                             ])
-                                                            ->searchable()
                                                             ->native(false),
-
                                                     ]),
                                             ]),
-                                        Section::make('Family Members')
-                                            ->columnSpanFull()
-                                            ->schema([
-                                                Repeater::make('family_members')
-                                                    ->label('')
-                                                    ->schema([
-                                                        TextInput::make('fam_member_fullname')
-                                                            ->label('Full Name')
-                                                            ->required(),
-                                                        Grid::make(2)
-                                                            ->schema([
-                                                                TextInput::make('fam_member_actual_weight')
-                                                                    ->label('Actual Weight'),
-                                                                Select::make('fam_member_nutrition_status')
-                                                                    ->label('Nutritional Status')
-                                                                    ->options([
-                                                                        'normal'      => 'Normal',
-                                                                        'underweight' => 'Underweight',
-                                                                        'overweight'  => 'Overweight',
-                                                                        'server_uw'       => 'Severely UW',
-                                                                    ])
-                                                                    ->native(false),
-                                                            ]),
-                                                    ])
-                                                    ->addActionLabel('Add Family Member')
-                                                    ->collapsible()
-                                                    ->defaultItems(0),
-                                            ]),
                                     ]),
-                            ])
+                            ]),
+
+                        Step::make('Family Members')
+                            ->icon('heroicon-o-user-group')
+                            ->schema([
+                                Repeater::make('family_members')
+                                    ->label('')
+                                    ->schema([
+                                        TextInput::make('fam_member_fullname')
+                                            ->label('Full Name')
+                                            ->required(),
+                                        Grid::make(2)
+                                            ->schema([
+                                                TextInput::make('fam_member_actual_weight')
+                                                    ->label('Actual Weight')
+                                                    ->numeric()
+                                                    ->suffix('kg')
+                                                    ->minValue(0.1)
+                                                    ->maxValue(500)
+                                                    ->step(0.1)
+                                                    ->placeholder('70.5'),
+
+                                                Select::make('fam_member_nutrition_status')
+                                                    ->label('Nutritional Status')
+                                                    ->options([
+                                                        'normal'      => 'Normal',
+                                                        'underweight' => 'Underweight',
+                                                        'overweight'  => 'Overweight',
+                                                        'server_uw'   => 'Severely UW',
+                                                    ])
+                                                    ->native(false),
+                                            ]),
+                                    ])
+                                    ->addActionLabel('Add Family Member')
+                                    ->collapsible()
+                                    ->defaultItems(0),
+                            ]),
                     ])
-                    ->slideOver()
                     ->after(function ($record, array $data) {
+                        // Mother
                         $record->familyProfiles()->create([
-                            'firstname'                     => $data['mother_firstname'],
-                            'lastname'                      => $data['mother_lastname'],
-                            'middlename'                    => $data['mother_middlename'],
-                            'suffix'                        => $data['mother_suffix'],
-                            'birthdate'                     => $data['mother_birthdate'],
-                            'relation'                      => $data['mother_relation'],
-                            'occupation'                    => $data['mother_occupation'],
-                            'educational_attainment'=> $data['mother_educational_attainment'],
+                            'type'                   => 'mother',
+                            'firstname'              => $data['mother_firstname'],
+                            'lastname'               => $data['mother_lastname'],
+                            'middlename'             => $data['mother_middlename'],
+                            'suffix'                 => $data['mother_suffix'] ?? null,
+                            'birthdate'              => $data['mother_birthdate'],
+                            'relation'               => $data['mother_relation'],
+                            'occupation'             => $data['mother_occupation'],
+                            'educational_attainment' => $data['mother_educational_attainment'],
                         ]);
 
-                        $record->familyMembers()->create([
-                            'firstname'                     => $data['father_firstname'],
-                            'lastname'                      => $data['father_lastname'],
-                            'middlename'                    => $data['father_middlename'],
-                            'suffix'                        => $data['father_suffix'],
-                            'birthdate'                     => $data['father_birthdate'],
-                            'relation'                      => $data['father_relation'],
-                            'occupation'                    => $data['father_occupation'],
-                            'educational_attainment'=> $data['father_educational_attainment'],
+                        // Father
+                        $record->familyProfiles()->create([
+                            'type'                   => 'father',
+                            'firstname'              => $data['father_firstname'],
+                            'lastname'               => $data['father_lastname'],
+                            'middlename'             => $data['father_middlename'],
+                            'suffix'                 => $data['father_suffix'] ?? null,
+                            'birthdate'              => $data['father_birthdate'],
+                            'relation'               => $data['father_relation'],
+                            'occupation'             => $data['father_occupation'],
+                            'educational_attainment' => $data['father_educational_attainment'],
                         ]);
 
+                        // Family Members
                         if (!empty($data['family_members'])) {
                             foreach ($data['family_members'] as $member) {
                                 $record->familyProfiles()->create([
-                                    'type'                       => 'fam_member',
-                                    'fam_member_fullname'        => $member['fam_member_fullname'],
-                                    'fam_member_actual_weight'   => $member['fam_member_actual_weight'],
-                                    'fam_member_nutrition_status'=> $member['fam_member_nutrition_status'],
+                                    'type'                        => 'fam_member',
+                                    'fam_member_fullname'         => $member['fam_member_fullname'],
+                                    'fam_member_actual_weight'    => $member['fam_member_actual_weight'] ?? null,
+                                    'fam_member_nutrition_status' => $member['fam_member_nutrition_status'] ?? null,
                                 ]);
                             }
                         }
-                    }),
+                    })
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
