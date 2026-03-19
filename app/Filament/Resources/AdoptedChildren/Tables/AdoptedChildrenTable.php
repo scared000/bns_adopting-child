@@ -308,10 +308,10 @@ class AdoptedChildrenTable
                                             ->label('Monthly Income')
                                             ->options([
                                                 'below_5000'  => 'Below ₱5,000',
-                                                '5000_9999'   => '₱5,000 - ₱9,999',
-                                                '10000_14999' => '₱10,000 - ₱14,999',
-                                                '15000_19999' => '₱15,000 - ₱19,999',
-                                                '20000_above' => '₱20,000 and above',
+                                                '5000-9999'   => '₱5,000 - ₱9,999',
+                                                '10000-14999' => '₱10,000 - ₱14,999',
+                                                '15000-19999' => '₱15,000 - ₱19,999',
+                                                '20000-above' => '₱20,000 and above',
                                             ])
                                             ->native(false),
                                         TextInput::make('source_income')
@@ -331,8 +331,8 @@ class AdoptedChildrenTable
                                         Select::make('phil_member')
                                             ->label('PhilHealth Member?')
                                             ->options([
-                                                '1' => 'Yes',
-                                                '0' => 'No',
+                                                'yes' => 'Yes',
+                                                'no' => 'No',
                                             ])
                                             ->native(false),
                                     ]),
@@ -343,7 +343,9 @@ class AdoptedChildrenTable
                                             ->schema([
                                                 Select::make('have_electricity')
                                                     ->label('Has Electricity?')
-                                                    ->options(['1' => 'Yes', '0' => 'No'])
+                                                    ->options([
+                                                        'yes' => 'Yes',
+                                                        'no' => 'No'])
                                                     ->native(false),
                                                 Select::make('water_source')
                                                     ->label('Source of Water')
