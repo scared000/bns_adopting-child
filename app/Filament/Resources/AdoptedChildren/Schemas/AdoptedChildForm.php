@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -406,23 +407,27 @@ class AdoptedChildForm
                                 'none' => 'None',
                             ])
                             ->native(false),
-                        Select::make('phil_member')
+                        Radio::make('phil_member')
                             ->label('PhilHealth Member?')
+                            ->required()
+                            ->inline()
                             ->options([
                                 'yes' => 'Yes',
                                 'no' => 'No',
-                            ])
-                            ->native(false),
+                            ]),
                     ]),
 
                 Section::make('Housing Information')
                     ->schema([
                         Grid::make(2)
                             ->schema([
-                                Select::make('have_electricity')
+                                Radio::make('have_electricity')
                                     ->label('Has Electricity?')
-                                    ->options(['yes' => 'Yes', 'no' => 'No'])
-                                    ->native(false),
+                                    ->inline()
+                                    ->options([
+                                        'yes' => 'Yes',
+                                        'no' => 'No'
+                                    ]),
                                 Select::make('water_source')
                                     ->label('Source of Water')
                                     ->options([
