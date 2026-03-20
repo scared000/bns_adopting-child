@@ -8,10 +8,12 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Tables\Columns\ImageColumn;
@@ -22,6 +24,23 @@ use Filament\Schemas\Components\Grid;
 
 class AdoptedChildrenTable
 {
+    private static function getNutritionalStatus($record): string
+    {
+        if (!$record->birthdate || !$record->weight_kg || !$record->height_cm) {
+            return 'Incomplete Data';
+        }
+
+        $age = \Carbon\Carbon::parse($record->birthdate)->diff(now());
+        $ageMonths = ($age->y * 12) + $age->m;
+
+        return \App\Helpers\NutritionalStatus::classify(
+            $ageMonths,
+            (float) $record->weight_kg,
+            (float) $record->height_cm,
+            $record->sex ?? 'male'
+        );
+    }
+
     public static function configure(Table $table): Table
     {
         return $table
@@ -43,13 +62,19 @@ class AdoptedChildrenTable
                 TextColumn::make('firstname')
                     ->label('Name')
                     ->searchable(['firstname', 'lastname'])
+                    ->weight('bold')
                     ->formatStateUsing(fn ($record) => $record->firstname. ' ' .$record->lastname ),
 
                 TextColumn::make('birthdate')
-                    ->label('Age')
+                    ->label('Age by year & month')
+                    ->sortable()
                     ->formatStateUsing(fn ($record) =>
                     $record->birthdate
-                        ? \Carbon\Carbon::parse($record->birthdate)->age . ' yrs old'
+                        ? (function () use ($record) {
+                        $age = \Carbon\Carbon::parse($record->birthdate)->diff(now());
+                        $months = ($age->y * 12) + $age->m;
+                        return $age->y . 'y ' . $age->m . 'm (' . $months . ' months)';
+                    })()
                         : 'N/A'
                     ),
                 TextColumn::make('height_cm')
@@ -62,12 +87,36 @@ class AdoptedChildrenTable
                     ->suffix('kg')
                     ->numeric(),
 
+                TextColumn::make('nutritional_status_computed')
+                    ->sortable()
+                    ->label('Nutritional Status')
+                        ->badge()
+                        ->default('computing')
+                        ->formatStateUsing(fn ($record) => self::getNutritionalStatus($record))
+                        ->color(function ($record): string {
+                            $status = self::getNutritionalStatus($record);
+
+                            return match (true) {
+                                str_contains($status, 'SUW')      => 'danger',
+                                str_contains($status, 'SST')      => 'danger',
+                                str_contains($status, 'MW')       => 'warning',
+                                str_contains($status, 'OB')       => 'danger',
+                                str_contains($status, 'OW')       => 'warning',
+                                str_contains($status, 'W —')      => 'danger',
+                                str_contains($status, 'UW')       => 'warning',
+                                str_contains($status, 'ST')       => 'warning',
+                                str_contains($status, 'At Risk')  => 'warning',
+                                str_contains($status, 'Invalid')  => 'danger',
+                                str_contains($status, 'Incomplete') => 'gray',
+                                default                           => 'success',
+                            };
+                        }),
             ])
             ->filters([
                 //
             ])
             ->recordActions([
-                EditAction::make(),
+                EditAction::make()->iconButton(),
             ])
             ->headerActions([
                 CreateAction::make()
@@ -99,9 +148,10 @@ class AdoptedChildrenTable
                                             ->afterStateUpdated(function ($state, Set $set) {
                                                 if ($state) {
                                                     $age = \Carbon\Carbon::parse($state)->diff(now());
-                                                    $months = $age->y * 12 + $age->m;
-                                                    $set('age_months', $months);
-                                                    $set('age_display', $age->y . 'y ' . $age->m . 'm');
+                                                    $totalMonths = ($age->y * 12) + $age->m;
+
+                                                    $set('age_months', $totalMonths);
+                                                    $set('age_display', $age->y . 'y ' . $age->m . 'm (' . $totalMonths . ' months)');
                                                 }
                                             }),
                                         TextInput::make('birthplace')
@@ -123,21 +173,68 @@ class AdoptedChildrenTable
                                             ->dehydrated(false)
                                             ->placeholder('Auto-computed from birthdate'),
 
+                                        TextInput::make('age_months')
+                                            ->label('Age in Months')
+                                            ->disabled()
+                                            ->numeric()
+                                            ->suffix('months')
+                                            ->placeholder('Auto-computed'),
+
                                         TextInput::make('height_cm')
                                             ->label('Height')
                                             ->suffix('cm')
                                             ->numeric()
                                             ->required()
-                                            ->live(),
+                                            ->live()
+                                            ->minValue(40)
+                                            ->maxValue(250),
 
                                         TextInput::make('weight_kg')
                                             ->label('Weight')
                                             ->suffix('kg')
                                             ->numeric()
                                             ->required()
-                                            ->live(),
-
+                                            ->live()
+                                            ->minValue(1)
+                                            ->maxValue(300),
                                     ]),
+                                Placeholder::make('nutritional_status_preview')
+                                    ->label('Nutritional Status Preview')
+                                    ->content(function (Get $get): \Illuminate\Support\HtmlString {
+                                        $months = (int) $get('age_months');
+                                        $weight = (float) $get('weight_kg');
+                                        $height = (float) $get('height_cm');
+                                        $sex    = $get('sex') ?? 'combined';
+
+                                        if (!$months || !$weight || !$height) {
+                                            return new \Illuminate\Support\HtmlString(
+                                                '<span class="text-sm text-gray-400 italic">Fill in birthdate, weight, and height to see status</span>'
+                                            );
+                                        }
+
+                                        $status = \App\Helpers\NutritionalStatus::classify($months, $weight, $height, $sex);
+
+                                        $colorMap = [
+                                            'SUW' => 'bg-red-100 text-red-700 border border-red-300',
+                                            'UW'  => 'bg-yellow-100 text-yellow-700 border border-yellow-300',
+                                            'SST' => 'bg-red-100 text-red-700 border border-red-300',
+                                            'ST'  => 'bg-orange-100 text-orange-700 border border-orange-300',
+                                            'W —' => 'bg-yellow-100 text-yellow-700 border border-yellow-300',
+                                        ];
+
+                                        $class = 'bg-green-100 text-green-700 border border-green-300';
+                                        foreach ($colorMap as $key => $css) {
+                                            if (str_contains($status, $key)) {
+                                                $class = $css;
+                                                break;
+                                            }
+                                        }
+
+                                        return new \Illuminate\Support\HtmlString(
+                                            "<span class=\"inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold {$class}\">{$status}</span>"
+                                        );
+                                    }),
+
                                 FileUpload::make('profile_path')
                                     ->label('Profile Picture')
                                     ->disk('public')

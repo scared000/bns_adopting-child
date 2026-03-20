@@ -22,16 +22,14 @@ class AdoptedChild extends Model
         'profile_path',
         'birthdate',
         'sex',
+        'age_months',
         'height_cm',
         'weight_kg',
         'birthplace',
-        'nutritional_status',
         'lcr_registered',
         'breastfed',
         'v_suplemented',
         'barangay_id',
-        'actual_weight',
-        'actual_height'
     ];
 
 
@@ -50,9 +48,9 @@ class AdoptedChild extends Model
     }
 
     // Assuming one status record per child, use HasMany if a child can have a history of statuses
-    public function familyStatus(): HasOne
+    public function familyStatus(): HasMany
     {
-        return $this->hasOne(FamilyStatus::class, 'child_id');
+        return $this->hasMany(FamilyStatus::class, 'child_id');
     }
 
     public function immunizations(): HasMany
@@ -78,6 +76,6 @@ class AdoptedChild extends Model
     public function familyMembers(): HasMany
     {
         return $this->hasMany(FamilyProfile::class, 'child_id')
-            ->where('type', 'member');
+            ->where('type', 'fam_member');
     }
 }

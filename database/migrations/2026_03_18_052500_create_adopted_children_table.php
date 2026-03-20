@@ -18,16 +18,14 @@ return new class extends Migration
             $table->date('birthdate')->nullable();
             $table->text('birthplace')->nullable();
             $table->string('sex')->nullable();
+            $table->integer('age_months')->nullable();
             $table->decimal('height_cm', 5, 2)->nullable();
             $table->decimal('weight_kg', 5, 2)->nullable();
-            $table->string('previous_status')->nullable();
-            $table->string('nutritional_status')->nullable();
+//            $table->string('nutritional_status')->nullable();
             $table->boolean('lcr_registered')->default(false);
             $table->boolean('breastfed')->default(false);
             $table->boolean('v_suplemented')->default(false);
             $table->unsignedBigInteger('barangay_id')->nullable();
-//            $table->decimal('actual_weight', 8, 2)->nullable();
-//            $table->decimal('actual_height', 8, 2)->nullable();
             $table->timestamps();
         });
     }
