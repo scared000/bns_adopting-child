@@ -126,6 +126,7 @@ class AdoptedChildrenTable
                 ->createAnother(false)
                 ->modalSubmitActionLabel('Save')
                 ->modalCancelActionLabel('Discard')
+                ->modalWidth('6xl')
                 ->steps(AdoptedChildForm::wizardSteps())
                 ->after(fn ($record, array $data) => AdoptedChildForm::afterCreate($record, $data)),
         ];
