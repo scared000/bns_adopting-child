@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources\AdoptedChildren\Tables;
 
+use App\Helpers\NutritionalStatus;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
@@ -18,6 +21,7 @@ use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Filament\Schemas\Components\Grid;
 
@@ -87,36 +91,70 @@ class AdoptedChildrenTable
                     ->suffix('kg')
                     ->numeric(),
 
-                TextColumn::make('nutritional_status_computed')
-                    ->sortable()
+                TextColumn::make('nutritional_status')
+                ->sortable()
                     ->label('Nutritional Status')
-                        ->badge()
-                        ->default('computing')
-                        ->formatStateUsing(fn ($record) => self::getNutritionalStatus($record))
-                        ->color(function ($record): string {
-                            $status = self::getNutritionalStatus($record);
-
-                            return match (true) {
-                                str_contains($status, 'SUW')      => 'danger',
-                                str_contains($status, 'SST')      => 'danger',
-                                str_contains($status, 'MW')       => 'warning',
-                                str_contains($status, 'OB')       => 'danger',
-                                str_contains($status, 'OW')       => 'warning',
-                                str_contains($status, 'W —')      => 'danger',
-                                str_contains($status, 'UW')       => 'warning',
-                                str_contains($status, 'ST')       => 'warning',
-                                str_contains($status, 'At Risk')  => 'warning',
-                                str_contains($status, 'Invalid')  => 'danger',
-                                str_contains($status, 'Incomplete') => 'gray',
-                                default                           => 'success',
-                            };
-                        }),
+                    ->badge()
+                    ->formatStateUsing(fn ($record) => self::getNutritionalStatus($record))
+                    ->color(function (string $state): string {
+                        return match (true) {
+                            str_contains($state, 'SUW')        => 'danger',
+                            str_contains($state, 'SST')        => 'danger',
+                            str_contains($state, 'MW')         => 'warning',
+                            str_contains($state, 'OB')         => 'danger',
+                            str_contains($state, 'OW')         => 'info',
+                            str_contains($state, 'Wasted')     => 'danger',
+                            str_contains($state, 'UW')         => 'warning',
+                            str_contains($state, 'ST')         => 'warning',
+                            str_contains($state, 'At Risk')    => 'danger',
+                            str_contains($state, 'Invalid')    => 'danger',
+                            str_contains($state, 'Incomplete') => 'gray',
+                            default                            => 'success',
+                        };
+                    }),
             ])
             ->filters([
-                //
+                SelectFilter::make('nutritional_status')
+                    ->label('Nutritional Status')
+                    ->options([
+                        'Normal (N)'                  => 'Normal',
+
+                        'UW — Underweight'            => 'Underweight (UW)',
+                        'SUW — Severely Underweight'  => 'Severely Underweight (SUW)',
+
+                        'ST — Stunted'                => 'Stunted (ST)',
+                        'SST — Severely Stunted'      => 'Severely Stunted (SST)',
+
+                        'MW — Moderately Wasted'      => 'Moderately Wasted (MW)',
+                        'W — Wasted'                  => 'Wasted (W)',
+
+                        'At Risk of Overweight'       => 'At Risk of Overweight',
+                        'OW — Overweight'             => 'Overweight (OW)',
+                        'OB — Obese'                  => 'Obese (OB)',
+                    ])
+                    ->placeholder('All Statuses')
+                    ->native(false),
             ])
             ->recordActions([
-                EditAction::make()->iconButton(),
+                ViewAction::make()->color('info')->iconButton(),
+                EditAction::make()
+                    ->iconButton()
+                    ->after(function ($record) {
+                        if ($record->birthdate && $record->weight_kg && $record->height_cm) {
+                            $age = \Carbon\Carbon::parse($record->birthdate)->diff(now());
+                            $ageMonths = ($age->y * 12) + $age->m;
+
+                            $record->update([
+                                'nutritional_status' => \App\Helpers\NutritionalStatus::classify(
+                                    $ageMonths,
+                                    (float) $record->weight_kg,
+                                    (float) $record->height_cm,
+                                    $record->sex ?? 'male'
+                                ),
+                            ]);
+                        }
+                    }),
+                DeleteAction::make()->iconButton(),
             ])
             ->headerActions([
                 CreateAction::make()
@@ -554,6 +592,20 @@ class AdoptedChildrenTable
                             ]),
                     ])
                     ->after(function ($record, array $data) {
+                        if ($record->birthdate && $record->weight_kg && $record->height_cm) {
+                            $age = \Carbon\Carbon::parse($record->birthdate)->diff(now());
+                            $ageMonths = ($age->y * 12) + $age->m;
+
+                            $record->update([
+                                'nutritional_status' => NutritionalStatus::classify(
+                                    $ageMonths,
+                                    (float) $record->weight_kg,
+                                    (float) $record->height_cm,
+                                    $record->sex ?? 'male'
+                                ),
+                            ]);
+                        }
+
                         // Mother
                         $record->familyProfiles()->create([
                             'type'                   => 'mother',

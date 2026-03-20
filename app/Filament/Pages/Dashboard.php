@@ -2,10 +2,11 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\StatsOverview;
+
 class Dashboard extends \Filament\Pages\Dashboard
 {
     protected static ?string $title = 'My Dashboard';
-    protected static string|null|\UnitEnum $navigationGroup = 'OVERVIEW';
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-squares-2x2';
 
     protected static string $routePath = '/';
@@ -18,11 +19,10 @@ class Dashboard extends \Filament\Pages\Dashboard
         ];
     }
 
-    // Optional: manually define which widgets appear (disables auto-discovery)
     public function getWidgets(): array
     {
         return [
-            \App\Filament\Widgets\StatsOverview::class,
+            StatsOverview::class,
         ];
     }
 }

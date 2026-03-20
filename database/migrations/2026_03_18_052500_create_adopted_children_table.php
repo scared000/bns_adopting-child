@@ -21,7 +21,7 @@ return new class extends Migration
             $table->integer('age_months')->nullable();
             $table->decimal('height_cm', 5, 2)->nullable();
             $table->decimal('weight_kg', 5, 2)->nullable();
-//            $table->string('nutritional_status')->nullable();
+            $table->string('nutritional_status')->nullable();
             $table->boolean('lcr_registered')->default(false);
             $table->boolean('breastfed')->default(false);
             $table->boolean('v_suplemented')->default(false);
