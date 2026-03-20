@@ -6,5 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class WhoGrowthStandard extends Model
 {
-    protected $fillable = ['indicator', 'sex', 'key_value', 'l', 'm', 's'];
+    protected $fillable = [
+        'indicator',
+        'sex',
+        'key_value',
+        'l',
+        'm',
+        's'
+    ];
 }
