@@ -16,6 +16,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Components\Wizard\Step;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class AdoptedChildForm
 {
@@ -31,6 +32,7 @@ class AdoptedChildForm
             self::stepGuardianInformation(),
             self::stepFamilyMembers(),
             self::stepFamilyStatus(),
+            self::stepReview(),
         ];
     }
 
@@ -472,6 +474,283 @@ class AdoptedChildForm
                     ]),
             ]);
     }
+
+    private static function stepReview(): Step
+    {
+        return Step::make('Review')
+            ->icon('heroicon-o-clipboard-document-check')
+            ->schema([
+                Section::make('👤 Child Information')
+                    ->schema([
+                        Grid::make(3)->schema([
+                            Placeholder::make('r_name')
+                                ->label('Full Name')
+                                ->content(fn (Get $get): string => trim(
+                                    ($get('firstname') ?? '') . ' ' .
+                                    ($get('middlename') ?? '') . ' ' .
+                                    ($get('lastname') ?? '') . ' ' .
+                                    ($get('suffix') ?? '')
+                                ) ?: '—'),
+
+                            Placeholder::make('r_birthdate')
+                                ->label('Date of Birth')
+                                ->content(fn (Get $get): string =>
+                                $get('birthdate') ? Carbon::parse($get('birthdate'))->format('F d, Y') : '—'
+                                ),
+
+                            Placeholder::make('r_age')
+                                ->label('Age')
+                                ->content(fn (Get $get): string => $get('age_display') ?? '—'),
+
+                            Placeholder::make('r_sex')
+                                ->label('Sex')
+                                ->content(fn (Get $get): string => ucfirst($get('sex') ?? '—')),
+
+                            Placeholder::make('r_birthplace')
+                                ->label('Place of Birth')
+                                ->content(fn (Get $get): string => $get('birthplace') ?? '—'),
+
+                            Placeholder::make('r_height')
+                                ->label('Height')
+                                ->content(fn (Get $get): string =>
+                                $get('height_cm') ? $get('height_cm') . ' cm' : '—'
+                                ),
+
+                            Placeholder::make('r_weight')
+                                ->label('Weight')
+                                ->content(fn (Get $get): string =>
+                                $get('weight_kg') ? $get('weight_kg') . ' kg' : '—'
+                                ),
+
+                            Placeholder::make('r_nutritional_status')
+                                ->label('Nutritional Status')
+                                ->content(function (Get $get): HtmlString {
+                                    $months = (int) $get('age_months');
+                                    $weight = (float) $get('weight_kg');
+                                    $height = (float) $get('height_cm');
+                                    $sex    = $get('sex') ?? 'male';
+
+                                    if (!$months || !$weight || !$height) {
+                                        return new HtmlString('<span class="text-gray-400">—</span>');
+                                    }
+
+                                    $status = NutritionalStatus::classify($months, $weight, $height, $sex);
+                                    $class  = self::statusBadgeClass($status);
+
+                                    return new HtmlString(
+                                        "<span class=\"inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold {$class}\">{$status}</span>"
+                                    );
+                                }),
+                        ]),
+                    ]),
+
+                Section::make('👨‍👩‍👦 Guardian Information')
+                    ->schema([
+                        Grid::make(2)->schema([
+                            Section::make('Mother')->schema([
+                                Grid::make(2)->schema([
+                                    Placeholder::make('r_mother_name')
+                                        ->label('Full Name')
+                                        ->content(fn (Get $get): string => trim(
+                                            ($get('mother_firstname') ?? '') . ' ' .
+                                            ($get('mother_middlename') ?? '') . ' ' .
+                                            ($get('mother_lastname') ?? '')
+                                        ) ?: '—'),
+                                    Placeholder::make('r_mother_birthdate')
+                                        ->label('Birth Date')
+                                        ->content(fn (Get $get): string =>
+                                        $get('mother_birthdate') ? Carbon::parse($get('mother_birthdate'))->format('F d, Y') : '—'
+                                        ),
+                                    Placeholder::make('r_mother_relation')
+                                        ->label('Relationship')
+                                        ->content(fn (Get $get): string =>
+                                            self::relationOptions()[$get('mother_relation')] ?? '—'
+                                        ),
+                                    Placeholder::make('r_mother_occupation')
+                                        ->label('Occupation')
+                                        ->content(fn (Get $get): string => $get('mother_occupation') ?? '—'),
+                                    Placeholder::make('r_mother_education')
+                                        ->label('Education')
+                                        ->content(fn (Get $get): string =>
+                                            self::educationalOptions()[$get('mother_educational_attainment')] ?? '—'
+                                        ),
+                                ]),
+                            ]),
+
+                            Section::make('Father')->schema([
+                                Grid::make(2)->schema([
+                                    Placeholder::make('r_father_name')
+                                        ->label('Full Name')
+                                        ->content(fn (Get $get): string => trim(
+                                            ($get('father_firstname') ?? '') . ' ' .
+                                            ($get('father_middlename') ?? '') . ' ' .
+                                            ($get('father_lastname') ?? '')
+                                        ) ?: '—'),
+                                    Placeholder::make('r_father_birthdate')
+                                        ->label('Birth Date')
+                                        ->content(fn (Get $get): string =>
+                                        $get('father_birthdate') ? Carbon::parse($get('father_birthdate'))->format('F d, Y') : '—'
+                                        ),
+                                    Placeholder::make('r_father_relation')
+                                        ->label('Relationship')
+                                        ->content(fn (Get $get): string =>
+                                            self::relationOptions('father')[$get('father_relation')] ?? '—'
+                                        ),
+                                    Placeholder::make('r_father_occupation')
+                                        ->label('Occupation')
+                                        ->content(fn (Get $get): string => $get('father_occupation') ?? '—'),
+                                    Placeholder::make('r_father_education')
+                                        ->label('Education')
+                                        ->content(fn (Get $get): string =>
+                                            self::educationalOptions()[$get('father_educational_attainment')] ?? '—'
+                                        ),
+                                ]),
+                            ]),
+                            Section::make('👨‍👩‍👧‍👦 Family Members')
+                                ->columnSpanFull()
+                                ->schema([
+                                    Placeholder::make('r_family_members')
+                                        ->label('')
+                                        ->hiddenLabel()
+                                        ->content(function (Get $get): HtmlString {
+                                            $members = $get('family_members') ?? [];
+
+                                            if (empty($members)) {
+                                                return new HtmlString(
+                                                    '<span class="text-sm text-gray-400 italic">No family members added.</span>'
+                                                );
+                                            }
+                                            $nutritionLabels = [
+                                                'normal'      => 'Normal',
+                                                'underweight' => 'Underweight',
+                                                'overweight'  => 'Overweight',
+                                                'server_uw'   => 'Severely UW',
+                                            ];
+
+                                            $rows = '';
+                                            foreach ($members as $member) {
+                                                $name = $member['fam_member_fullname'] ?? '—';
+                                                $weight = isset($member['fam_member_actual_weight'])
+                                                    ? $member['fam_member_actual_weight'] . ' kg'
+                                                    : '—';
+                                                $status = $nutritionLabels[$member['fam_member_nutrition_status'] ?? ''] ?? '—';
+
+                                                $rows .= "<tr style=\"border-bottom: 1px solid #e5e7eb;\">
+                                                            <td style=\"padding: 8px 0; font-size: 14px; width: 33%;\">{$name}</td>
+                                                            <td style=\"padding: 8px 0; font-size: 14px; width: 33%;\">{$weight}</td>
+                                                            <td style=\"padding: 8px 0; font-size: 14px; width: 33%;\">{$status}</td>
+                                                        </tr>";
+
+                                            }
+
+                                            return new HtmlString("<div style=\"overflow-x: auto;\">
+                                                                            <table style=\"width: 100%; table-layout: fixed; border-collapse: collapse;\">
+                                                                                <thead>
+                                                                                    <tr style=\"border-bottom: 2px solid #d1d5db;\">
+                                                                                        <th style=\"padding-bottom: 8px; text-align: left; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; width: 33%;\">Full Name</th>
+                                                                                        <th style=\"padding-bottom: 8px; text-align: left; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; width: 33%;\">Weight</th>
+                                                                                        <th style=\"padding-bottom: 8px; text-align: left; font-size: 11px; font-weight: 600; color: #6b7280; text-transform: uppercase; width: 33%;\">Nutritional Status</th>
+                                                                                    </tr>
+                                                                                </thead>
+                                                                                <tbody>
+                                                                                    {$rows}
+                                                                                </tbody>
+                                                                            </table>
+                                                                        </div>");
+                                        }),
+                                ]),
+                        ]),
+                    ]),
+
+                Section::make('🏠 Family Status')
+                    ->schema([
+                        Grid::make(3)->schema([
+                            Placeholder::make('r_civil_status')
+                                ->label('Civil Status')
+                                ->content(fn (Get $get): string => match ($get('civil_status')) {
+                                    'single' => 'Single', 'married' => 'Married',
+                                    'widowed' => 'Widowed', 'separated' => 'Separated',
+                                    'cohabiting' => 'Live-in / Cohabiting', default => '—',
+                                }),
+                            Placeholder::make('r_monthly_income')
+                                ->label('Monthly Income')
+                                ->content(fn (Get $get): string => match ($get('monthly_income')) {
+                                    'below_5000' => 'Below ₱5,000', '5000-9999' => '₱5,000 - ₱9,999',
+                                    '10000-14999' => '₱10,000 - ₱14,999', '15000-19999' => '₱15,000 - ₱19,999',
+                                    '20000-above' => '₱20,000 and above', default => '—',
+                                }),
+                            Placeholder::make('r_source_income')
+                                ->label('Source of Income')
+                                ->content(fn (Get $get): string => $get('source_income') ?? '—'),
+                            Placeholder::make('r_phil_member')
+                                ->label('PhilHealth Member?')
+                                ->content(fn (Get $get): string => match ($get('phil_member')) {
+                                    'yes' => 'Yes', 'no' => 'No', default => '—',
+                                }),
+                            Placeholder::make('r_electricity')
+                                ->label('Has Electricity?')
+                                ->content(fn (Get $get): string => match ($get('have_electricity')) {
+                                    'yes' => 'Yes', 'no' => 'No', default => '—',
+                                }),
+                            Placeholder::make('r_water_source')
+                                ->label('Water Source')
+                                ->content(fn (Get $get): string => match ($get('water_source')) {
+                                    'tap' => 'Tap / Piped Water', 'well' => 'Deep Well',
+                                    'spring' => 'Spring', 'river' => 'River / Stream',
+                                    'rain' => 'Rainwater', 'delivered' => 'Delivered Water', default => '—',
+                                }),
+                            Placeholder::make('r_toilet')
+                                ->label('Toilet Facility')
+                                ->content(fn (Get $get): string => match ($get('toilet_facility')) {
+                                    'flush' => 'Water-sealed / Flush', 'pit' => 'Pit Latrine',
+                                    'open' => 'Open Defecation', 'shared' => 'Shared Toilet', default => '—',
+                                }),
+                            Placeholder::make('r_roofing')
+                                ->label('Roofing')
+                                ->content(fn (Get $get): string => match ($get('roofing')) {
+                                    'galvanized' => 'Galvanized Iron', 'concrete' => 'Concrete',
+                                    'nipa' => 'Nipa / Cogon', 'wood' => 'Wood', default => '—',
+                                }),
+                            Placeholder::make('r_walls')
+                                ->label('Wall Material')
+                                ->content(fn (Get $get): string => match ($get('walls')) {
+                                    'concrete' => 'Concrete / Hollow Blocks', 'wood' => 'Wood',
+                                    'bamboo' => 'Bamboo', 'mixed' => 'Mixed Materials', default => '—',
+                                }),
+                            Placeholder::make('r_flooring')
+                                ->label('Flooring')
+                                ->content(fn (Get $get): string => match ($get('flooring')) {
+                                    'concrete' => 'Concrete', 'wood' => 'Wood',
+                                    'earth' => 'Earth / Soil', 'tile' => 'Tile', default => '—',
+                                }),
+                        ]),
+                    ]),
+            ]);
+    }
+
+    private static function statusBadgeClass(string $status): string
+    {
+        $colorMap = [
+            'SUW'     => 'bg-red-100 text-red-700 border border-red-300',
+            'SST'     => 'bg-red-100 text-red-700 border border-red-300',
+            'Wasted'  => 'bg-red-100 text-red-700 border border-red-300',
+            'At Risk' => 'bg-red-100 text-red-700 border border-red-300',
+            'OB'      => 'bg-red-100 text-red-700 border border-red-300',
+            'OW'      => 'bg-blue-100 text-blue-700 border border-blue-300',
+            'UW'      => 'bg-yellow-100 text-yellow-700 border border-yellow-300',
+            'ST'      => 'bg-yellow-100 text-yellow-700 border border-yellow-300',
+            'MW'      => 'bg-yellow-100 text-yellow-700 border border-yellow-300',
+        ];
+
+        foreach ($colorMap as $key => $css) {
+            if (str_contains($status, $key)) {
+                return $css;
+            }
+        }
+
+        return 'bg-green-100 text-green-700 border border-green-300';
+    }
+
 
     private static function relationOptions(string $type = 'mother'): array
     {
