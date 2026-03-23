@@ -46,7 +46,7 @@ class AdoptedChildResource extends Resource
         return [
             'view' => ViewAdoptedChild::route('{record}'),
             'index' => ListAdoptedChildren::route('/'),
-            'edit' => EditAdoptedChild::route('/{record}/edit'),
+//            'edit' => EditAdoptedChild::route('/{record}/edit'),
         ];
     }
 }

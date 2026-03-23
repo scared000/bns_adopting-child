@@ -109,14 +109,13 @@ class AdoptedChildrenTable
     {
         return [
             ViewAction::make()
+                ->label('Details')
                 ->color('info')
-                ->iconButton(),
+                ->badge(),
 
-            EditAction::make()
-                ->iconButton()
-                ->after(fn ($record) => AdoptedChildForm::afterEdit($record)),
-
-            DeleteAction::make()->iconButton(),
+            DeleteAction::make()
+                ->label('Delete')
+                ->badge(),
         ];
     }
 

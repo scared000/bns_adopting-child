@@ -92,9 +92,135 @@ class AdoptedChildForm
         ]);
     }
 
-    public static function afterEdit($record): void
+    public static function fillEditForm($record): array
+    {
+        $mother = $record->motherProfile;
+        $father = $record->fatherProfile;
+        $status = $record->familyStatus->first();
+
+        $ageDisplay = null;
+        $ageMonths  = null;
+        if ($record->birthdate) {
+            $age = \Carbon\Carbon::parse($record->birthdate)->diff(now());
+            $ageMonths = ($age->y * 12) + $age->m;
+            $ageDisplay = $age->y . 'y ' . $age->m . 'm (' . $ageMonths . ' months)';
+        }
+
+        return [
+            'firstname' => $record->firstname,
+            'middlename' => $record->middlename,
+            'lastname' => $record->lastname,
+            'suffix' => $record->suffix,
+            'birthdate' => $record->birthdate,
+            'birthplace' => $record->birthplace,
+            'sex' => $record->sex,
+            'height_cm' => $record->height_cm,
+            'weight_kg' => $record->weight_kg,
+            'profile_path' => $record->profile_path,
+            'age_display' => $ageDisplay,
+            'age_months' => $ageMonths,
+
+            'mother_firstname' => $mother?->firstname,
+            'mother_middlename' => $mother?->middlename,
+            'mother_lastname' => $mother?->lastname,
+            'mother_suffix' => $mother?->suffix,
+            'mother_birthdate' => $mother?->birthdate,
+            'mother_relation' => $mother?->relation,
+            'mother_occupation' => $mother?->occupation,
+            'mother_educational_attainment' => $mother?->educational_attainment,
+
+            'father_firstname' => $father?->firstname,
+            'father_middlename' => $father?->middlename,
+            'father_lastname' => $father?->lastname,
+            'father_suffix' => $father?->suffix,
+            'father_birthdate' => $father?->birthdate,
+            'father_relation' => $father?->relation,
+            'father_occupation' => $father?->occupation,
+            'father_educational_attainment' => $father?->educational_attainment,
+
+            'family_members' => $record->familyMembers->map(fn ($m) => [
+                'fam_member_fullname' => $m->fam_member_fullname,
+                'fam_member_actual_weight' => $m->fam_member_actual_weight,
+                'fam_member_nutrition_status' => $m->fam_member_nutrition_status,
+            ])->toArray(),
+
+            'civil_status' => $status?->status,
+            'type_of_marriage' => $status?->type_of_marriage,
+            'monthly_income' => $status?->monthly_income,
+            'source_income' => $status?->source_income,
+            'phil_member' => $status?->phil_member,
+            'family_plan_method' => $status?->family_plan_method,
+            'have_electricity' => $status?->have_electricity,
+            'water_source' => $status?->water_source,
+            'toilet_facility' => $status?->toilet_facility,
+            'roofing' => $status?->roofing,
+            'walls' => $status?->walls,
+            'flooring' => $status?->flooring,
+        ];
+    }
+
+    public static function afterEdit($record, array $data): void
     {
         self::syncNutritionalStatus($record);
+
+        // Update Mother
+        $record->familyProfiles()->where('type', 'mother')->updateOrCreate(
+            ['type' => 'mother'],
+            [
+                'firstname' => $data['mother_firstname'],
+                'lastname' => $data['mother_lastname'],
+                'middlename' => $data['mother_middlename'],
+                'suffix' => $data['mother_suffix'] ?? null,
+                'birthdate' => $data['mother_birthdate'],
+                'relation' => $data['mother_relation'],
+                'occupation' => $data['mother_occupation'],
+                'educational_attainment' => $data['mother_educational_attainment'],
+            ]
+        );
+
+        // Update Father
+        $record->familyProfiles()->where('type', 'father')->updateOrCreate(
+            ['type' => 'father'],
+            [
+                'firstname' => $data['father_firstname'],
+                'lastname' => $data['father_lastname'],
+                'middlename' => $data['father_middlename'],
+                'suffix' => $data['father_suffix'] ?? null,
+                'birthdate' => $data['father_birthdate'],
+                'relation' => $data['father_relation'],
+                'occupation' => $data['father_occupation'],
+                'educational_attainment' => $data['father_educational_attainment'],
+            ]
+        );
+
+        $record->familyProfiles()->where('type', 'fam_member')->delete();
+        foreach ($data['family_members'] ?? [] as $member) {
+            $record->familyProfiles()->create([
+                'type' => 'fam_member',
+                'fam_member_fullname' => $member['fam_member_fullname'],
+                'fam_member_actual_weight' => $member['fam_member_actual_weight'] ?? null,
+                'fam_member_nutrition_status' => $member['fam_member_nutrition_status'] ?? null,
+            ]);
+        }
+
+        // Update Family Status
+        $record->familyStatus()->updateOrCreate(
+            [],
+            [
+                'status' => $data['civil_status'],
+                'type_of_marriage'  => $data['type_of_marriage'],
+                'monthly_income' => $data['monthly_income'],
+                'source_income' => $data['source_income'],
+                'phil_member' => $data['phil_member'],
+                'family_plan_method'=> $data['family_plan_method'],
+                'have_electricity' => $data['have_electricity'],
+                'water_source' => $data['water_source'],
+                'toilet_facility' => $data['toilet_facility'],
+                'roofing' => $data['roofing'],
+                'walls' => $data['walls'],
+                'flooring' => $data['flooring'],
+            ]
+        );
     }
 
     public static function syncNutritionalStatus($record): void
