@@ -108,7 +108,9 @@ class AdoptedChildrenTable
     private static function recordActions(): array
     {
         return [
-            ViewAction::make()->color('info')->iconButton(),
+            ViewAction::make()
+                ->color('info')
+                ->iconButton(),
 
             EditAction::make()
                 ->iconButton()

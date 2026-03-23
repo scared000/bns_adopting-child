@@ -5,6 +5,7 @@ namespace App\Filament\Resources\AdoptedChildren;
 use App\Filament\Resources\AdoptedChildren\Pages\CreateAdoptedChild;
 use App\Filament\Resources\AdoptedChildren\Pages\EditAdoptedChild;
 use App\Filament\Resources\AdoptedChildren\Pages\ListAdoptedChildren;
+use App\Filament\Resources\AdoptedChildren\Pages\ViewAdoptedChild;
 use App\Filament\Resources\AdoptedChildren\Schemas\AdoptedChildForm;
 use App\Filament\Resources\AdoptedChildren\Tables\AdoptedChildrenTable;
 use App\Models\AdoptedChild;
@@ -43,6 +44,7 @@ class AdoptedChildResource extends Resource
     public static function getPages(): array
     {
         return [
+            'view' => ViewAdoptedChild::route('{record}'),
             'index' => ListAdoptedChildren::route('/'),
             'edit' => EditAdoptedChild::route('/{record}/edit'),
         ];
