@@ -55,10 +55,8 @@ class NutritionalStatus
         return implode(' | ', $statuses) ?: 'Normal (N)';
     }
 
-    // -------------------------------------------------------
-    // 5–19 years: BMI-for-Age classification
-    // -------------------------------------------------------
 
+    // 5–19 years: BMI-for-Age classification
     protected static function classifyBmiForAge(int $ageMonths, float $weight, float $height, string $sex): string
     {
         // WHO BFA tables cover 61–228 months (5–19 years)
@@ -87,10 +85,7 @@ class NutritionalStatus
         return 'Normal (N)';
     }
 
-    // -------------------------------------------------------
     // Over 19 years: simple adult BMI cutoffs (WHO)
-    // -------------------------------------------------------
-
     protected static function classifyAdultBmi(float $weight, float $height): string
     {
         $heightM = $height / 100;
@@ -105,10 +100,8 @@ class NutritionalStatus
         return 'OB — Obese';
     }
 
-    // -------------------------------------------------------
-    // 0–5 years indicators
-    // -------------------------------------------------------
 
+    // 0–5 years indicators
     protected static function weightForAge(int $months, float $weight, string $sex): string
     {
         $lms = self::getLMS('wfa', $sex, $months);
@@ -150,10 +143,8 @@ class NutritionalStatus
         return '';
     }
 
-    // -------------------------------------------------------
-    // LMS lookup with caching + interpolation
-    // -------------------------------------------------------
 
+    // LMS lookup with caching + interpolation
     protected static function getLMS(string $indicator, string $sex, float $keyValue): ?object
     {
         $cacheKey = "who_lms_{$indicator}_{$sex}";
@@ -204,10 +195,8 @@ class NutritionalStatus
         ];
     }
 
-    // -------------------------------------------------------
-    // WHO LMS z-score formula
-    // -------------------------------------------------------
 
+    // WHO LMS z-score formula
     protected static function zScore(float $x, float $l, float $m, float $s): float
     {
         if ($l == 0) {
