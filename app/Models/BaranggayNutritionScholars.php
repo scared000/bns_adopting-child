@@ -10,6 +10,7 @@ class BaranggayNutritionScholars extends Model
 {
     use HasFactory;
 
+    protected $table = 'barangay_nutrition_scholars';
     protected $fillable = [
         'firstname',
         'lastname',

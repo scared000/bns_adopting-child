@@ -34,7 +34,7 @@ class ListFamilyProfiles extends Page implements HasTable
             )
             ->columns([
                 TextColumn::make('firstname')
-                    ->label('Child Name')
+                    ->label('CHILD NAME')
                     ->formatStateUsing(fn ($record) =>
                     trim($record->firstname . ' ' . $record->lastname)
                     )
@@ -42,7 +42,7 @@ class ListFamilyProfiles extends Page implements HasTable
                     ->sortable(),
 
                 TextColumn::make('motherProfile.firstname')
-                    ->label('Mother')
+                    ->label('MOTHER')
                     ->getStateUsing(fn ($record) =>
                     trim(
                         ($record->motherProfile?->firstname ?? '') . ' ' .
@@ -53,7 +53,7 @@ class ListFamilyProfiles extends Page implements HasTable
                     ->searchable(),
 
                 TextColumn::make('fatherProfile.firstname')
-                    ->label('Father')
+                    ->label('FATHER')
                     ->getStateUsing(fn ($record) =>
                     trim(
                         ($record->fatherProfile?->firstname ?? '') . ' ' .
@@ -76,7 +76,7 @@ class ListFamilyProfiles extends Page implements HasTable
                 ),
 
                 TextColumn::make('phil_member')
-                    ->label('PhilHealth')
+                    ->label('PHIL-HEALTH')
                     ->badge()
                     ->getStateUsing(fn ($record) =>
                         $record->familyStatus->first()?->phil_member ?? null

@@ -10,7 +10,7 @@ class NutritionalStatus
     /**
      * Classify nutritional status based on WHO standards.
      *
-     * 0–60 months  → WHO Child Growth Standards (2006)
+     * 0–60 months → WHO Child Growth Standards (2006)
      *                Uses WFA, HFA, WFH indicators
      *
      * 61–228 months (5–19 years) → WHO Growth Reference (2007)
