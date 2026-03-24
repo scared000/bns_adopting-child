@@ -40,7 +40,9 @@
                             </h1>
                             <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
                                 <x-heroicon-m-map-pin class="w-3.5 h-3.5 text-orange-500" />
-                                Barangay {{ $record->barangay_name ?? 'Not assigned' }}, Davao de Oro
+                                Barangay {{ $record->barangay?->brgyDesc?? 'Barangay Not assigned' }},
+                                         {{$record->municipality?->citymunDesc?? 'Municipality Not assigned' }},
+                                         {{$record->municipality?->province?->provDesc?? 'Province assigned' }}
                             </p>
                         </div>
                     </div>

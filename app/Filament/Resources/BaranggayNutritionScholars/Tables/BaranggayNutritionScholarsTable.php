@@ -45,8 +45,6 @@ class BaranggayNutritionScholarsTable
                 TextColumn::make('address')
                     ->label('ADDRESS')
                     ->searchable()
-                    ->wrap()
-                    ->extraAttributes(['class' => 'max-w-xs break-words'])
                     ->getStateUsing(function ($record) {
                         return collect([
                             $record->purok,
