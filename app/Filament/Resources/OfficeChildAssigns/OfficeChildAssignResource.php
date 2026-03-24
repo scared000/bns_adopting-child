@@ -16,13 +16,15 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use function Laravel\Prompts\search;
 
 class OfficeChildAssignResource extends Resource
 {
     protected static ?string $model = OfficeChildAssign::class;
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationLabel = 'Child Assignments';
-    protected static string|null|\UnitEnum $navigationGroup = 'CHILD ASSIGNMENT';
+    protected static string|null|\UnitEnum $navigationGroup = 'MONITORING';
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
@@ -41,17 +43,20 @@ class OfficeChildAssignResource extends Resource
 
                 Select::make('adopted_id')
                     ->label('Child')
-                    ->options(
-                        AdoptedChild::all()
+                    ->options(function (){
+                        return AdoptedChild::query()
+                            ->whereDoesntHave('officeAssignments')
+                            ->get()
                             ->mapWithKeys(fn ($child) => [
-                                $child->id => $child->firstname . ' ' . $child->lastname
-                            ])
-                    )
+                                $child->id => "{$child->firstname}{$child->lastname} - {$child->barangay_name}"
+                            ]);
+                    })
                     ->searchable()
-                    ->required(),
+                    ->required()
+                    ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
 
                 DatePicker::make('assigned_date')  // ✅ DatePicker not TextColumn
-                ->label('Assigned Date')
+                    ->label('Assigned Date')
                     ->default(now()),
             ]);
     }
@@ -64,12 +69,15 @@ class OfficeChildAssignResource extends Resource
                     ->label('BNS NAME')
                     ->formatStateUsing(fn ($record) => $record->bns->firstname . ' ' . $record->bns->lastname)
                     ->searchable(),
+
                 TextColumn::make('child.firstname')
                     ->label('CHILD NAME')
                     ->formatStateUsing(fn ($record) => $record->child->firstname . ' ' . $record->child->lastname)
                     ->searchable(),
+
                 TextColumn::make('bns.barangay_name')
                     ->label('BARANGAY'),
+
                 TextColumn::make('assigned_date')
                     ->label('ASSIGNED DATE')
                     ->date()

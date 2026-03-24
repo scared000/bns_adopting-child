@@ -20,6 +20,7 @@ class OfficeVisitsResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
     protected static string|null|\UnitEnum $navigationGroup = 'MONITORING';
+    protected static ?int $navigationSort = 2;
 
 
     public static function form(Schema $schema): Schema

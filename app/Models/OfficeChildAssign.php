@@ -13,6 +13,9 @@ class OfficeChildAssign extends Model
         'office_id',
         'assigned_date',
     ];
+    protected $casts = [
+        'assigned_date' => 'date',
+    ];
 
     public function child(): BelongsTo
     {
