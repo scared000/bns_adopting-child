@@ -30,8 +30,9 @@ class AdoptedChildrenTable
     {
         return [
             ImageColumn::make('profile_path')
-                ->label('Profile')
+                ->label('PROFILE')
                 ->circular()
+                ->disk('public')
                 ->defaultImageUrl(fn ($record) =>
                     'https://ui-avatars.com/api/?' . http_build_query([
                         'name' => $record->firstname . ' ' . $record->lastname,
@@ -44,13 +45,13 @@ class AdoptedChildrenTable
                 ),
 
             TextColumn::make('firstname')
-                ->label('Name')
+                ->label('NAME')
                 ->searchable(['firstname', 'lastname'])
                 ->weight('bold')
                 ->formatStateUsing(fn ($record) => $record->firstname . ' ' . $record->lastname),
 
             TextColumn::make('birthdate')
-                ->label('Age by year & month')
+                ->label('AGE BY YEAR & MONTH')
                 ->sortable()
                 ->formatStateUsing(fn ($record) =>
                 $record->birthdate
@@ -65,18 +66,18 @@ class AdoptedChildrenTable
                 ),
 
             TextColumn::make('height_cm')
-                ->label('Height')
+                ->label('HEIGHT CM')
                 ->suffix('cm')
                 ->numeric(),
 
             TextColumn::make('weight_kg')
-                ->label('Weight')
+                ->label('WEIGHT KG')
                 ->suffix('kg')
                 ->numeric(),
 
             TextColumn::make('nutritional_status')
                 ->sortable()
-                ->label('Nutritional Status')
+                ->label('NUTRITIONAL STATUS')
                 ->badge()
                 ->formatStateUsing(fn ($record) => $record->nutritional_status ?? 'Incomplete Data')
                 ->color(fn (string $state): string => self::statusColor($state)),

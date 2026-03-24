@@ -14,14 +14,20 @@ class BaranggayNutritionScholars extends Model
     protected $fillable = [
         'firstname',
         'lastname',
+        'barangay_name',
+        'barangay_code',
         'middlename',
         'suffix',
         'profile_path',
-        'barangay_id'
     ];
 
     public function officeVisits(): HasMany
     {
         return $this->hasMany(OfficeChildVisit::class, 'bns_id');
+    }
+
+    public function childAssignments(): HasMany
+    {
+        return $this->hasMany(OfficeChildAssign::class, 'bns_id');
     }
 }

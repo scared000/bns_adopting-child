@@ -31,6 +31,7 @@ class AdoptedChildInfolist
                 ImageEntry::make('profile_path')
                     ->label('Profile')
                     ->circular()
+                    ->disk('public')
                     ->defaultImageUrl(fn ($record) =>
                         'https://ui-avatars.com/api/?' . http_build_query([
                             'name' => $record->firstname . ' ' . $record->lastname,

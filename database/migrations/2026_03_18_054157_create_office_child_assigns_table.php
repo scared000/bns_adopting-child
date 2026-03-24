@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('office_child_assigns', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('bns_id')->nullable()->constrained('barangay_nutrition_scholars')->nullOnDelete();
             $table->foreignId('adopted_id')->constrained('adopted_children')->cascadeOnDelete();
             $table->unsignedBigInteger('office_id')->nullable(); // Assuming 'offices' table exists elsewhere
             $table->date('Assigned_date')->nullable();

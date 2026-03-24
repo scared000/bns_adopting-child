@@ -15,7 +15,8 @@ return new class extends Migration
             $table->string('middlename')->nullable();
             $table->string('suffix')->nullable();
             $table->string('profile_path')->nullable();
-            $table->unsignedBigInteger('barangay_id')->nullable();
+            $table->string('barangay_code')->nullable();
+            $table->string('barangay_name')->nullable();
             $table->timestamps();
         });
     }
