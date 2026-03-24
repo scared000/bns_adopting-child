@@ -4,6 +4,7 @@ namespace App\Filament\Resources\AdoptedChildren\Infolists;
 
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Schema;
@@ -29,71 +30,72 @@ class AdoptedChildInfolist
             ->columns(3)
             ->schema([
                 ImageEntry::make('profile_path')
-                    ->label('Profile')
+                    ->label(new HtmlString('<span style="font-weight:750;">Profile</span>'))
                     ->circular()
                     ->disk('public')
                     ->defaultImageUrl(fn ($record) =>
                         'https://ui-avatars.com/api/?' . http_build_query([
-                            'name' => $record->firstname . ' ' . $record->lastname,
+                            'name' => "{$record->firstname} {$record->lastname}",
                             'background' => '6366f1',
                             'color' => 'fff',
                             'size' => '128',
                             'bold' => 'true',
-                            'rounded' => 'true',
                         ])
-                    )
-                    ->columnSpanFull(),
-
-                TextEntry::make('firstname')
-                    ->label(new HtmlString('<span style="font-weight:600;">Full Name</span>'))
-                    ->formatStateUsing(fn ($record) =>
-                    trim(
-                        $record->firstname . ' ' .
-                        ($record->middlename ?? '') . ' ' .
-                        $record->lastname . ' ' .
-                        ($record->suffix ?? '')
-                    )
                     ),
 
-                TextEntry::make('birthdate')
-                    ->label(new HtmlString('<span style="font-weight:600;">Date of Birth</span>'))
-                    ->formatStateUsing(fn ($state) =>
-                    $state
-                        ? \Carbon\Carbon::parse($state)->format('F d, Y')
-                        : '—'
-                    ),
+                // Column 2: Name and Age
+                Group::make([
+                    TextEntry::make('name_display')
+                        ->label(new HtmlString('<span style="font-weight:750;">Full Name</span>'))
+                        ->getStateUsing(fn ($record) => trim("{$record->firstname} {$record->middlename} {$record->lastname} {$record->suffix}")),
 
-                TextEntry::make('birthdate')
-                    ->label(new HtmlString('<span style="font-weight:600;">Age</span>'))
-                    ->formatStateUsing(fn ($record) => (function () use ($record) {
-                        if (!$record->birthdate) return '—';
-                        $age    = \Carbon\Carbon::parse($record->birthdate)->diff(now());
-                        $months = ($age->y * 12) + $age->m;
-                        return $age->y >= 5
-                            ? $age->y . ' yrs old'
-                            : $age->y . 'y ' . $age->m . 'm (' . $months . ' mos)';
-                    })()),
+                    TextEntry::make('age_display')
+                        ->label(new HtmlString('<span style="font-weight:750;">Age</span>'))
+                        ->getStateUsing(fn ($record) => $record->birthdate
+                            ? \Carbon\Carbon::parse($record->birthdate)->diff(now())->y . ' yrs old'
+                            : '—'),
+                ]),
 
-                TextEntry::make('sex')
-                    ->label(new HtmlString('<span style="font-weight:600;">Sex</span>'))
-                    ->formatStateUsing(fn ($state) => ucfirst($state ?? '—')),
+                // Column 3: DOB and Sex
+                Group::make([
+                    TextEntry::make('birthdate')
+                        ->label(new HtmlString('<span style="font-weight:750;">Date of Birth</span>'))
+                        ->date('F d, Y'),
 
-                TextEntry::make('birthplace')
-                    ->label(new HtmlString('<span style="font-weight:600;">Place of Birth</span>')),
+                    TextEntry::make('sex')
+                        ->label(new HtmlString('<span style="font-weight:750;">Sex</span>'))
+                        ->formatStateUsing(fn ($state) => ucfirst($state ?? '—')),
+                ]),
 
+                // Row 2
                 TextEntry::make('height_cm')
-                    ->label(new HtmlString('<span style="font-weight:600;">Height</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Height</span>'))
                     ->suffix(' cm'),
 
                 TextEntry::make('weight_kg')
-                    ->label(new HtmlString('<span style="font-weight:600;">Weight</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Weight</span>'))
                     ->suffix(' kg'),
 
+                TextEntry::make('birthplace')
+                    ->label(new HtmlString('<span style="font-weight:750;">Place of Birth</span>')),
+
                 TextEntry::make('nutritional_status')
-                    ->label(new HtmlString('<span style="font-weight:600;">Nutritional Status</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Nutritional Status</span>'))
                     ->badge()
-                    ->formatStateUsing(fn ($state) => $state ?? 'Incomplete Data')
-                    ->color(fn (string $state): string => self::statusColor($state)),
+                    ->color(fn (string $state): string => self::statusColor($state))
+                    ->columnSpan(1),
+
+                TextEntry::make('address')
+                    ->label(new HtmlString('<span style="font-weight:750;">Address</span>'))
+                    ->columnSpan(2)
+                    ->getStateUsing(function ($record) {
+                        return collect([
+                            $record->purok,
+                            $record->barangay?->brgyDesc,
+                            $record->municipality?->citymunDesc,
+                            $record->municipality?->province?->provDesc
+                        ])->filter()->implode(', ');
+                    }),
             ]);
     }
 
@@ -106,7 +108,7 @@ class AdoptedChildInfolist
                 Section::make('Mother')
                     ->schema([
                         TextEntry::make('motherProfile.firstname')
-                            ->label(new HtmlString('<span style="font-weight:600;">Full Name</span>'))
+                            ->label(new HtmlString('<span style="font-weight:750;">Full Name</span>'))
                             ->formatStateUsing(fn ($record) =>
                             trim(
                                 ($record->motherProfile?->firstname ?? '') . ' ' .
@@ -115,14 +117,14 @@ class AdoptedChildInfolist
                             ) ?: '—'
                             ),
                         TextEntry::make('motherProfile.birthdate')
-                            ->label(new HtmlString('<span style="font-weight:600;">Birth Date</span>'))
+                            ->label(new HtmlString('<span style="font-weight:750;">Birth Date</span>'))
                             ->formatStateUsing(fn ($state) =>
                             $state
                                 ? \Carbon\Carbon::parse($state)->format('F d, Y')
                                 : '—'
                             ),
                         TextEntry::make('motherProfile.relation')
-                            ->label(new HtmlString('<span style="font-weight:600;">Relationship</span>'))
+                            ->label(new HtmlString('<span style="font-weight:750;">Relationship</span>'))
                             ->formatStateUsing(fn ($state) => match ($state) {
                                 'biological_mother' => 'Biological Mother',
                                 'adoptive_mother' => 'Adoptive Mother',
@@ -136,9 +138,9 @@ class AdoptedChildInfolist
                                 default => ucwords(str_replace('_', ' ', $state ?? '—')),
                             }),
                         TextEntry::make('motherProfile.occupation')
-                            ->label(new HtmlString('<span style="font-weight:600;">Occupation</span>')),
+                            ->label(new HtmlString('<span style="font-weight:750;">Occupation</span>')),
                         TextEntry::make('motherProfile.educational_attainment')
-                            ->label(new HtmlString('<span style="font-weight:600;">Education</span>'))
+                            ->label(new HtmlString('<span style="font-weight:750;">Education</span>'))
                             ->formatStateUsing(fn ($state) => match ($state) {
                                 'no_formal_education' => 'No Formal Education',
                                 'elementary_undergraduate' => 'Elementary Undergraduate',
@@ -159,7 +161,7 @@ class AdoptedChildInfolist
                 Section::make('Father')
                     ->schema([
                         TextEntry::make('fatherProfile.firstname')
-                            ->label(new HtmlString('<span style="font-weight:600;">Full Name</span>'))
+                            ->label(new HtmlString('<span style="font-weight:750;">Full Name</span>'))
                             ->formatStateUsing(fn ($record) =>
                             trim(
                                 ($record->fatherProfile?->firstname ?? '') . ' ' .
@@ -168,14 +170,14 @@ class AdoptedChildInfolist
                             ) ?: '—'
                             ),
                         TextEntry::make('fatherProfile.birthdate')
-                            ->label(new HtmlString('<span style="font-weight:600;">Birth Date</span>'))
+                            ->label(new HtmlString('<span style="font-weight:750;">Birth Date</span>'))
                             ->formatStateUsing(fn ($state) =>
                             $state
                                 ? \Carbon\Carbon::parse($state)->format('F d, Y')
                                 : '—'
                             ),
                         TextEntry::make('fatherProfile.relation')
-                            ->label(new HtmlString('<span style="font-weight:600;">Relationship</span>'))
+                            ->label(new HtmlString('<span style="font-weight:750;">Relationship</span>'))
                             ->formatStateUsing(fn ($state) => match ($state) {
                                 'biological_mother' => 'Biological Mother',
                                 'adoptive_mother' => 'Adoptive Mother',
@@ -190,11 +192,11 @@ class AdoptedChildInfolist
                             }),
 
                         TextEntry::make('fatherProfile.occupation')
-                            ->label(new HtmlString('<span style="font-weight:600;">Occupation</span>')),
+                            ->label(new HtmlString('<span style="font-weight:750;">Occupation</span>')),
 
                         TextEntry::make('fatherProfile.educational_attainment')
                             ->label('Education')
-                            ->label(new HtmlString('<span style="font-weight:600;">Education</span>'))
+                            ->label(new HtmlString('<span style="font-weight:750;">Education</span>'))
                             ->formatStateUsing(fn ($state) => match ($state) {
                                 'no_formal_education' => 'No Formal Education',
                                 'elementary_undergraduate' => 'Elementary Undergraduate',
@@ -305,7 +307,7 @@ class AdoptedChildInfolist
             ->columns(3)
             ->schema([
                 TextEntry::make('familyStatus.status')
-                    ->label(new HtmlString('<span style="font-weight:600;">Civil Status</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Civil Status</span>'))
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'civil' => 'Civil',
                         'church' => 'Church / Religious',
@@ -314,7 +316,7 @@ class AdoptedChildInfolist
                         default => ucwords(str_replace('_', ' ', $state ?? '—')),
                     }),
                 TextEntry::make('familyStatus.type_of_marriage')
-                    ->label(new HtmlString('<span style="font-weight:600;">Type of Marriage</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Type of Marriage</span>'))
                     ->formatStateUsing(fn ($state) => match ($state) {
                         'single' => 'Single',
                         'married' => 'Married',
@@ -324,7 +326,7 @@ class AdoptedChildInfolist
                         default => ucwords(str_replace('_', ' ', $state ?? '—')),
                     }),
                 TextEntry::make('familyStatus.monthly_income')
-                    ->label(new HtmlString('<span style="font-weight:600;">Monthly Income</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Monthly Income</span>'))
                     ->formatStateUsing(fn ($record) =>
                     match ($record->familyStatus->first()?->monthly_income) {
                         'below_5000' => 'Below ₱5,000',
@@ -336,19 +338,19 @@ class AdoptedChildInfolist
                     }
                     ),
                 TextEntry::make('familyStatus.source_income')
-                    ->label(new HtmlString('<span style="font-weight:600;">Source of Income</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Source of Income</span>'))
                     ->formatStateUsing(fn ($record) =>
                         $record->familyStatus->first()?->source_income ?? '—'
                     ),
                 TextEntry::make('familyStatus.phil_member')
-                    ->label(new HtmlString('<span style="font-weight:600;">PhilHealth Member?</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">PhilHealth Member?</span>'))
                     ->formatStateUsing(fn ($record) =>
                     match ($record->familyStatus->first()?->phil_member) {
                         'yes' => 'Yes', 'no' => 'No', default => '—',
                     }
                     ),
                 TextEntry::make('familyStatus.family_plan_method')
-                    ->label(new HtmlString('<span style="font-weight:600;">Family Planning</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Family Planning</span>'))
                     ->formatStateUsing(fn($state) => match ($state) {
                         'natural' => 'Natural',
                         'pills' => 'Pills',
@@ -360,14 +362,14 @@ class AdoptedChildInfolist
                         default => ucwords(str_replace('_', ' ', $state ?? '—')),
                     }),
                 TextEntry::make('familyStatus.have_electricity')
-                    ->label(new HtmlString('<span style="font-weight:600;">Has Electricity?</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Has Electricity?</span>'))
                     ->formatStateUsing(fn ($record) =>
                     match ($record->familyStatus->first()?->have_electricity) {
                         'yes' => 'Yes', 'no' => 'No', default => '—',
                     }
                     ),
                 TextEntry::make('familyStatus.water_source')
-                    ->label(new HtmlString('<span style="font-weight:600;">Water Source</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Water Source</span>'))
                     ->formatStateUsing(fn ($record) =>
                     match ($record->familyStatus->first()?->water_source) {
                         'tap' => 'Tap / Piped Water',
@@ -380,7 +382,7 @@ class AdoptedChildInfolist
                     }
                     ),
                 TextEntry::make('familyStatus.toilet_facility')
-                    ->label(new HtmlString('<span style="font-weight:600;">Toilet Facility</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Toilet Facility</span>'))
                     ->formatStateUsing(fn ($record) =>
                     match ($record->familyStatus->first()?->toilet_facility) {
                         'flush' => 'Water-sealed / Flush',
@@ -391,7 +393,7 @@ class AdoptedChildInfolist
                     }
                     ),
                 TextEntry::make('familyStatus.roofing')
-                    ->label(new HtmlString('<span style="font-weight:600;">Roofing</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Roofing</span>'))
                     ->formatStateUsing(fn ($record) =>
                     match ($record->familyStatus->first()?->roofing) {
                         'galvanized' => 'Galvanized Iron',
@@ -402,7 +404,7 @@ class AdoptedChildInfolist
                     }
                     ),
                 TextEntry::make('familyStatus.walls')
-                    ->label(new HtmlString('<span style="font-weight:600;">Wall Material</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Wall Material</span>'))
                     ->formatStateUsing(fn ($record) =>
                     match ($record->familyStatus->first()?->walls) {
                         'concrete' => 'Concrete / Hollow Blocks',
@@ -413,7 +415,7 @@ class AdoptedChildInfolist
                     }
                     ),
                 TextEntry::make('familyStatus.flooring')
-                    ->label(new HtmlString('<span style="font-weight:600;">Flooring</span>'))
+                    ->label(new HtmlString('<span style="font-weight:750;">Flooring</span>'))
                     ->formatStateUsing(fn ($record) =>
                     match ($record->familyStatus->first()?->flooring) {
                         'concrete' => 'Concrete',

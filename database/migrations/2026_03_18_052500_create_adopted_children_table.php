@@ -10,6 +10,11 @@ return new class extends Migration
     {
         Schema::create('adopted_children', function (Blueprint $table) {
             $table->id();
+            $table->string('municipality_id')->nullable();
+            $table->string('barangay_id')->nullable();
+            $table->foreign('municipality_id')->references('citymunCode')->on('municipalities');
+            $table->foreign('barangay_id')->references('brgyCode')->on('barangays');
+            $table->string('purok')->nullable();
             $table->string('firstname');
             $table->string('lastname');
             $table->string('middlename')->nullable();
@@ -25,7 +30,6 @@ return new class extends Migration
             $table->boolean('lcr_registered')->default(false);
             $table->boolean('breastfed')->default(false);
             $table->boolean('v_suplemented')->default(false);
-            $table->unsignedBigInteger('barangay_id')->nullable();
             $table->timestamps();
         });
     }

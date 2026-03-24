@@ -33,11 +33,11 @@ class OfficeChildVisit extends Model
 
     public function barangayNutritionScholar(): BelongsTo
     {
-        return $this->belongsTo(BarangayNutritionScholar::class, 'bns_id');
+        return $this->belongsTo(BaranggayNutritionScholars::class, 'bns_id');
     }
 
     public function visitItems(): HasMany
     {
-        return $this->hasMany(VisitItem::class, 'visit_id');
+        return $this->hasMany(VisitItems::class, 'visit_id');
     }
 }

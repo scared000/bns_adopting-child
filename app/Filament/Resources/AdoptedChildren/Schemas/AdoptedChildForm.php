@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\AdoptedChildren\Schemas;
 
 use App\Helpers\NutritionalStatus;
+use App\Models\Barangay;
 use Carbon\Carbon;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -252,13 +253,12 @@ class AdoptedChildForm
     private static function childInformationFields(): array
     {
         return [
-            TextInput::make('firstname')
-                ->label('First Name')
-                ->required()
-                ->maxLength(255),
-
-            Grid::make(2)
+            Grid::make(3)
                 ->schema([
+                    TextInput::make('firstname')
+                        ->label('First Name')
+                        ->required()
+                        ->maxLength(255),
                     TextInput::make('middlename')
                         ->label('Middle Name'),
                     TextInput::make('lastname')
@@ -266,6 +266,13 @@ class AdoptedChildForm
                         ->required(),
                     TextInput::make('suffix')
                         ->label('Suffix'),
+                    Select::make('sex')
+                        ->label('Sex')
+                        ->required()
+                        ->options([
+                            'male'   => 'Male',
+                            'female' => 'Female',
+                        ]),
                     DatePicker::make('birthdate')
                         ->label('Date of Birth')
                         ->required()
@@ -281,13 +288,35 @@ class AdoptedChildForm
                     TextInput::make('birthplace')
                         ->label('Place of Birth')
                         ->required(),
-                    Select::make('sex')
-                        ->label('Sex')
-                        ->required()
-                        ->options([
-                            'male'   => 'Male',
-                            'female' => 'Female',
-                        ]),
+
+                    TextInput::make('purok')
+                        ->label('Purok')
+                        ->required(),
+
+                    Select::make('municipality_id')
+                        ->label('Municipality')
+                        ->relationship(
+                            name: 'municipality',
+                            titleAttribute: 'citymunDesc'
+                        )
+                        ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->citymunDesc} ({$record->province->provDesc})")
+                        ->searchable()
+                        ->preload()
+                        ->live()
+                        ->required(),
+
+                    Select::make('barangay_id')
+                        ->label('Barangay')
+                        ->options(function (Get $get) {
+                            $municipalityCode = $get('municipality_id');
+                            if (!$municipalityCode) {
+                                return [];
+                            }
+                            return Barangay::where('citymunCode', $municipalityCode)
+                                ->pluck('brgyDesc', 'brgyCode');
+                        })
+                        ->searchable()
+                        ->required(),
                 ]),
 
             Grid::make(4)

@@ -19,6 +19,9 @@ class BaranggayNutritionScholars extends Model
         'middlename',
         'suffix',
         'profile_path',
+        'barangay_id',
+        'purok',
+        'municipality_id',
     ];
 
     public function officeVisits(): HasMany

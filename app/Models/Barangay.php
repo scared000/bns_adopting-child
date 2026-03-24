@@ -3,6 +3,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Barangay extends Model
 {
@@ -22,5 +23,10 @@ class Barangay extends Model
     public function province(): BelongsTo
     {
         return $this->belongsTo(Province::class, 'provCode', 'provCode');
+    }
+
+    public function adoptedChildren(): HasMany
+    {
+        return $this->hasMany(AdoptedChild::class, 'barangay_id', 'brgyDesc');
     }
 }

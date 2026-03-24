@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
@@ -31,6 +32,8 @@ class AdoptedChild extends Model
         'breastfed',
         'v_suplemented',
         'barangay_id',
+        'purok',
+        'municipality_id',
     ];
 
 
@@ -78,5 +81,15 @@ class AdoptedChild extends Model
     {
         return $this->hasMany(FamilyProfile::class, 'child_id')
             ->where('type', 'fam_member');
+    }
+
+    public function barangay(): BelongsTo
+    {
+        return $this->belongsTo(Barangay::class, 'barangay_id','brgyCode');
+    }
+
+    public function municipality(): BelongsTo
+    {
+        return $this->belongsTo(Municipality::class, 'municipality_id','citymunCode');
     }
 }
