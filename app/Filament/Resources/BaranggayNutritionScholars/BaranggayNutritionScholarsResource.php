@@ -5,6 +5,7 @@ namespace App\Filament\Resources\BaranggayNutritionScholars;
 use App\Filament\Resources\BaranggayNutritionScholars\Pages\CreateBaranggayNutritionScholars;
 use App\Filament\Resources\BaranggayNutritionScholars\Pages\EditBaranggayNutritionScholars;
 use App\Filament\Resources\BaranggayNutritionScholars\Pages\ListBaranggayNutritionScholars;
+use App\Filament\Resources\BaranggayNutritionScholars\Pages\ViewBaranggayNutritionScholars;
 use App\Filament\Resources\BaranggayNutritionScholars\Schemas\BaranggayNutritionScholarsForm;
 use App\Filament\Resources\BaranggayNutritionScholars\Tables\BaranggayNutritionScholarsTable;
 use App\Models\BaranggayNutritionScholars;
@@ -46,6 +47,7 @@ class BaranggayNutritionScholarsResource extends Resource
             'index' => ListBaranggayNutritionScholars::route('/'),
             'create' => CreateBaranggayNutritionScholars::route('/create'),
             'edit' => EditBaranggayNutritionScholars::route('/{record}/edit'),
+            'view'   => ViewBaranggayNutritionScholars::route('/{record}'),
         ];
     }
 }

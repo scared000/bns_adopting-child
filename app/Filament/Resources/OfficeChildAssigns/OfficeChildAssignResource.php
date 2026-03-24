@@ -7,11 +7,15 @@ use App\Filament\Resources\OfficeChildAssigns\Pages\ListOfficeChildAssigns;
 use App\Models\AdoptedChild;
 use App\Models\BaranggayNutritionScholars;
 use App\Models\OfficeChildAssign;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
+use Filament\Notifications\Collection;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -48,8 +52,7 @@ class OfficeChildAssignResource extends Resource
                             ->whereDoesntHave('officeAssignments')
                             ->get()
                             ->mapWithKeys(fn ($child) => [
-                                $child->id => "{$child->firstname}{$child->lastname} - {$child->barangay_name}"
-                            ]);
+                                $child->id => $child->firstname . ' ' . $child->lastname]);
                     })
                     ->searchable()
                     ->required()
@@ -65,10 +68,6 @@ class OfficeChildAssignResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('bns.firstname')
-                    ->label('BNS NAME')
-                    ->formatStateUsing(fn ($record) => $record->bns->firstname . ' ' . $record->bns->lastname)
-                    ->searchable(),
 
                 TextColumn::make('child.firstname')
                     ->label('CHILD NAME')
@@ -78,15 +77,47 @@ class OfficeChildAssignResource extends Resource
                 TextColumn::make('bns.barangay_name')
                     ->label('BARANGAY'),
 
+                TextColumn::make('bns.firstname')
+                    ->label('ASSIGNED BNS')
+                    ->formatStateUsing(fn ($record) => $record->bns->firstname . ' ' . $record->bns->lastname)
+                    ->searchable(),
+
                 TextColumn::make('assigned_date')
                     ->label('ASSIGNED DATE')
                     ->date()
                     ->placeholder('—'),
+
+                TextColumn::make('visit_done')
+                    ->label('VISIT DONE')
+                    ->default('None'),
+
             ])
             ->recordActions([
+                Action::make('unassign')
+                    ->label('Unassign')
+                    ->icon('heroicon-m-user-minus')
+                    ->color('warning')
+                    ->requiresConfirmation()
+                    ->modalHeading('Unassign Child')
+                    ->modalDescription('Are you sure you want to remove this child from the BNS? This will free up the child for a new assignment.')
+                    ->action(function (OfficeChildAssign $record) {
+                        $record->delete();
+                        Notification::make()
+                            ->title('Child unassigned successfully')
+                            ->success()
+                            ->send();
+                    }),
                 DeleteAction::make(),
             ])
+            ->recordActionsColumnLabel('ACTION')
             ->toolbarActions([
+//                BulkAction::make('bulk_unassign')
+//                    ->label('Unassign Selected')
+//                    ->icon('heroicon-o-x-circle')
+//                    ->color('danger')
+//                    ->requiresConfirmation()
+//                    ->action(fn (Collection $records) => $records->each->delete())
+//                    ->after(fn () => Notification::make()->title('Selected children unassigned')->success()->send()),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
