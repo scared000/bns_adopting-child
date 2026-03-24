@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class BaranggayNutritionScholars extends Model
@@ -32,5 +33,15 @@ class BaranggayNutritionScholars extends Model
     public function childAssignments(): HasMany
     {
         return $this->hasMany(OfficeChildAssign::class, 'bns_id');
+    }
+
+    public function barangay(): BelongsTo
+    {
+        return $this->belongsTo(Barangay::class, 'barangay_id','brgyCode');
+    }
+
+    public function municipality(): BelongsTo
+    {
+        return $this->belongsTo(Municipality::class, 'municipality_id','citymunCode');
     }
 }

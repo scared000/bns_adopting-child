@@ -17,7 +17,7 @@ class Barangay extends Model
 
     public function municipality(): BelongsTo
     {
-        return $this->belongsTo(Municipality::class, 'citymunCode', 'citymunCode');
+        return $this->belongsTo(Municipality::class,  'citymunCode', 'citymunCode');
     }
 
     public function province(): BelongsTo
@@ -27,6 +27,11 @@ class Barangay extends Model
 
     public function adoptedChildren(): HasMany
     {
-        return $this->hasMany(AdoptedChild::class, 'barangay_id', 'brgyDesc');
+        return $this->hasMany(AdoptedChild::class,'barangay_id', 'brgyDesc');
+    }
+
+    public function bns(): HasMany
+    {
+        return $this->hasMany(BaranggayNutritionScholars::class, 'barangay_id', 'brgyDesc');
     }
 }

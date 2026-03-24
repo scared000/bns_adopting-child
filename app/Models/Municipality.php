@@ -29,4 +29,9 @@ class Municipality extends Model
     {
         return $this->hasMany(AdoptedChild::class, 'municipality_id', 'munDesc');
     }
+
+    public function bns(): HasMany
+    {
+        return $this->hasMany(BaranggayNutritionScholars::class, 'municipality_id', 'munDesc');
+    }
 }

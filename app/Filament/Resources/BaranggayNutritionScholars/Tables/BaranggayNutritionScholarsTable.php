@@ -8,11 +8,13 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\Alignment;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use Illuminate\Support\HtmlString;
 
 class BaranggayNutritionScholarsTable
 {
@@ -40,8 +42,18 @@ class BaranggayNutritionScholarsTable
                     ->weight('bold')
                     ->formatStateUsing(fn ($record) => $record->firstname . ' ' . $record->lastname),
 
-                TextColumn::make('barangay_name')
-                    ->label('BARANGAY'),
+                TextColumn::make('address')
+                    ->label('ADDRESS')
+                    ->searchable()
+                    ->wrap()
+                    ->extraAttributes(['class' => 'max-w-xs break-words'])
+                    ->getStateUsing(function ($record) {
+                        return collect([
+                            $record->purok,
+                            $record->barangay?->brgyDesc,
+                            $record->municipality?->citymunDesc,
+                        ])->filter()->implode(', ');
+                    }),
 
                 TextColumn::make('child_assignments_count')
                     ->label('CHILD ASSIGNED')
@@ -54,9 +66,10 @@ class BaranggayNutritionScholarsTable
                     ->label('LAST VISIT')
                     ->default('—'),
 
-                TextColumn::make('status')
-                    ->label('STATUS')
-                    ->default('—'),
+//                TextColumn::make('status')
+//                    ->label('STATUS')
+//                    ->searchable()
+//                    ->default('—'),
 
             ])
             ->filters([
