@@ -43,7 +43,6 @@ class AdoptedChildInfolist
                         ])
                     ),
 
-                // Column 2: Name and Age
                 Group::make([
                     TextEntry::make('name_display')
                         ->label(new HtmlString('<span style="font-weight:750;">Full Name</span>'))
@@ -56,7 +55,6 @@ class AdoptedChildInfolist
                             : '—'),
                 ]),
 
-                // Column 3: DOB and Sex
                 Group::make([
                     TextEntry::make('birthdate')
                         ->label(new HtmlString('<span style="font-weight:750;">Date of Birth</span>'))
@@ -67,7 +65,6 @@ class AdoptedChildInfolist
                         ->formatStateUsing(fn ($state) => ucfirst($state ?? '—')),
                 ]),
 
-                // Row 2
                 TextEntry::make('height_cm')
                     ->label(new HtmlString('<span style="font-weight:750;">Height</span>'))
                     ->suffix(' cm'),
