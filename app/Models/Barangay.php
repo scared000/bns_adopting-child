@@ -34,4 +34,9 @@ class Barangay extends Model
     {
         return $this->hasMany(BaranggayNutritionScholars::class, 'barangay_id', 'brgyDesc');
     }
+
+    public function childAsignments(): HasMany
+    {
+        return $this->hasMany(OfficeChildAssign::class, 'brgyDesc', 'brgyDesc');
+    }
 }

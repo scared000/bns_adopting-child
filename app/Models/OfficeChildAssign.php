@@ -26,4 +26,13 @@ class OfficeChildAssign extends Model
     {
         return $this->belongsTo(BaranggayNutritionScholars::class, 'bns_id');
     }
+    public function barangay(): BelongsTo
+    {
+        return $this->belongsTo(Barangay::class, 'barangay_id','brgyCode');
+    }
+
+    public function municipality(): BelongsTo
+    {
+        return $this->belongsTo(Municipality::class, 'municipality_id','citymunCode');
+    }
 }

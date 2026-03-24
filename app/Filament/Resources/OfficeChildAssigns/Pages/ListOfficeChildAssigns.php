@@ -38,7 +38,7 @@ class ListOfficeChildAssigns extends ListRecords
                             ->options(
                                 BaranggayNutritionScholars::all()
                                     ->mapWithKeys(fn ($bns) => [
-                                        $bns->id => $bns->firstname . ' ' . $bns->lastname . ' — ' . $bns->barangay_name
+                                        $bns->id => $bns->firstname . ' ' . $bns->lastname . ' — ' . ($bns->barangay?->brgyDesc ?? 'No Barangay')
                                     ])
                             )
                             ->searchable()

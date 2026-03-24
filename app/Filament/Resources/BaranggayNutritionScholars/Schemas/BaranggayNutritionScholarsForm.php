@@ -36,6 +36,9 @@ class BaranggayNutritionScholarsForm
                     ->label('Suffix')
                     ->suffix('Jr./Sr.'),
 
+                TextInput::make('purok')
+                    ->label('Purok'),
+
                 Select::make('municipality_id')
                     ->label('Municipality')
                     ->relationship(

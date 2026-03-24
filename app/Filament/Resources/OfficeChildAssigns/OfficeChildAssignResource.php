@@ -39,7 +39,7 @@ class OfficeChildAssignResource extends Resource
                     ->options(
                         BaranggayNutritionScholars::all()
                             ->mapWithKeys(fn ($bns) => [
-                                $bns->id => $bns->firstname . ' ' . $bns->lastname . ' — ' . $bns->barangay_name
+                                $bns->id => $bns->firstname . ' ' . $bns->lastname . ' — ' . ($bns->barangay?->brgyDesc ?? 'No Barangay')
                             ])
                     )
                     ->searchable()
@@ -74,8 +74,16 @@ class OfficeChildAssignResource extends Resource
                     ->formatStateUsing(fn ($record) => $record->child->firstname . ' ' . $record->child->lastname)
                     ->searchable(),
 
-                TextColumn::make('bns.barangay_name')
-                    ->label('BARANGAY'),
+                TextColumn::make('barangay')
+                    ->label('BARANGAY')
+                    ->getStateUsing(function ($record) {
+                        $bns = $record->bns;
+                        return collect([
+                            $bns?->purok,
+                            $bns?->barangay?->brgyDesc,
+                            $bns?->municipality?->citymunDesc,
+                        ])->filter()->implode(', ') ?: '—';
+                    }),
 
                 TextColumn::make('bns.firstname')
                     ->label('ASSIGNED BNS')
