@@ -62,7 +62,13 @@ class BaranggayNutritionScholarsTable
 
                 TextColumn::make('last_visit')
                     ->label('LAST VISIT')
-                    ->default('—'),
+                    ->getStateUsing(function ($record) {
+                        $lastVisit = $record->visits()->latest('visit_date')->first()?->visit_date;
+                        if (!$lastVisit) {
+                            return '—';
+                        }
+                        return $lastVisit->format('M d, Y');
+                    })
 
 //                TextColumn::make('status')
 //                    ->label('STATUS')

@@ -66,6 +66,7 @@ class AdoptedChild extends Model
     {
         return $this->hasMany(OfficeChildAssign::class, 'adopted_id');
     }
+
     public function motherProfile(): HasOne
     {
         return $this->hasOne(FamilyProfile::class, 'child_id')
@@ -83,6 +84,10 @@ class AdoptedChild extends Model
             ->where('type', 'fam_member');
     }
 
+    public function childVisit(): HasMany
+    {
+        return $this->hasMany(OfficeChildVisit::class, 'adopted_id');
+    }
     public function barangay(): BelongsTo
     {
         return $this->belongsTo(Barangay::class, 'barangay_id','brgyCode');

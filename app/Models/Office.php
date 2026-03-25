@@ -38,4 +38,9 @@ class Office extends Model
     {
         return $this->hasMany(OfficeChildAssign::class, 'office_id');
     }
+
+    public function childVisit(): BelongsTo
+    {
+        return $this->belongsTo(OfficeChildVisit::class, 'office_assign_id');
+    }
 }

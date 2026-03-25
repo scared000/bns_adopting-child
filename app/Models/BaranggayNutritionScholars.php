@@ -44,4 +44,9 @@ class BaranggayNutritionScholars extends Model
     {
         return $this->belongsTo(Municipality::class, 'municipality_id','citymunCode');
     }
+
+    public function visits(): HasMany
+    {
+        return $this->hasMany(OfficeChildVisit::class, 'bns_id');
+    }
 }

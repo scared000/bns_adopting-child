@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class OfficeChildAssign extends Model
 {
@@ -39,5 +40,9 @@ class OfficeChildAssign extends Model
     public function office(): BelongsTo
     {
         return $this->belongsTo(Office::class, 'office_id');
+    }
+    public function visits(): HasMany
+    {
+        return $this->hasMany(OfficeChildVisit::class, 'office_assign_id');
     }
 }

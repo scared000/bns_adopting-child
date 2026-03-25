@@ -13,6 +13,8 @@ class OfficeChildVisit extends Model
 
     protected $fillable = [
         'office_assign_id',
+        'office_id',
+        'adopted_id',
         'bns_id',
         'visit_date',
         'visit_address',
@@ -23,19 +25,29 @@ class OfficeChildVisit extends Model
     ];
 
     protected $casts = [
-        'visit_documentation' => 'array', // Automatically casts the JSON column to an array
+        'visit_documentation' => 'array',
+        'visit_date' => 'date',
     ];
+
+    public function child(): BelongsTo
+    {
+        return $this->belongsTo(AdoptedChild::class, 'adopted_id');
+    }
 
     public function officeAssignment(): BelongsTo
     {
-        return $this->belongsTo(OfficeChildAssign::class, 'officeasign_id');
+        return $this->belongsTo(OfficeChildAssign::class, 'office_assign_id');
     }
 
-    public function barangayNutritionScholar(): BelongsTo
+    public function bns(): BelongsTo
     {
         return $this->belongsTo(BaranggayNutritionScholars::class, 'bns_id');
     }
 
+    public function office(): BelongsTo
+    {
+        return $this->belongsTo(Office::class, 'office_id');
+    }
     public function visitItems(): HasMany
     {
         return $this->hasMany(VisitItems::class, 'visit_id');

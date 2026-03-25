@@ -89,6 +89,7 @@ class OfficeChildAssignResource extends Resource
 
                 TextColumn::make('child.firstname')
                     ->label('CHILD NAME')
+                    ->weight('bold')
                     ->formatStateUsing(fn ($record) => $record->child->firstname . ' ' . $record->child->lastname)
                     ->searchable(),
 
@@ -108,8 +109,6 @@ class OfficeChildAssignResource extends Resource
                 TextColumn::make('office.office')
                     ->label('ASSIGNED OFFICE')
                     ->wrap()
-                    ->badge()
-                    ->color('gray')
                     ->getStateUsing(function ($record) {
                         $office = $record->office;
                         return collect([
@@ -129,9 +128,13 @@ class OfficeChildAssignResource extends Resource
                     ->date()
                     ->placeholder('—'),
 
-                TextColumn::make('visit_done')
-                    ->label('VISIT DONE')
-                    ->default('None'),
+                TextColumn::make('visits_count')
+                    ->label('VISITS DONE')
+                    ->sortable()
+                    ->counts('visits')
+                    ->badge()
+                    ->color('info')
+                    ->formatStateUsing(fn ($state) => $state . ' ' . str('Visit')->plural($state)),
 
             ])
             ->recordActions([
