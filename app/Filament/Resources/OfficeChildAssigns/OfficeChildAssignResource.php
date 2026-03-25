@@ -110,6 +110,13 @@ class OfficeChildAssignResource extends Resource
                     ->wrap()
                     ->badge()
                     ->color('gray')
+                    ->getStateUsing(function ($record) {
+                        $office = $record->office;
+                        return collect([
+                            $office->office,
+                            $office->short_name ? "({$office->short_name})" : null,
+                        ])->filter()->implode(' ') ?: '—';
+                    })
                     ->searchable(),
 
                 TextColumn::make('bns.firstname')
