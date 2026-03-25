@@ -35,4 +35,9 @@ class OfficeChildAssign extends Model
     {
         return $this->belongsTo(Municipality::class, 'municipality_id','citymunCode');
     }
+
+    public function office(): BelongsTo
+    {
+        return $this->belongsTo(Office::class, 'office_id');
+    }
 }

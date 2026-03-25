@@ -37,6 +37,6 @@ class Barangay extends Model
 
     public function childAsignments(): HasMany
     {
-        return $this->hasMany(OfficeChildAssign::class, 'brgyDesc', 'brgyDesc');
+        return $this->hasMany(OfficeChildAssign::class, 'barangay_id', 'brgyDesc');
     }
 }

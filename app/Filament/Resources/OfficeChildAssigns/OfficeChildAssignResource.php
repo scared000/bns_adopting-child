@@ -6,12 +6,14 @@ use App\Filament\Resources\OfficeChildAssigns\Pages\CreateOfficeChildAssign;
 use App\Filament\Resources\OfficeChildAssigns\Pages\ListOfficeChildAssigns;
 use App\Models\AdoptedChild;
 use App\Models\BaranggayNutritionScholars;
+use App\Models\Office;
 use App\Models\OfficeChildAssign;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Collection;
@@ -47,18 +49,34 @@ class OfficeChildAssignResource extends Resource
 
                 Select::make('adopted_id')
                     ->label('Child')
-                    ->options(function (){
+                    ->options(function ($record) {
                         return AdoptedChild::query()
-                            ->whereDoesntHave('officeAssignments')
+                            ->where(function ($query) use ($record) {
+                                $query->whereDoesntHave('officeAssignments');
+                                if ($record?->adopted_id) {
+                                    $query->orWhere('id', $record->adopted_id);
+                                }
+                            })
                             ->get()
                             ->mapWithKeys(fn ($child) => [
-                                $child->id => $child->firstname . ' ' . $child->lastname]);
+                                $child->id => $child->firstname . ' ' . $child->lastname
+                            ]);
                     })
                     ->searchable()
                     ->required()
                     ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
 
-                DatePicker::make('assigned_date')  // ✅ DatePicker not TextColumn
+                Select::make('office_id')
+                    ->label('Assigned Office')
+                    ->options(
+                        Office::all()->mapWithKeys(fn ($office) => [
+                            $office->id => $office->office . ' (' . $office->short_name . ')'
+                        ])
+                    )
+                    ->searchable()
+                    ->required(),
+
+                DatePicker::make('assigned_date')
                     ->label('Assigned Date')
                     ->default(now()),
             ]);
@@ -76,14 +94,23 @@ class OfficeChildAssignResource extends Resource
 
                 TextColumn::make('barangay')
                     ->label('BARANGAY')
+                    ->wrap()
                     ->getStateUsing(function ($record) {
                         $bns = $record->bns;
                         return collect([
                             $bns?->purok,
                             $bns?->barangay?->brgyDesc,
                             $bns?->municipality?->citymunDesc,
+                            $bns?->province?->provDesc,
                         ])->filter()->implode(', ') ?: '—';
                     }),
+
+                TextColumn::make('office.office')
+                    ->label('ASSIGNED OFFICE')
+                    ->wrap()
+                    ->badge()
+                    ->color('gray')
+                    ->searchable(),
 
                 TextColumn::make('bns.firstname')
                     ->label('ASSIGNED BNS')
@@ -101,6 +128,7 @@ class OfficeChildAssignResource extends Resource
 
             ])
             ->recordActions([
+                EditAction::make('edit')->icon('heroicon-o-pencil'),
                 Action::make('unassign')
                     ->label('Unassign')
                     ->icon('heroicon-m-user-minus')

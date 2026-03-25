@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Office extends Model
 {
@@ -31,4 +33,9 @@ class Office extends Model
         'can_be_multiple_services' => 'boolean',
         'window_count'             => 'integer',
     ];
+
+    public function children(): hasMany
+    {
+        return $this->hasMany(OfficeChildAssign::class, 'office_id');
+    }
 }
