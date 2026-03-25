@@ -8,6 +8,7 @@ use App\Models\OfficeChildAssign;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
@@ -164,6 +165,40 @@ class OfficeVisitsForm
                             ->maxFiles(10)
                             ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
                             ->helperText('Upload up to 10 images or PDFs (JPEG, PNG, WEBP, PDF)'),
+                    ]),
+
+                Section::make('Items Distributed')
+                    ->description('List any items or assistance provided during this visit')
+                    ->icon('heroicon-o-gift')
+                    ->columnSpanFull()
+                    ->schema([
+                        Repeater::make('visitItems')
+                        ->relationship()
+                            ->schema([
+                                TextInput::make('Item_description')
+                                    ->label('Item Description')
+                                    ->placeholder('e.g. Rice, Canned Goods, Vitamins')
+                                    ->required()
+                                    ->columnSpan(2),
+
+                                TextInput::make('item_quantity')
+                                    ->label('Quantity')
+                                    ->numeric()
+                                    ->default(1)
+                                    ->required()
+                                    ->columnSpan(1),
+
+                                TextInput::make('item_amount')
+                                    ->label('Amount/Value')
+                                    ->numeric()
+                                    ->prefix('₱')
+                                    ->placeholder('0.00')
+                                    ->columnSpan(1),
+                            ])
+                            ->columns(4)
+                            ->addActionLabel('Add Item')
+                            ->collapsible()
+                            ->defaultItems(0)
                     ]),
 
             ])

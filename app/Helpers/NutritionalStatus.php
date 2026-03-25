@@ -3,205 +3,138 @@
 namespace App\Helpers;
 
 use App\Models\WhoGrowthStandard;
-use Illuminate\Support\Facades\Cache;
 
 class NutritionalStatus
 {
     /**
-     * Classify nutritional status based on WHO standards.
+     * Classify nutritional status based on WHO Growth Standards (LMS method).
      *
-     * 0–60 months → WHO Child Growth Standards (2006)
-     *                Uses WFA, HFA, WFH indicators
+     * - 0–60 months  : uses WFA (weight-for-age) + HFA (height-for-age) + WFH (weight-for-height)
+     * - 61–228 months: uses BFA (BMI-for-age)
      *
-     * 61–228 months (5–19 years) → WHO Growth Reference (2007)
-     *                Uses BMI-for-Age indicator
-     *
-     * @param int    $ageMonths  Age in months
-     * @param float  $weight     Weight in kg
-     * @param float  $height     Height in cm
+     * @param int    $ageMonths  Age in completed months
+     * @param float  $weightKg   Weight in kilograms
+     * @param float  $heightCm   Height in centimetres
      * @param string $sex        'male' or 'female'
+     * @return string
      */
-    public static function classify(int $ageMonths, float $weight, float $height, string $sex = 'male'): string
+    public static function classify(int $ageMonths, float $weightKg, float $heightCm, string $sex): string
     {
-        if ($ageMonths < 0) {
-            return 'Invalid Age';
+        if (!in_array($sex, ['male', 'female'])) return 'Incomplete Data';
+        if ($weightKg <= 0 || $heightCm <= 0) return 'Incomplete Data';
+
+        // --- 0 to 5 Years (60 Months) ---
+        if ($ageMonths <= 60) {
+            $wfaZ = self::computeZScore('wfa', $sex, (float)$ageMonths, $weightKg);
+            $hfaZ = self::computeZScore('hfa', $sex, (float)$ageMonths, $heightCm);
+            $wfhZ = self::computeZScore('wfh', $sex, $heightCm, $weightKg);
+
+            $results = [];
+
+            // Weight-for-Age (WFA)
+            if ($wfaZ !== null) {
+                if ($wfaZ <= -3) $results[] = 'WFA: Severely Underweight';
+                elseif ($wfaZ <= -2) $results[] = 'WFA: Underweight';
+                elseif ($wfaZ >= 2) $results[] = 'WFA: Overweight';
+                else $results[] = 'WFA: Normal';
+            }
+
+            // Height-for-Age (HFA)
+            if ($hfaZ !== null) {
+                if ($hfaZ <= -3) $results[] = 'HFA: Severely Stunted';
+                elseif ($hfaZ <= -2) $results[] = 'HFA: Stunted';
+                elseif ($hfaZ >= 2) $results[] = 'HFA: Tall';
+                else $results[] = 'HFA: Normal';
+            }
+
+            // Weight-for-Height (WFH)
+            if ($wfhZ !== null) {
+                if ($wfhZ <= -3) $results[] = 'WFH: Severely Wasted';
+                elseif ($wfhZ <= -2) $results[] = 'WFH: Wasted';
+                elseif ($wfhZ >= 3) $results[] = 'WFH: Obese';
+                elseif ($wfhZ >= 2) $results[] = 'WFH: Overweight';
+                else $results[] = 'WFH: Normal';
+            }
+
+            return count($results) > 0 ? implode(' | ', $results) : 'Normal';
         }
 
-        if ($height <= 0 || $weight <= 0) {
-            return 'Invalid Measurement';
+        // --- 5 to 19 Years (61 to 228 Months) ---
+        if ($ageMonths > 60 && $ageMonths <= 228) {
+            $bmi = $weightKg / (($heightCm / 100.0) ** 2);
+            $zScore = self::computeZScore('bfa', $sex, (float)$ageMonths, $bmi);
+
+            if ($zScore === null) return 'N/A';
+
+            if ($zScore > 3) return 'Obese';
+            if ($zScore > 2) return 'Overweight';
+            if ($zScore > 1) return 'At Risk of Overweight';
+
+            if ($zScore < -3) return 'Severely Underweight';
+            if ($zScore < -2) return 'Underweight';
+
+            return 'Normal';
         }
 
-        // 5–19 years: use BMI-for-Age (WHO Growth Reference 2007)
-        if ($ageMonths > 60) {
-            return self::classifyBmiForAge($ageMonths, $weight, $height, $sex);
-        }
-
-        // 0–5 years: validate against expected child ranges
-        if ($height < 44 || $height > 121) {
-            return 'Invalid Height';
-        }
-
-        if ($weight < 1 || $weight > 35) {
-            return 'Invalid Weight';
-        }
-
-        // 0–5 years: use WFA + HFA + WFH
-        $wfa = self::weightForAge($ageMonths, $weight, $sex);
-        $hfa = self::heightForAge($ageMonths, $height, $sex);
-        $wfh = self::weightForHeight($height, $weight, $sex);
-
-        $statuses = array_filter([$wfa, $hfa, $wfh]);
-
-        return implode(' | ', $statuses) ?: 'Normal (N)';
+        // --- Adults (Above 19 Years) ---
+        $bmi = $weightKg / (($heightCm / 100.0) ** 2);
+        if ($bmi < 18.5) return 'Underweight';
+        if ($bmi < 25.0) return 'Normal';
+        if ($bmi < 30.0) return 'Overweight';
+        return 'Obese';
     }
 
+    // -------------------------------------------------------------------------
+    // LMS z-score computation
+    // -------------------------------------------------------------------------
 
-    // 5–19 years: BMI-for-Age classification
-    protected static function classifyBmiForAge(int $ageMonths, float $weight, float $height, string $sex): string
-    {
-        // WHO BFA tables cover 61–228 months (5–19 years)
-        if ($ageMonths > 228) {
-            return self::classifyAdultBmi($weight, $height);
-        }
-
-        $heightM = $height / 100;
-        $bmi     = $weight / ($heightM * $heightM);
-
-        $lms = self::getLMS('bfa', $sex, $ageMonths);
-
-        if (!$lms) {
-            // Fallback to simple BMI if no LMS data
-            return self::classifyAdultBmi($weight, $height);
-        }
-
-        $z = self::zScore($bmi, $lms->l, $lms->m, $lms->s);
-
-        if ($z < -3) return 'SUW — Severely Underweight';
-        if ($z < -2) return 'UW — Underweight';
-        if ($z > 3)  return 'OB — Obese';
-        if ($z > 2)  return 'OW — Overweight';
-        if ($z > 1)  return 'At Risk of Overweight';
-
-        return 'Normal (N)';
-    }
-
-    // Over 19 years: simple adult BMI cutoffs (WHO)
-    protected static function classifyAdultBmi(float $weight, float $height): string
-    {
-        $heightM = $height / 100;
-        $bmi     = $weight / ($heightM * $heightM);
-
-        if ($bmi < 16.0) return 'SUW — Severely Underweight';
-        if ($bmi < 17.0) return 'UW — Underweight';
-        if ($bmi < 18.5) return 'UW — Underweight';
-        if ($bmi < 25.0) return 'Normal (N)';
-        if ($bmi < 30.0) return 'OW — Overweight';
-
-        return 'OB — Obese';
-    }
-
-
-    // 0–5 years indicators
-    protected static function weightForAge(int $months, float $weight, string $sex): string
-    {
-        $lms = self::getLMS('wfa', $sex, $months);
-        if (!$lms) return '';
-
-        $z = self::zScore($weight, $lms->l, $lms->m, $lms->s);
-
-        if ($z < -3) return 'SUW — Severely Underweight';
-        if ($z < -2) return 'UW — Underweight';
-        if ($z > 3)  return 'OB — Obese';
-        if ($z > 2)  return 'OW — Overweight';
-        return '';
-    }
-
-    protected static function heightForAge(int $months, float $height, string $sex): string
-    {
-        $lms = self::getLMS('hfa', $sex, $months);
-        if (!$lms) return '';
-
-        $z = self::zScore($height, $lms->l, $lms->m, $lms->s);
-
-        if ($z < -3) return 'SST — Severely Stunted';
-        if ($z < -2) return 'ST — Stunted';
-        if ($z > 3)  return 'VT — Very Tall';
-        return '';
-    }
-
-    protected static function weightForHeight(float $height, float $weight, string $sex): string
-    {
-        $lms = self::getLMS('wfh', $sex, $height);
-        if (!$lms) return '';
-
-        $z = self::zScore($weight, $lms->l, $lms->m, $lms->s);
-
-        if ($z < -3) return 'W — Wasted';
-        if ($z < -2) return 'MW — Moderately Wasted';
-        if ($z > 3)  return 'OB — Obese';
-        if ($z > 2)  return 'OW — Overweight';
-        return '';
-    }
-
-
-    // LMS lookup with caching + interpolation
-    protected static function getLMS(string $indicator, string $sex, float $keyValue): ?object
-    {
-        $cacheKey = "who_lms_{$indicator}_{$sex}";
-
-        $table = Cache::rememberForever($cacheKey, fn () =>
-        WhoGrowthStandard::where('indicator', $indicator)
+    /**
+     * Compute a WHO LMS z-score.
+     *
+     * Formula:
+     *   L ≠ 0 → Z = [(X / M)^L − 1] / (L × S)
+     *   L = 0 → Z = ln(X / M) / S
+     *
+     * @param string $indicator  'wfa' | 'hfa' | 'wfh' | 'bfa'
+     * @param string $sex        'male' | 'female'
+     * @param float  $keyValue   age_months (wfa/hfa/bfa) or height_cm (wfh)
+     * @param float  $measurement The observed value (weight, height, or BMI)
+     * @return float|null  null if no matching LMS row found
+     */
+    private static function computeZScore(
+        string $indicator,
+        string $sex,
+        float  $keyValue,
+        float  $measurement
+    ): ?float {
+        $row = WhoGrowthStandard::where('indicator', $indicator)
             ->where('sex', $sex)
-            ->orderBy('key_value')
-            ->get()
-            ->map(fn ($row) => [
-                'l'         => (float) $row->l,
-                'm'         => (float) $row->m,
-                's'         => (float) $row->s,
-                'key_value' => (float) $row->key_value,
-            ])
-            ->values()
-            ->toArray()
-        );
+            ->where('key_value', $keyValue)
+            ->first();
 
-        if (empty($table)) return null;
-
-        $lower = null;
-        $upper = null;
-
-        foreach ($table as $row) {
-            if ($row['key_value'] <= $keyValue) {
-                $lower = $row;
-            }
-            if ($row['key_value'] >= $keyValue && $upper === null) {
-                $upper = $row;
-            }
+        // Fallback: nearest available key_value (handles rounding gaps)
+        if (!$row) {
+            $row = WhoGrowthStandard::where('indicator', $indicator)
+                ->where('sex', $sex)
+                ->orderByRaw('ABS(key_value - ?)', [$keyValue])
+                ->first();
         }
 
-        if (!$lower && !$upper) return null;
-        if (!$lower) return (object) $upper;
-        if (!$upper) return (object) $lower;
-
-        if ($lower['key_value'] === $upper['key_value']) {
-            return (object) $lower;
+        if (!$row || $row->m <= 0) {
+            return null;
         }
 
-        $ratio = ($keyValue - $lower['key_value']) / ($upper['key_value'] - $lower['key_value']);
+        $L = (float) $row->l;
+        $M = (float) $row->m;
+        $S = (float) $row->s;
 
-        return (object) [
-            'l' => $lower['l'] + $ratio * ($upper['l'] - $lower['l']),
-            'm' => $lower['m'] + $ratio * ($upper['m'] - $lower['m']),
-            's' => $lower['s'] + $ratio * ($upper['s'] - $lower['s']),
-        ];
-    }
-
-
-    // WHO LMS z-score formula
-    protected static function zScore(float $x, float $l, float $m, float $s): float
-    {
-        if ($l == 0) {
-            return log($x / $m) / $s;
+        if (abs($L) < 1e-6) {
+            // L ≈ 0: use natural log formula
+            $z = log($measurement / $M) / $S;
+        } else {
+            $z = (pow($measurement / $M, $L) - 1.0) / ($L * $S);
         }
-        return (pow($x / $m, $l) - 1) / ($l * $s);
+
+        return $z;
     }
 }

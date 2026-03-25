@@ -16,6 +16,7 @@ class OfficeVisitsTable
         return $table
             ->columns([
                 TextColumn::make('child.firstname')
+                    ->weight('bold')
                     ->label('CHILD NAME')
                     ->formatStateUsing(fn ($record) => $record->child?->firstname . ' ' . $record->child?->lastname ?? '—')
                     ->searchable(),
@@ -28,8 +29,6 @@ class OfficeVisitsTable
                 TextColumn::make('office.office')
                     ->label('ASSIGNED OFFICE')
                     ->wrap()
-                    ->badge()
-                    ->color('gray')
                     ->getStateUsing(function ($record) {
                         $office = $record->office;
                         if (!$office) return '—';

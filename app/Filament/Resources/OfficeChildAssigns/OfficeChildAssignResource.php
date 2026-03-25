@@ -157,13 +157,6 @@ class OfficeChildAssignResource extends Resource
             ])
             ->recordActionsColumnLabel('ACTION')
             ->toolbarActions([
-//                BulkAction::make('bulk_unassign')
-//                    ->label('Unassign Selected')
-//                    ->icon('heroicon-o-x-circle')
-//                    ->color('danger')
-//                    ->requiresConfirmation()
-//                    ->action(fn (Collection $records) => $records->each->delete())
-//                    ->after(fn () => Notification::make()->title('Selected children unassigned')->success()->send()),
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),

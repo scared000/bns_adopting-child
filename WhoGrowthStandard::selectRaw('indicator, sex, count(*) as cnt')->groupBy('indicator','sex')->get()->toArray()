@@ -1,0 +1,43 @@
+[90m= [39m[
+    [
+      "[34mindicator[39m" => "[32mbfa[39m",
+      "[34msex[39m" => "[32mfemale[39m",
+      "[34mcnt[39m" => [35m168[39m,
+    ],
+    [
+      "[34mindicator[39m" => "[32mbfa[39m",
+      "[34msex[39m" => "[32mmale[39m",
+      "[34mcnt[39m" => [35m168[39m,
+    ],
+    [
+      "[34mindicator[39m" => "[32mhfa[39m",
+      "[34msex[39m" => "[32mfemale[39m",
+      "[34mcnt[39m" => [35m61[39m,
+    ],
+    [
+      "[34mindicator[39m" => "[32mhfa[39m",
+      "[34msex[39m" => "[32mmale[39m",
+      "[34mcnt[39m" => [35m61[39m,
+    ],
+    [
+      "[34mindicator[39m" => "[32mwfa[39m",
+      "[34msex[39m" => "[32mfemale[39m",
+      "[34mcnt[39m" => [35m61[39m,
+    ],
+    [
+      "[34mindicator[39m" => "[32mwfa[39m",
+      "[34msex[39m" => "[32mmale[39m",
+      "[34mcnt[39m" => [35m61[39m,
+    ],
+    [
+      "[34mindicator[39m" => "[32mwfh[39m",
+      "[34msex[39m" => "[32mfemale[39m",
+      "[34mcnt[39m" => [35m76[39m,
+    ],
+    [
+      "[34mindicator[39m" => "[32mwfh[39m",
+      "[34msex[39m" => "[32mmale[39m",
+      "[34mcnt[39m" => [35m76[39m,
+    ],
+  ]
+
