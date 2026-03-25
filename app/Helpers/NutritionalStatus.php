@@ -84,10 +84,7 @@ class NutritionalStatus
         return 'Obese';
     }
 
-    // -------------------------------------------------------------------------
     // LMS z-score computation
-    // -------------------------------------------------------------------------
-
     /**
      * Compute a WHO LMS z-score.
      *
@@ -112,7 +109,6 @@ class NutritionalStatus
             ->where('key_value', $keyValue)
             ->first();
 
-        // Fallback: nearest available key_value (handles rounding gaps)
         if (!$row) {
             $row = WhoGrowthStandard::where('indicator', $indicator)
                 ->where('sex', $sex)
@@ -129,7 +125,6 @@ class NutritionalStatus
         $S = (float) $row->s;
 
         if (abs($L) < 1e-6) {
-            // L ≈ 0: use natural log formula
             $z = log($measurement / $M) / $S;
         } else {
             $z = (pow($measurement / $M, $L) - 1.0) / ($L * $S);
