@@ -29,7 +29,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->registration()
-            ->brandName('BNS & Adopting A Child')
+            ->brandName('BNS & Nutrition Monitoring System')
 //            ->topNavigation()
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
