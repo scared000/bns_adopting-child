@@ -12,13 +12,30 @@ class Immunizations extends Model
 
     protected $fillable = [
         'child_id',
-        'description',
-        'first_dose',
-        'second_dose',
-        'third_dose'
+        'vaccine_description',
+        'dose_1',
+        'dose_2',
+        'dose_3',
+        'status',
+        'remarks',
     ];
 
-    public function adoptedChild(): BelongsTo
+    protected $casts = [
+        'dose_1' => 'date',
+        'dose_2' => 'date',
+        'dose_3' => 'date',
+    ];
+
+    protected static function booted(): void
+    {
+        static::saving(function (self $model) {
+            $model->status = ($model->dose_1 && $model->dose_2 && $model->dose_3)
+                ? 'complete'
+                : 'incomplete';
+        });
+    }
+
+    public function child(): BelongsTo
     {
         return $this->belongsTo(AdoptedChild::class, 'child_id');
     }

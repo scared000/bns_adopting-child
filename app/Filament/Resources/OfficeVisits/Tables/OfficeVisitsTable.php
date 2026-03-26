@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\OfficeVisits\Tables;
 
-use App\Filament\Pages\ChildVisitDetail;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -56,9 +55,6 @@ class OfficeVisitsTable
                     ->color(fn (string $state): string => self::statusColor($state))
                     ->placeholder('—'),
             ])
-            ->recordUrl(
-                fn ($record): string => ChildVisitDetail::getUrl(['child' => $record->child_id])
-            )
             ->filters([])
             ->recordActionsColumnLabel('ACTION')
             ->recordActions([
