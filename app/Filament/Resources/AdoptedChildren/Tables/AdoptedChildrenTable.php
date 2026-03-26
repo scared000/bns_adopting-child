@@ -76,11 +76,10 @@ class AdoptedChildrenTable
                 ->numeric(),
 
             TextColumn::make('nutritional_status')
-                ->sortable()
                 ->label('NUTRITIONAL STATUS')
-                ->badge()
-                ->formatStateUsing(fn ($record) => $record->nutritional_status ?? 'Incomplete Data')
-                ->color(fn (string $state): string => self::statusColor($state)),
+                ->wrap()
+                ->color(fn (string $state): string => self::statusColor($state))
+                ->placeholder('—'),
         ];
     }
 
@@ -145,18 +144,18 @@ class AdoptedChildrenTable
 
     private static function statusColor(string $state): string
     {
+        $state = strtolower($state);
+
         return match (true) {
-            str_contains($state, 'SUW') => 'danger',
-            str_contains($state, 'SST') => 'danger',
-            str_contains($state, 'Wasted') => 'danger',
-            str_contains($state, 'At Risk') => 'danger',
-            str_contains($state, 'OB') => 'danger',
-            str_contains($state, 'OW') => 'info',
-            str_contains($state, 'UW') => 'warning',
-            str_contains($state, 'ST') => 'warning',
-            str_contains($state, 'MW') => 'warning',
-            str_contains($state, 'Incomplete') => 'gray',
-            str_contains($state, 'Invalid') => 'danger',
+            str_contains($state, 'severely') ||
+            str_contains($state, 'wasted') ||
+            str_contains($state, 'obese') => 'danger',
+            str_contains($state, 'underweight') ||
+            str_contains($state, 'stunted') ||
+            str_contains($state, 'overweight') ||
+            str_contains($state, 'at risk') => 'warning',
+            str_contains($state, 'tall') => 'info',
+            str_contains($state, 'incomplete') || str_contains($state, 'n/a') => 'gray',
             default => 'success',
         };
     }
