@@ -15,7 +15,10 @@ class ChildVisitLog extends Page
     protected string $view = 'filament.pages.child-visit-log';
 
     public string $search = '';
-
+    public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable
+    {
+        return '';
+    }
     public function getChildrenProperty()
     {
         return AdoptedChild::with([

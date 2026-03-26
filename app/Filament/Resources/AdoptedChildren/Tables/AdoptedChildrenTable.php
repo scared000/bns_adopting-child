@@ -124,6 +124,7 @@ class AdoptedChildrenTable
         return [
             CreateAction::make()
                 ->icon('heroicon-s-plus')
+                ->label('New Child')
                 ->createAnother(false)
                 ->modalSubmitActionLabel('Save')
                 ->modalCancelActionLabel('Discard')
