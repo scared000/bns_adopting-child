@@ -2,6 +2,8 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\ChildVisitDetail;
+use App\Filament\Pages\ChildVisitLog;
 use App\Filament\Resources\AdoptedChildren\Pages\ListFamilyProfiles;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -40,6 +42,8 @@ class AdminPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->pages([
                 ListFamilyProfiles::class,
+                ChildVisitLog::class,
+                ChildVisitDetail::class,
             ])
             ->widgets([
                 AccountWidget::class,

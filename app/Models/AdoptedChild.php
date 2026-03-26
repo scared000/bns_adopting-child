@@ -51,7 +51,6 @@ class AdoptedChild extends Model
         return $this->hasMany(FamilyProfile::class, 'child_id');
     }
 
-    // Assuming one status record per child, use HasMany if a child can have a history of statuses
     public function familyStatus(): HasMany
     {
         return $this->hasMany(FamilyStatus::class, 'child_id');
@@ -60,11 +59,6 @@ class AdoptedChild extends Model
     public function immunizations(): HasMany
     {
         return $this->hasMany(Immunizations::class, 'child_id');
-    }
-
-    public function officeAssignments(): HasMany
-    {
-        return $this->hasMany(OfficeChildAssign::class, 'adopted_id');
     }
 
     public function motherProfile(): HasOne
@@ -96,5 +90,15 @@ class AdoptedChild extends Model
     public function municipality(): BelongsTo
     {
         return $this->belongsTo(Municipality::class, 'municipality_id','citymunCode');
+    }
+
+
+    public function officeAssignments(): HasMany
+    {
+        return $this->hasMany(OfficeChildAssign::class, 'adopted_id');
+    }
+
+    public function officeVisits(): HasMany {
+        return $this->hasMany(OfficeChildVisit::class, 'adopted_id');
     }
 }
