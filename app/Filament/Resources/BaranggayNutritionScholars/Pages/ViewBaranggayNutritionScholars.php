@@ -10,6 +10,8 @@ class ViewBaranggayNutritionScholars extends ViewRecord
     protected static string $resource = BaranggayNutritionScholarsResource::class;
     protected string $view = 'filament.pages.BaranggayNutritionScholarsProfiles.view-bns-profile';
 
+    public string $activeTab = 'children';
+
     public function getHeading(): string
     {
         return '';
@@ -18,5 +20,10 @@ class ViewBaranggayNutritionScholars extends ViewRecord
     protected function getHeaderActions(): array
     {
         return [];
+    }
+
+    public function setTab(string $tab): void
+    {
+        $this->activeTab = $tab;
     }
 }

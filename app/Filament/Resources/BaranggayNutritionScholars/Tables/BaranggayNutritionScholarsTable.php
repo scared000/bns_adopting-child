@@ -8,6 +8,7 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
 use Filament\Support\Enums\Alignment;
@@ -82,11 +83,16 @@ class BaranggayNutritionScholarsTable
             ->recordUrl(fn ($record) => BaranggayNutritionScholarsResource::getUrl('view', ['record' => $record]))
             ->recordActionsColumnLabel('ACTION')
             ->recordActions([
+                ViewAction::make()
+                    ->badge()
+                    ->label('Details')
+                    ->icon('heroicon-o-eye')
+                    ->color('info'),
                 EditAction::make()
                     ->icon('heroicon-o-pencil')
                     ->badge()
                     ->label('Edit')
-                    ->color('info'),
+                    ->color('warning'),
 
                 Action::make('delete')
                     ->label('Delete')

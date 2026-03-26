@@ -1,9 +1,9 @@
 <x-filament-panels::page>
     @php
-        $child      = $this->child;
-        $visits     = $child->officeVisits->sortByDesc('visit_date');
+        $child = $this->child;
+        $visits = $child->officeVisits->sortByDesc('visit_date');
         $totalVisits= $visits->count();
-        $bns        = $child->officeAssignments->first()?->bns;
+        $bns = $child->officeAssignments->first()?->bns;
         $initials = strtoupper(substr($child->firstname, 0, 1) . substr($child->lastname, 0, 1));
     @endphp
 
@@ -25,11 +25,11 @@
                             @else
                                 <img
                                     src="https://ui-avatars.com/api/?{{ http_build_query([
-                                        'name'       => $child->firstname . ' ' . $child->lastname,
+                                        'name' => $child->firstname . ' ' . $child->lastname,
                                         'background' => $child->sex === 'male' ? '3b82f6' : 'ec4899',
-                                        'color'      => 'fff',
-                                        'size'       => '128',
-                                        'bold'       => 'true',
+                                        'color' => 'fff',
+                                        'size' => '128',
+                                        'bold' => 'true',
                                     ]) }}"
                                     alt="{{ $child->firstname }}"
                                     class="w-24 h-24 rounded-2xl ring-4 ring-white dark:ring-gray-900 shadow-lg"
