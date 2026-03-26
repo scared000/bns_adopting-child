@@ -4,7 +4,7 @@
         $visits     = $child->officeVisits->sortByDesc('visit_date');
         $totalVisits= $visits->count();
         $bns        = $child->officeAssignments->first()?->bns;
-        $initials   = strtoupper(substr($child->firstname, 0, 1) . substr($child->lastname, 0, 1));
+        $initials = strtoupper(substr($child->firstname, 0, 1) . substr($child->lastname, 0, 1));
     @endphp
 
     {{-- HERO PROFILE SECTION --}}
@@ -42,7 +42,7 @@
                                 {{ $child->firstname }} {{ $child->lastname }}
                             </h1>
                             <p class="text-sm text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mt-0.5">
-                                <x-heroicon-m-map-pin class="w-3.5 h-3.5 text-orange-500" />
+                                <x-heroicon-m-map-pin class="w-3.5 h-3.5 text-orange-500"/>
                                 {{ $child->purok }},
                                 {{ $child->barangay?->brgyDesc ?? 'No barangay' }},
                                 {{ $child->municipality?->citymunDesc ?? 'No municipality' }},
@@ -57,7 +57,7 @@
                            class="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium
                                   border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400
                                   hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
-                            <x-heroicon-m-arrow-left class="w-4 h-4" />
+                            <x-heroicon-m-arrow-left class="w-4 h-4"/>
                             Back
                         </a>
                     </div>
@@ -84,7 +84,8 @@
         </div>
 
         {{-- Tabs --}}
-        <div class="flex gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-1 w-fit shadow-sm">
+        <div
+            class="flex gap-1 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl p-1 w-fit shadow-sm">
             <button wire:click="setTab('history')"
                     class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all
                        {{ $this->activeTab === 'history'
@@ -103,12 +104,14 @@
 
         {{-- Visit History Tab --}}
         @if ($this->activeTab === 'history')
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div
+                class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
 
                 {{-- Table Header --}}
                 <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                        <x-heroicon-o-calendar-days class="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    <div
+                        class="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                        <x-heroicon-o-calendar-days class="w-5 h-5 text-orange-600 dark:text-orange-400"/>
                     </div>
                     <div>
                         <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Visit History</h2>
@@ -119,12 +122,24 @@
                 <table class="w-full">
                     <thead>
                     <tr class="bg-gray-50 dark:bg-gray-800/50">
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Visit Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Address</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Height</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Weight</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">BNS</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Visit Date
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Address
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Height
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Weight
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            BNS
+                        </th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -152,7 +167,8 @@
                                 {{ $visit->weight ? $visit->weight . ' kg' : '—' }}
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium {{ $badge }}">
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium {{ $badge }}">
                                     {{ $visit->status ?? '—' }}
                                 </span>
                             </td>
@@ -164,11 +180,14 @@
                         <tr>
                             <td colspan="6">
                                 <div class="flex flex-col items-center justify-center py-16 text-center">
-                                    <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-                                        <x-heroicon-o-calendar-days class="w-8 h-8 text-gray-400" />
+                                    <div
+                                        class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                                        <x-heroicon-o-calendar-days class="w-8 h-8 text-gray-400"/>
                                     </div>
-                                    <p class="text-sm font-medium text-gray-900 dark:text-white">No visits recorded yet</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Visits will appear here once recorded</p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">No visits recorded
+                                        yet</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Visits will appear here
+                                        once recorded</p>
                                 </div>
                             </td>
                         </tr>
@@ -180,26 +199,37 @@
 
         {{-- Visit Items Tab --}}
         @if ($this->activeTab === 'items')
-            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div
+                class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
 
                 {{-- Table Header --}}
                 <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
-                    <div class="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                        <x-heroicon-o-archive-box class="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                    <div
+                        class="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                        <x-heroicon-o-archive-box class="w-5 h-5 text-orange-600 dark:text-orange-400"/>
                     </div>
                     <div>
                         <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Visit Items Log</h2>
-                        <p class="text-xs text-gray-500 dark:text-gray-400">Items distributed to this child across all visits</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">Items distributed to this child across all
+                            visits</p>
                     </div>
                 </div>
 
                 <table class="w-full">
                     <thead>
                     <tr class="bg-gray-50 dark:bg-gray-800/50">
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Visit Date</th>
-                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Item Description</th>
-                        <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Quantity</th>
-                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Amount</th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Visit Date
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Item Description
+                        </th>
+                        <th class="px-6 py-3 text-center text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Quantity
+                        </th>
+                        <th class="px-6 py-3 text-right text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Amount
+                        </th>
                     </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
@@ -224,11 +254,14 @@
                         <tr>
                             <td colspan="4">
                                 <div class="flex flex-col items-center justify-center py-16 text-center">
-                                    <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-                                        <x-heroicon-o-archive-box class="w-8 h-8 text-gray-400" />
+                                    <div
+                                        class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                                        <x-heroicon-o-archive-box class="w-8 h-8 text-gray-400"/>
                                     </div>
-                                    <p class="text-sm font-medium text-gray-900 dark:text-white">No items recorded yet</p>
-                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Distributed items will appear here</p>
+                                    <p class="text-sm font-medium text-gray-900 dark:text-white">No items recorded
+                                        yet</p>
+                                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Distributed items will
+                                        appear here</p>
                                 </div>
                             </td>
                         </tr>

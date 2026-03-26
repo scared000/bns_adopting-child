@@ -20,7 +20,7 @@ class VisitItemsLog extends Page implements HasTable
     protected static ?string $navigationLabel = 'Visit Items Log';
     protected static ?string $title = 'Visit Items Log';
 
-    protected string $view = 'filament.pages.visit-items-log';
+    protected string $view = 'filament.pages.item-logs.visit-items-log';
 
     public function table(Table $table): Table
     {

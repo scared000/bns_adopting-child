@@ -9,7 +9,7 @@ use Livewire\Attributes\Url;
 class ChildVisitDetail extends Page
 {
     protected static bool $shouldRegisterNavigation = false;
-    protected string $view = 'filament.pages.child-visit-detail';
+    protected string $view = 'filament.pages.child-history-log.child-visit-detail';
     #[Url]
     public int $childId = 0;
 
@@ -29,9 +29,5 @@ class ChildVisitDetail extends Page
     public function setTab(string $tab): void
     {
         $this->activeTab = $tab;
-    }
-    public function ChildProperty()
-    {
-        return $this->childRecord;
     }
 }

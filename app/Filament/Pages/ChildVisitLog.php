@@ -12,7 +12,7 @@ class ChildVisitLog extends Page
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationLabel = 'Child Visit Log';
 
-    protected string $view = 'filament.pages.child-visit-log';
+    protected string $view = 'filament.pages.child-history-log.child-visit-log';
 
     public string $search = '';
     public function getTitle(): string|\Illuminate\Contracts\Support\Htmlable
