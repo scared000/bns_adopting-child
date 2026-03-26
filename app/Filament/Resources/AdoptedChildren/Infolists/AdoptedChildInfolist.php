@@ -78,7 +78,7 @@ class AdoptedChildInfolist
 
                 TextEntry::make('nutritional_status')
                     ->label(new HtmlString('<span style="font-weight:750;">Nutritional Status</span>'))
-                    ->badge()
+                    ->wrap()
                     ->color(fn (string $state): string => self::statusColor($state))
                     ->columnSpan(1),
 

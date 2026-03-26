@@ -7,7 +7,7 @@ use Filament\Pages\Page;
 
 class ChildVisitLog extends Page
 {
-    protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-user-group';
+    protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-calendar-days';
     protected static string|null|\UnitEnum $navigationGroup = 'LOG';
     protected static ?int $navigationSort = 4;
     protected static ?string $navigationLabel = 'Child Visit Log';

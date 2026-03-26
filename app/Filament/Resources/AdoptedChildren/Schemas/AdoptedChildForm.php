@@ -114,6 +114,9 @@ class AdoptedChildForm
             'suffix' => $record->suffix,
             'birthdate' => $record->birthdate,
             'birthplace' => $record->birthplace,
+            'purok' => $record->purok,
+            'municipality_id' => $record->municipality_id,
+            'barangay_id' => $record->barangay_id,
             'sex' => $record->sex,
             'height_cm' => $record->height_cm,
             'weight_kg' => $record->weight_kg,
@@ -316,6 +319,7 @@ class AdoptedChildForm
                             return Barangay::where('citymunCode', $municipalityCode)
                                 ->pluck('brgyDesc', 'brgyCode');
                         })
+                        ->live()
                         ->searchable()
                         ->required(),
                 ]),
