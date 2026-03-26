@@ -69,7 +69,6 @@ class AdoptedChildrenTable
                 ->label('HEIGHT CM')
                 ->suffix('cm')
                 ->numeric(),
-
             TextColumn::make('weight_kg')
                 ->label('WEIGHT KG')
                 ->suffix('kg')
