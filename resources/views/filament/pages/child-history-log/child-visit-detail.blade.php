@@ -138,6 +138,9 @@
                             Nutritional Status
                         </th>
                         <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                            Office
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                             BNS
                         </th>
                     </tr>
@@ -171,6 +174,15 @@
                                     class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium {{ $badge }}">
                                     {{ $visit->status ?? '—' }}
                                 </span>
+                            </td>
+                            <td class="px-5 py-3 text-gray-600 dark:text-gray-400 text-xs">  {{-- ← add this --}}
+                                @if ($visit->office)
+                                    <span class="font-medium text-gray-700 dark:text-gray-300">
+                                        {{ $visit->office->short_name ?? $visit->office->office ?? '—' }}
+                                    </span>
+                                @else
+                                    <span class="text-gray-400">—</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                                 {{ $visit->bns ? $visit->bns->firstname . ' ' . $visit->bns->lastname : '—' }}

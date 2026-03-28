@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\AdoptedChildren\Tables;
 
 use App\Filament\Resources\AdoptedChildren\Schemas\AdoptedChildForm;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
@@ -11,6 +13,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
@@ -22,8 +25,11 @@ class AdoptedChildrenTable
             ->columns(self::columns())
             ->filters(self::filters())
             ->recordActions(self::recordActions())
+            ->recordActionsColumnLabel('ACTION')
+            ->recordActionsPosition(RecordActionsPosition::AfterColumns)
             ->headerActions(self::headerActions())
             ->toolbarActions(self::toolbarActions());
+
     }
 
     private static function columns(): array
@@ -77,6 +83,7 @@ class AdoptedChildrenTable
             TextColumn::make('nutritional_status')
                 ->label('NUTRITIONAL STATUS')
                 ->wrap()
+                ->extraCellAttributes(['style' => 'min-width: 200px; white-space: normal;'])
                 ->color(fn (string $state): string => self::statusColor($state))
                 ->placeholder('—'),
         ];
@@ -107,13 +114,23 @@ class AdoptedChildrenTable
     private static function recordActions(): array
     {
         return [
+            Action::make('visit_log')
+                ->label('Visit Log')
+                ->icon('heroicon-o-clock')
+                ->color('gray')
+                ->badge()
+                ->url(fn ($record) => url('/admin/child-visit-detail?childId=' . $record->id)),
+
             ViewAction::make()
                 ->label('Details')
+                ->icon('heroicon-o-eye')
                 ->color('info')
                 ->badge(),
 
             DeleteAction::make()
                 ->label('Delete')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
                 ->badge(),
         ];
     }
