@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AdoptedChildren\Infolists;
 
+use App\Filament\Resources\AdoptedChildren\Tables\AdoptedChildrenTable;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Group;
@@ -79,6 +80,14 @@ class AdoptedChildInfolist
                 TextEntry::make('nutritional_status')
                     ->label(new HtmlString('<span style="font-weight:750;">Nutritional Status</span>'))
                     ->wrap()
+                    ->getStateUsing(function ($record) {
+                        return $record->officeVisits()
+                            ->latest('visit_date')
+                            ->first()
+                            ?->status
+                            ?? $record->nutritional_status
+                            ?? '—';
+                    })
                     ->color(fn (string $state): string => self::statusColor($state))
                     ->columnSpan(1),
 
@@ -428,19 +437,6 @@ class AdoptedChildInfolist
     //badge color map
     private static function statusColor(string $state): string
     {
-        return match (true) {
-            str_contains($state, 'SUW') => 'danger',
-            str_contains($state, 'SST') => 'danger',
-            str_contains($state, 'Wasted') => 'danger',
-            str_contains($state, 'At Risk') => 'danger',
-            str_contains($state, 'OB') => 'danger',
-            str_contains($state, 'OW') => 'info',
-            str_contains($state, 'UW') => 'warning',
-            str_contains($state, 'ST') => 'warning',
-            str_contains($state, 'MW') => 'warning',
-            str_contains($state, 'Incomplete') => 'gray',
-            str_contains($state, 'Invalid') => 'danger',
-            default => 'success',
-        };
+        return AdoptedChildrenTable::statusColor($state);
     }
 }

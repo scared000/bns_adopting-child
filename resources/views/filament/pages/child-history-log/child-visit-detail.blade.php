@@ -150,9 +150,14 @@
                         @php
                             $s = strtolower($visit->status ?? '');
                             $badge = match(true) {
-                                str_contains($s,'severely') || str_contains($s,'wasted') => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-                                str_contains($s,'underweight') || str_contains($s,'stunted') => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
-                                str_contains($s,'normal') => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
+                                str_contains($s, 'severely') ||
+                                str_contains($s, 'wasted')   ||
+                                str_contains($s, 'obese')    => 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
+                                str_contains($s, 'overweight') ||
+                                str_contains($s, 'underweight') ||
+                                str_contains($s, 'stunted')     ||
+                                str_contains($s, 'at risk')     => 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400',
+                                str_contains($s, 'normal')      => 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400',
                                 default => 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
                             };
                         @endphp

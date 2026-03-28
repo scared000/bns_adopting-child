@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OfficeVisits\Tables;
 
+use App\Filament\Resources\AdoptedChildren\Tables\AdoptedChildrenTable;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
@@ -69,19 +70,6 @@ class OfficeVisitsTable
     }
     private static function statusColor(string $state): string
     {
-        $state = strtolower($state);
-
-        return match (true) {
-            str_contains($state, 'severely') ||
-            str_contains($state, 'wasted') ||
-            str_contains($state, 'obese') => 'danger',
-            str_contains($state, 'underweight') ||
-            str_contains($state, 'stunted') ||
-            str_contains($state, 'overweight') ||
-            str_contains($state, 'at risk') => 'warning',
-            str_contains($state, 'tall') => 'info',
-            str_contains($state, 'incomplete') || str_contains($state, 'n/a') => 'gray',
-            default => 'success',
-        };
+        return AdoptedChildrenTable::statusColor($state);
     }
 }

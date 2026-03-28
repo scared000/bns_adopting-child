@@ -84,7 +84,14 @@ class AdoptedChildrenTable
                 ->label('NUTRITIONAL STATUS')
                 ->wrap()
                 ->extraCellAttributes(['style' => 'min-width: 200px; white-space: normal;'])
-                ->color(fn (string $state): string => self::statusColor($state))
+                ->getStateUsing(function ($record) {
+                    $latestStatus = $record->officeVisits->first()?->status;
+                    return $latestStatus ?? $record->nutritional_status ?? '—';
+                })
+                ->color(fn ($state): string => $state
+                    ? AdoptedChildrenTable::statusColor($state)
+                    : 'gray'
+                )
                 ->placeholder('—'),
         ];
     }
@@ -159,7 +166,7 @@ class AdoptedChildrenTable
         ];
     }
 
-    private static function statusColor(string $state): string
+    public static function statusColor(string $state): string
     {
         $state = strtolower($state);
 

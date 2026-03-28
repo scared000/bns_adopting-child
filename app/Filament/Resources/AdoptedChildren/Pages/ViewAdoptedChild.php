@@ -5,10 +5,12 @@ namespace App\Filament\Resources\AdoptedChildren\Pages;
 use App\Filament\Resources\AdoptedChildren\AdoptedChildResource;
 use App\Filament\Resources\AdoptedChildren\Infolists\AdoptedChildInfolist;
 use App\Filament\Resources\AdoptedChildren\Schemas\AdoptedChildForm;
+use App\Models\AdoptedChild;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
 use Filament\Resources\Pages\ViewRecord;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Model;
 
 class ViewAdoptedChild extends ViewRecord
 {
@@ -17,6 +19,18 @@ class ViewAdoptedChild extends ViewRecord
     public function infolist(Schema $schema): Schema
     {
         return AdoptedChildInfolist::configure($schema);
+    }
+    protected function resolveRecord(int|string $key): Model
+    {
+        return AdoptedChild::with([
+            'officeVisits' => fn ($q) => $q->latest('visit_date')->limit(1),
+            'barangay',
+            'municipality.province',
+            'motherProfile',
+            'fatherProfile',
+            'familyMembers',
+            'familyStatus',
+        ])->findOrFail($key);
     }
 
     protected function getHeaderActions(): array
