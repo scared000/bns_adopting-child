@@ -62,7 +62,7 @@ class AdoptedChildrenTable
                 ->formatStateUsing(fn ($record) =>
                 $record->birthdate
                     ? (function () use ($record) {
-                    $age    = \Carbon\Carbon::parse($record->birthdate)->diff(now());
+                    $age = \Carbon\Carbon::parse($record->birthdate)->diff(now());
                     $months = ($age->y * 12) + $age->m;
                     return $age->y >= 5
                         ? $age->y . ' yrs old'

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Widgets\AtRiskChildrenWidget;
 use App\Filament\Widgets\NutritionStatusWidget;
 use App\Filament\Widgets\RecentVisitsWidget;
 use App\Filament\Widgets\StatsOverview;
@@ -17,7 +18,7 @@ class Dashboard extends \Filament\Pages\Dashboard
         return [
             'default' => 1,
             'md'      => 2,
-            'xl'      => 3,
+            'xl'      => 4,
         ];
     }
 
@@ -25,8 +26,9 @@ class Dashboard extends \Filament\Pages\Dashboard
     {
         return [
             StatsOverview::class,
-//            NutritionStatusWidget::class,
-//            RecentVisitsWidget::class,
+            NutritionStatusWidget::class,
+            AtRiskChildrenWidget::class,
+            RecentVisitsWidget::class,
         ];
     }
 }
