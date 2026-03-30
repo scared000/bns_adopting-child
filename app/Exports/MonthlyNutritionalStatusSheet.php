@@ -133,7 +133,7 @@ class MonthlyNutritionalStatusSheet implements FromArray, WithTitle, WithStyles,
             '', 'Sex',                                                          // A, B
             'Age in months', 'Wt. kg.', 'BL Ht. cm.', 'N.S', 'Date of Weighing', // C-G
             'Age in Months', 'WT', 'NS (WFA)', 'HT', 'NS (HFA)', 'WT/FOR H/L-NS', // H-M
-            '',                                                                  // N
+            '',  // N
         ];
 
         $this->dataStartRow = 13;
@@ -160,8 +160,8 @@ class MonthlyNutritionalStatusSheet implements FromArray, WithTitle, WithStyles,
 
             $dataRows[] = [
                 $no++ . '. ' . $child->lastname . ', ' . $child->firstname,  // A
-                strtoupper(substr($child->sex ?? '—', 0, 1)),                 // B
-                $blAgeMonths,             // C
+                strtoupper(substr($child->sex ?? '—', 0, 1)), // B
+                $blAgeMonths, // C
                 $baseline?->weight ?? '—', // D
                 $baseline?->height ?? '—', // E
                 $blNS,                    // F
