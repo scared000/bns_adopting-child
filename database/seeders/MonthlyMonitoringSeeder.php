@@ -74,7 +74,7 @@ class MonthlyMonitoringSeeder extends Seeder
 
         foreach ($this->childrenData as $index => $data) {
 
-            // ── Create or find child ──────────────────────────────────────────
+            // Create or find child
             $child = AdoptedChild::firstOrCreate(
                 ['firstname' => $data['firstname'], 'lastname' => $data['lastname']],
                 [
@@ -91,7 +91,7 @@ class MonthlyMonitoringSeeder extends Seeder
                 ]
             );
 
-            // ── Resolve assignment (find existing or create) ──────────────────
+            // Resolve assignment (find existing or create)
             $assignId = $this->resolveAssignId($child->id, $officeId, $bnsId, $assignCols);
 
             if (! $assignId) {
@@ -100,7 +100,7 @@ class MonthlyMonitoringSeeder extends Seeder
                 continue;
             }
 
-            // ── Baseline visit (~4 months ago) ────────────────────────────────
+            // Baseline visit (~4 months ago)
             $baselineDate = Carbon::createFromDate($followUpYear, $followUpMonth, rand(1, 28))
                 ->subMonths(4);
 
@@ -125,7 +125,7 @@ class MonthlyMonitoringSeeder extends Seeder
                 $skipped++;
             }
 
-            // ── Follow-up visit (current month) ───────────────────────────────
+            //  Follow-up visit (current month)
             $hasFollowUp = OfficeChildVisit::where('adopted_id', $child->id)
                 ->whereMonth('visit_date', $followUpMonth)
                 ->whereYear('visit_date', $followUpYear)
