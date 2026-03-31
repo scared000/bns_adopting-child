@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\ChildVisitDetail;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use App\Filament\Pages\ChildVisitLog;
 use App\Filament\Resources\AdoptedChildren\Pages\ListFamilyProfiles;
 use Filament\Enums\UserMenuPosition;
@@ -36,6 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->registration()
             ->topbar(false)
+            ->globalSearch(false)
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
@@ -90,6 +92,27 @@ class AdminPanelProvider extends PanelProvider
                 SubstituteBindings::class,
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
+            ])
+            ->plugins([
+                FilamentShieldPlugin::make()
+                    ->gridColumns([
+                        'default' => 1,
+                        'sm' => 2,
+                        'lg' => 3
+                    ])
+                    ->sectionColumnSpan(1)
+                    ->checkboxListColumns([
+                        'default' => 1,
+                        'sm' => 2,
+                        'lg' => 4,
+                    ])
+                    ->resourceCheckboxListColumns([
+                        'default' => 1,
+                        'sm' => 2,
+                    ])
+                    ->navigationGroup('System Management')
+                    ->navigationSort(100)
+                    ->navigationIcon('heroicon-o-shield-check'),
             ])
             ->authMiddleware([
                 Authenticate::class,

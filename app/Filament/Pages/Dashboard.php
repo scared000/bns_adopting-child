@@ -13,7 +13,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class Dashboard extends \Filament\Pages\Dashboard
 {
-    protected static ?string $title = 'My Dashboard';
+    protected static ?string $title = 'DASHBOARD';
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-home';
     protected static string $routePath = '/';
 
