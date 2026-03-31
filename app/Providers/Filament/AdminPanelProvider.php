@@ -33,7 +33,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->registration()
             ->brandName('BNS & Adopt-A-Child System')
-//            ->topNavigation()
+            ->topNavigation()
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
                 'primary' => Color::Amber,

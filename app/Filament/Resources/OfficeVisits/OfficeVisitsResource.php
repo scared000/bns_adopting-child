@@ -45,7 +45,7 @@ class OfficeVisitsResource extends Resource
         return [
             'index' => ListOfficeVisits::route('/'),
             'create' => CreateOfficeVisits::route('/create'),
-            'edit' => EditOfficeVisits::route('/{record}/edit'),
+//            'edit' => EditOfficeVisits::route('/{record}/edit'),
         ];
     }
 }

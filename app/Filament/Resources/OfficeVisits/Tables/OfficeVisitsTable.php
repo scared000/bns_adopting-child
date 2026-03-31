@@ -7,6 +7,11 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+use Filament\Infolists\Components\ImageEntry;
+use Filament\Infolists\Components\RepeatableEntry;
+use Filament\Infolists\Components\TextEntry;
+use Filament\Schemas\Components\Section;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -32,7 +37,7 @@ class OfficeVisitsTable
                     ->wrap()
                     ->getStateUsing(function ($record) {
                         $office = $record->office;
-                        if (!$office) return '—';
+                        if (! $office) return '—';
                         return collect([
                             $office->office,
                             $office->short_name ? "({$office->short_name})" : null,
@@ -57,10 +62,28 @@ class OfficeVisitsTable
                     ->placeholder('—'),
             ])
             ->filters([])
+            ->recordAction('view')
             ->recordActionsColumnLabel('ACTION')
             ->recordActions([
-                EditAction::make()->icon('heroicon-o-pencil')->badge(),
-                DeleteAction::make()->icon('heroicon-o-trash')->badge(),
+                ViewAction::make()
+                    ->icon('heroicon-o-eye')
+                    ->color('info')
+                    ->badge()
+                    ->iconButton()
+                    ->modalHeading(fn ($record) => 'Visit — ' . ($record->child?->firstname . ' ' . $record->child?->lastname))
+                    ->modalWidth('6xl')
+                    ->extraModalFooterActions([
+                        EditAction::make()
+                            ->icon('heroicon-o-pencil')
+                            ->color('primary')
+                            ->modalWidth('6xl'),
+                    ])
+                    ->schema(self::viewSchema()),
+
+                DeleteAction::make()
+                    ->icon('heroicon-o-trash')
+                    ->badge()
+                    ->iconButton(),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -68,8 +91,118 @@ class OfficeVisitsTable
                 ]),
             ]);
     }
+
+    private static function viewSchema(): array
+    {
+        return [
+            Section::make('Assignment Information')
+                ->icon('heroicon-o-user-group')
+                ->columns(2)
+                ->schema([
+                    TextEntry::make('child.firstname')
+                        ->label('Child Name')
+                        ->getStateUsing(fn ($record) => $record->child
+                            ? $record->child->firstname . ' ' . $record->child->lastname
+                            : '—')
+                        ->weight('bold'),
+
+                    TextEntry::make('bns.firstname')
+                        ->label('Assigned BNS')
+                        ->getStateUsing(fn ($record) => $record->bns
+                            ? $record->bns->firstname . ' ' . $record->bns->lastname
+                            : '—'),
+
+                    TextEntry::make('office.office')
+                        ->label('Assigned Office')
+                        ->getStateUsing(function ($record) {
+                            $office = $record->office;
+                            if (! $office) return '—';
+                            return collect([
+                                $office->office,
+                                $office->short_name ? "({$office->short_name})" : null,
+                            ])->filter()->implode(' ') ?: '—';
+                        })
+                        ->columnSpanFull(),
+                ]),
+
+            Section::make('Visit Details')
+                ->icon('heroicon-o-map-pin')
+                ->columns(2)
+                ->schema([
+                    TextEntry::make('visit_date')
+                        ->label('Visit Date')
+                        ->date()
+                        ->placeholder('—'),
+
+                    TextEntry::make('status')
+                        ->label('Status')
+                        ->badge()
+                        ->color(fn (string $state): string => self::statusColor($state))
+                        ->placeholder('—'),
+
+                    TextEntry::make('visit_address')
+                        ->label('Visit Address')
+                        ->columnSpanFull()
+                        ->placeholder('—'),
+                ]),
+
+            Section::make('Measurements & Nutritional Status')
+                ->icon('heroicon-o-scale')
+                ->columns(3)
+                ->schema([
+                    TextEntry::make('weight')
+                        ->label('Weight')
+                        ->suffix(' kg')
+                        ->placeholder('—'),
+
+                    TextEntry::make('height')
+                        ->label('Height')
+                        ->suffix(' cm')
+                        ->placeholder('—'),
+
+                    TextEntry::make('muac')
+                        ->label('MUAC')
+                        ->suffix(' cm')
+                        ->placeholder('—'),
+                ]),
+
+            Section::make('Items Distributed')
+                ->icon('heroicon-o-gift')
+                ->schema([
+                    RepeatableEntry::make('visitItems')
+                        ->label('')
+                        ->schema([
+                            TextEntry::make('Item_description')
+                                ->label('Item'),
+
+                            TextEntry::make('item_quantity')
+                                ->label('Qty'),
+
+                            TextEntry::make('item_amount')
+                                ->label('Amount')
+                                ->prefix('₱'),
+                        ])
+                        ->columns(3),
+                ]),
+
+            Section::make('Documentation')
+                ->icon('heroicon-o-camera')
+                ->schema([
+                    ImageEntry::make('visit_documentation')
+                        ->label('Visit Photos')
+                        ->disk('public')
+                        ->height(120)
+                        ->square()
+                        ->stacked()
+                        ->placeholder('No photos uploaded'),
+                ]),
+        ];
+    }
+
     private static function statusColor(string $state): string
     {
         return AdoptedChildrenTable::statusColor($state);
     }
+
+
 }
