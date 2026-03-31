@@ -166,12 +166,12 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ $child->age ?? '—' }} yrs</td>
                                 <td class="px-6 py-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium
-                                            {{ $child->sex === 'male'
-                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                                : 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400' }}">
-                                            {{ ucfirst($child->sex ?? '—') }}
-                                        </span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium
+                                        {{ $child->sex === 'male'
+                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                            : 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400' }}">
+                                        {{ ucfirst($child->sex ?? '—') }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4">
                                     @php
@@ -185,18 +185,32 @@
                                         };
                                     @endphp
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium {{ $sc }}">
-                                            {{ $status ?: '—' }}
-                                        </span>
+                                        {{ $status ?: '—' }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                                     {{ $assignment->assigned_date ? \Carbon\Carbon::parse($assignment->assigned_date)->format('M d, Y') : '—' }}
                                 </td>
+
+                                {{-- ACTION column: View + Unassign --}}
                                 <td class="px-6 py-4">
-                                    <a href="{{ \App\Filament\Resources\AdoptedChildren\AdoptedChildResource::getUrl('view', ['record' => $child]) }}"
-                                       class="inline-flex items-center gap-1.5 text-xs font-medium text-orange-600 hover:text-orange-700 transition-colors">
-                                        <x-heroicon-m-eye class="w-3.5 h-3.5" />
-                                        View
-                                    </a>
+                                    <div class="flex items-center gap-2">
+                                        {{-- View child --}}
+                                        <a href="{{ \App\Filament\Resources\AdoptedChildren\AdoptedChildResource::getUrl('view', ['record' => $child]) }}"
+                                           class="inline-flex items-center gap-1.5 text-xs font-medium text-orange-600 hover:text-orange-700 transition-colors">
+                                            <x-heroicon-m-eye class="w-3.5 h-3.5" />
+                                            View
+                                        </a>
+
+                                        <span class="text-gray-300 dark:text-gray-600">|</span>
+
+                                        {{-- Unassign button — triggers confirmation --}}
+                                        <button wire:click="confirmUnassign({{ $assignment->id }})"
+                                                class="inline-flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700 transition-colors">
+                                            <x-heroicon-m-user-minus class="w-3.5 h-3.5" />
+                                            Unassign
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         @endforeach
@@ -270,8 +284,8 @@
                                                 ]) }}"
                                              class="w-7 h-7 rounded-lg" />
                                         <span class="font-medium text-gray-800 dark:text-white">
-                                                {{ $visit->child?->firstname }} {{ $visit->child?->lastname }}
-                                            </span>
+                                            {{ $visit->child?->firstname }} {{ $visit->child?->lastname }}
+                                        </span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-gray-500 dark:text-gray-400 max-w-xs truncate">
@@ -284,9 +298,9 @@
                                     {{ $visit->weight ? $visit->weight . ' kg' : '—' }}
                                 </td>
                                 <td class="px-6 py-4">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium {{ $badge }}">
-                                            {{ $visit->status ?? '—' }}
-                                        </span>
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium {{ $badge }}">
+                                        {{ $visit->status ?? '—' }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs">
                                     @if ($visit->visitItems->count())
@@ -304,4 +318,49 @@
         @endif
 
     </div>
+
+    {{-- ── UNASSIGN CONFIRMATION MODAL ─────────────────────────────────────── --}}
+    @if ($this->confirmingUnassignId !== null)
+        @php
+            $pendingAssignment = $record->childAssignments()->with('child')->find($this->confirmingUnassignId);
+            $pendingChild      = $pendingAssignment?->child;
+        @endphp
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+             style="background: rgba(0,0,0,0.5);">
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5">
+
+                {{-- Icon + Heading --}}
+                <div class="flex flex-col items-center text-center gap-3">
+                    <div class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                        <x-heroicon-o-user-minus class="w-7 h-7 text-red-600 dark:text-red-400" />
+                    </div>
+                    <div>
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">Unassign Child</h3>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                            Are you sure you want to unassign
+                            <span class="font-semibold text-gray-800 dark:text-white">
+                                {{ $pendingChild?->firstname }} {{ $pendingChild?->lastname }}
+                            </span>
+                            from this BNS? This action cannot be undone.
+                        </p>
+                    </div>
+                </div>
+
+                {{-- Buttons --}}
+                <div class="flex gap-3 justify-center">
+                    <button wire:click="cancelUnassign"
+                            class="px-5 py-2 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+                        Cancel
+                    </button>
+                    <button wire:click="unassignChild"
+                            class="px-5 py-2 rounded-xl text-sm font-medium bg-red-500 hover:bg-red-600 text-white transition-colors shadow-sm">
+                        <span wire:loading.remove wire:target="unassignChild">Yes, Unassign</span>
+                        <span wire:loading wire:target="unassignChild">Unassigning...</span>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    @endif
+
 </x-filament-panels::page>
