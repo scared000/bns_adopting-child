@@ -110,7 +110,7 @@ class AdminPanelProvider extends PanelProvider
                         'default' => 1,
                         'sm' => 2,
                     ])
-                    ->navigationGroup('System Management')
+                    ->navigationGroup('SYSTEM MANAGEMENT')
                     ->navigationSort(100)
                     ->navigationIcon('heroicon-o-shield-check'),
             ])

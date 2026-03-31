@@ -1,4 +1,20 @@
 <x-filament-panels::page>
+    @php
+        $perPage        = 5;
+
+        // ── Children pagination data ───────────────────────────────
+        $totalChildren  = $record->childAssignments()->count();
+        $totalChildPages = max(1, (int) ceil($totalChildren / $perPage));
+        $assignments    = $record->childAssignments()->with('child')->latest()
+                            ->forPage($this->childrenPage, $perPage)->get();
+
+        // ── Visits pagination data ─────────────────────────────────
+        $totalVisits    = $record->officeVisits()->count();
+        $totalVisitPages = max(1, (int) ceil($totalVisits / $perPage));
+        $visits         = $record->officeVisits()->with(['child', 'visitItems'])->latest('visit_date')
+                            ->forPage($this->visitsPage, $perPage)->get();
+    @endphp
+
     <div class="space-y-6">
 
         {{-- HERO PROFILE SECTION --}}
@@ -61,20 +77,12 @@
                 {{-- Stats Row --}}
                 <div class="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
                     <div class="text-center">
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                            {{ $record->childAssignments()->count() }}
-                        </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 uppercase tracking-wide font-medium">
-                            Children Assigned
-                        </p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $totalChildren }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 uppercase tracking-wide font-medium">Children Assigned</p>
                     </div>
                     <div class="text-center border-l border-gray-100 dark:border-gray-800">
-                        <p class="text-2xl font-bold text-gray-900 dark:text-white">
-                            {{ $record->officeVisits()->count() }}
-                        </p>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 uppercase tracking-wide font-medium">
-                            Total Visits
-                        </p>
+                        <p class="text-2xl font-bold text-gray-900 dark:text-white">{{ $totalVisits }}</p>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-0.5 uppercase tracking-wide font-medium">Total Visits</p>
                     </div>
                 </div>
             </div>
@@ -98,9 +106,13 @@
             </button>
         </div>
 
-        {{-- TAB: ASSIGNED CHILDREN --}}
+        {{-- ═══════════════════════════════════════════════════════════════
+             TAB: ASSIGNED CHILDREN
+        ═══════════════════════════════════════════════════════════════ --}}
         @if ($this->activeTab === 'children')
             <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+                {{-- Header --}}
                 <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
@@ -109,7 +121,7 @@
                         <div>
                             <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Assigned Children</h2>
                             <p class="text-xs text-gray-500 dark:text-gray-400">
-                                {{ $record->childAssignments()->count() }} {{ str('child')->plural($record->childAssignments()->count()) }} under this BNS
+                                {{ $totalChildren }} {{ str('child')->plural($totalChildren) }} under this BNS
                             </p>
                         </div>
                     </div>
@@ -120,9 +132,7 @@
                     </a>
                 </div>
 
-                @php $assignments = $record->childAssignments()->with('child')->latest()->get(); @endphp
-
-                @if($assignments->isEmpty())
+                @if($assignments->isEmpty() && $this->childrenPage === 1)
                     <div class="flex flex-col items-center justify-center py-16 text-center">
                         <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
                             <x-heroicon-o-face-smile class="w-8 h-8 text-gray-400" />
@@ -149,12 +159,12 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-3">
                                         <img src="https://ui-avatars.com/api/?{{ http_build_query([
-                                                    'name'       => $child->firstname . ' ' . $child->lastname,
-                                                    'background' => $child->sex === 'male' ? '3b82f6' : 'ec4899',
-                                                    'color'      => 'fff',
-                                                    'size'       => '64',
-                                                    'bold'       => 'true',
-                                                ]) }}"
+                                                        'name'       => $child->firstname . ' ' . $child->lastname,
+                                                        'background' => $child->sex === 'male' ? '3b82f6' : 'ec4899',
+                                                        'color'      => 'fff',
+                                                        'size'       => '64',
+                                                        'bold'       => 'true',
+                                                    ]) }}"
                                              class="w-9 h-9 rounded-xl" />
                                         <div>
                                             <p class="text-sm font-semibold text-gray-900 dark:text-white uppercase">
@@ -166,12 +176,12 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ $child->age ?? '—' }} yrs</td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium
-                                        {{ $child->sex === 'male'
-                                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                            : 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400' }}">
-                                        {{ ucfirst($child->sex ?? '—') }}
-                                    </span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium
+                                            {{ $child->sex === 'male'
+                                                ? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                : 'bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400' }}">
+                                            {{ ucfirst($child->sex ?? '—') }}
+                                        </span>
                                 </td>
                                 <td class="px-6 py-4">
                                     @php
@@ -185,26 +195,20 @@
                                         };
                                     @endphp
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium {{ $sc }}">
-                                        {{ $status ?: '—' }}
-                                    </span>
+                                            {{ $status ?: '—' }}
+                                        </span>
                                 </td>
                                 <td class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
                                     {{ $assignment->assigned_date ? \Carbon\Carbon::parse($assignment->assigned_date)->format('M d, Y') : '—' }}
                                 </td>
-
-                                {{-- ACTION column: View + Unassign --}}
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
-                                        {{-- View child --}}
                                         <a href="{{ \App\Filament\Resources\AdoptedChildren\AdoptedChildResource::getUrl('view', ['record' => $child]) }}"
                                            class="inline-flex items-center gap-1.5 text-xs font-medium text-orange-600 hover:text-orange-700 transition-colors">
                                             <x-heroicon-m-eye class="w-3.5 h-3.5" />
                                             View
                                         </a>
-
                                         <span class="text-gray-300 dark:text-gray-600">|</span>
-
-                                        {{-- Unassign button — triggers confirmation --}}
                                         <button wire:click="confirmUnassign({{ $assignment->id }})"
                                                 class="inline-flex items-center gap-1.5 text-xs font-medium text-red-500 hover:text-red-700 transition-colors">
                                             <x-heroicon-m-user-minus class="w-3.5 h-3.5" />
@@ -216,17 +220,53 @@
                         @endforeach
                         </tbody>
                     </table>
+
+                    {{-- ── Children Pagination ── --}}
+                    @if($totalChildPages > 1)
+                        <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                Page {{ $this->childrenPage }} of {{ $totalChildPages }}
+                                &middot; {{ $totalChildren }} {{ str('record')->plural($totalChildren) }}
+                            </p>
+                            <div class="flex items-center gap-1">
+                                {{-- Prev --}}
+                                <button wire:click="childrenPrevPage"
+                                        @if($this->childrenPage <= 1) disabled @endif
+                                        class="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                                    <x-heroicon-m-chevron-left class="w-4 h-4" />
+                                </button>
+
+                                {{-- Page numbers --}}
+                                @for($p = 1; $p <= $totalChildPages; $p++)
+                                    <button wire:click="childrenGoToPage({{ $p }})"
+                                            class="w-7 h-7 rounded-lg text-xs font-medium transition-colors
+                                                {{ $this->childrenPage === $p
+                                                    ? 'bg-orange-500 text-white'
+                                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                                        {{ $p }}
+                                    </button>
+                                @endfor
+
+                                {{-- Next --}}
+                                <button wire:click="childrenNextPage"
+                                        @if($this->childrenPage >= $totalChildPages) disabled @endif
+                                        class="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                                    <x-heroicon-m-chevron-right class="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    @endif
                 @endif
             </div>
         @endif
 
-        {{-- TAB: VISIT HISTORY --}}
+        {{-- ═══════════════════════════════════════════════════════════════
+             TAB: VISIT HISTORY
+        ═══════════════════════════════════════════════════════════════ --}}
         @if ($this->activeTab === 'visits')
-            @php
-                $visits = $record->officeVisits()->with(['child', 'visitItems'])->latest('visit_date')->get();
-            @endphp
-
             <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+                {{-- Header --}}
                 <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
                         <x-heroicon-o-calendar-days class="w-5 h-5 text-orange-600 dark:text-orange-400" />
@@ -237,7 +277,7 @@
                     </div>
                 </div>
 
-                @if ($visits->isEmpty())
+                @if ($visits->isEmpty() && $this->visitsPage === 1)
                     <div class="flex flex-col items-center justify-center py-16 text-center">
                         <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
                             <x-heroicon-o-calendar-days class="w-8 h-8 text-gray-400" />
@@ -276,16 +316,16 @@
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
                                         <img src="https://ui-avatars.com/api/?{{ http_build_query([
-                                                    'name'       => ($visit->child?->firstname ?? '?') . ' ' . ($visit->child?->lastname ?? ''),
-                                                    'background' => $visit->child?->sex === 'male' ? '3b82f6' : 'ec4899',
-                                                    'color'      => 'fff',
-                                                    'size'       => '48',
-                                                    'bold'       => 'true',
-                                                ]) }}"
+                                                        'name'       => ($visit->child?->firstname ?? '?') . ' ' . ($visit->child?->lastname ?? ''),
+                                                        'background' => $visit->child?->sex === 'male' ? '3b82f6' : 'ec4899',
+                                                        'color'      => 'fff',
+                                                        'size'       => '48',
+                                                        'bold'       => 'true',
+                                                    ]) }}"
                                              class="w-7 h-7 rounded-lg" />
                                         <span class="font-medium text-gray-800 dark:text-white">
-                                            {{ $visit->child?->firstname }} {{ $visit->child?->lastname }}
-                                        </span>
+                                                {{ $visit->child?->firstname }} {{ $visit->child?->lastname }}
+                                            </span>
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-gray-500 dark:text-gray-400 max-w-xs truncate">
@@ -298,9 +338,9 @@
                                     {{ $visit->weight ? $visit->weight . ' kg' : '—' }}
                                 </td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium {{ $badge }}">
-                                        {{ $visit->status ?? '—' }}
-                                    </span>
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-lg text-xs font-medium {{ $badge }}">
+                                            {{ $visit->status ?? '—' }}
+                                        </span>
                                 </td>
                                 <td class="px-6 py-4 text-gray-500 dark:text-gray-400 text-xs">
                                     @if ($visit->visitItems->count())
@@ -313,6 +353,42 @@
                         @endforeach
                         </tbody>
                     </table>
+
+                    {{-- ── Visits Pagination ── --}}
+                    @if($totalVisitPages > 1)
+                        <div class="px-6 py-4 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
+                            <p class="text-xs text-gray-500 dark:text-gray-400">
+                                Page {{ $this->visitsPage }} of {{ $totalVisitPages }}
+                                &middot; {{ $totalVisits }} {{ str('record')->plural($totalVisits) }}
+                            </p>
+                            <div class="flex items-center gap-1">
+                                {{-- Prev --}}
+                                <button wire:click="visitsPrevPage"
+                                        @if($this->visitsPage <= 1) disabled @endif
+                                        class="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                                    <x-heroicon-m-chevron-left class="w-4 h-4" />
+                                </button>
+
+                                {{-- Page numbers --}}
+                                @for($p = 1; $p <= $totalVisitPages; $p++)
+                                    <button wire:click="visitsGoToPage({{ $p }})"
+                                            class="w-7 h-7 rounded-lg text-xs font-medium transition-colors
+                                                {{ $this->visitsPage === $p
+                                                    ? 'bg-orange-500 text-white'
+                                                    : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800' }}">
+                                        {{ $p }}
+                                    </button>
+                                @endfor
+
+                                {{-- Next --}}
+                                <button wire:click="visitsNextPage"
+                                        @if($this->visitsPage >= $totalVisitPages) disabled @endif
+                                        class="p-1.5 rounded-lg text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+                                    <x-heroicon-m-chevron-right class="w-4 h-4" />
+                                </button>
+                            </div>
+                        </div>
+                    @endif
                 @endif
             </div>
         @endif
@@ -328,8 +404,6 @@
         <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
              style="background: rgba(0,0,0,0.5);">
             <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-5">
-
-                {{-- Icon + Heading --}}
                 <div class="flex flex-col items-center text-center gap-3">
                     <div class="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
                         <x-heroicon-o-user-minus class="w-7 h-7 text-red-600 dark:text-red-400" />
@@ -345,8 +419,6 @@
                         </p>
                     </div>
                 </div>
-
-                {{-- Buttons --}}
                 <div class="flex gap-3 justify-center">
                     <button wire:click="cancelUnassign"
                             class="px-5 py-2 rounded-xl text-sm font-medium border border-gray-300 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
@@ -358,7 +430,6 @@
                         <span wire:loading wire:target="unassignChild">Unassigning...</span>
                     </button>
                 </div>
-
             </div>
         </div>
     @endif

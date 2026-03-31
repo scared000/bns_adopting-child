@@ -57,6 +57,7 @@ class OfficeVisitsTable
 
                 TextColumn::make('status')
                     ->label('STATUS')
+                    ->badge()
                     ->wrap()
                     ->color(fn (string $state): string => self::statusColor($state))
                     ->placeholder('—'),
@@ -127,29 +128,13 @@ class OfficeVisitsTable
 
             Section::make('Visit Details')
                 ->icon('heroicon-o-map-pin')
-                ->columns(2)
+                ->columns(3)
                 ->schema([
                     TextEntry::make('visit_date')
                         ->label('Visit Date')
                         ->date()
                         ->placeholder('—'),
 
-                    TextEntry::make('status')
-                        ->label('Status')
-                        ->badge()
-                        ->color(fn (string $state): string => self::statusColor($state))
-                        ->placeholder('—'),
-
-                    TextEntry::make('visit_address')
-                        ->label('Visit Address')
-                        ->columnSpanFull()
-                        ->placeholder('—'),
-                ]),
-
-            Section::make('Measurements & Nutritional Status')
-                ->icon('heroicon-o-scale')
-                ->columns(3)
-                ->schema([
                     TextEntry::make('weight')
                         ->label('Weight')
                         ->suffix(' kg')
@@ -160,9 +145,15 @@ class OfficeVisitsTable
                         ->suffix(' cm')
                         ->placeholder('—'),
 
-                    TextEntry::make('muac')
-                        ->label('MUAC')
-                        ->suffix(' cm')
+                    TextEntry::make('status')
+                        ->label('Nutritional Status')
+                        ->badge()
+                        ->color(fn (string $state): string => self::statusColor($state))
+                        ->placeholder('—'),
+
+                    TextEntry::make('visit_address')
+                        ->label('Visit Address')
+                        ->columnSpanFull()
                         ->placeholder('—'),
                 ]),
 
@@ -203,6 +194,4 @@ class OfficeVisitsTable
     {
         return AdoptedChildrenTable::statusColor($state);
     }
-
-
 }

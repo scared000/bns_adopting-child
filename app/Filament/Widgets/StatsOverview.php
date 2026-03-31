@@ -33,8 +33,9 @@ class StatsOverview extends BaseWidget
         $atRiskCount = $latestStatuses->filter(function ($s) {
             $s = strtolower($s ?? '');
             return str_contains($s, 'severely') ||
-                str_contains($s, 'wasted')   ||
-                str_contains($s, 'obese');
+                    str_contains($s, 'wasted') ||
+                    str_contains($s, 'obese') ||
+                    str_contains($s, 'stunted');
         })->count();
 
         $normalPercent = $totalChildren > 0
@@ -65,7 +66,7 @@ class StatsOverview extends BaseWidget
                 ->icon('heroicon-o-check-circle'),
 
             Stat::make('At-Risk Children', number_format($atRiskCount))
-                ->description('Severely UW, Wasted or Obese')
+                ->description('Severely UW, Wasted, Obese or Stunned')
                 ->descriptionIcon('heroicon-m-exclamation-triangle')
                 ->color('danger')
                 ->icon('heroicon-o-exclamation-triangle'),
