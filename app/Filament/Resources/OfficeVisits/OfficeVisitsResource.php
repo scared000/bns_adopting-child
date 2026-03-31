@@ -22,6 +22,15 @@ class OfficeVisitsResource extends Resource
     protected static string|null|\UnitEnum $navigationGroup = 'MONITORING';
     protected static ?int $navigationSort = 2;
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
 
     public static function form(Schema $schema): Schema
     {

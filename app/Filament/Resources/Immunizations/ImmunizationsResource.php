@@ -33,6 +33,16 @@ class ImmunizationsResource extends Resource
     protected static ?int $navigationSort = 5;
     protected static ?string $navigationLabel = 'Immunization Records';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([

@@ -14,7 +14,7 @@ use Maatwebsite\Excel\Facades\Excel;
 class Dashboard extends \Filament\Pages\Dashboard
 {
     protected static ?string $title = 'My Dashboard';
-    protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-squares-2x2';
+    protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-home';
     protected static string $routePath = '/';
 
     public int $exportMonth;

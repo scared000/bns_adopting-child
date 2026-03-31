@@ -22,7 +22,15 @@ class BaranggayNutritionScholarsResource extends Resource
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-heart';
     protected static string|null|\UnitEnum $navigationGroup = 'OVERVIEW';
     public static ?int $navigationSort = 3;
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
 
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
 
     public static function form(Schema $schema): Schema
     {

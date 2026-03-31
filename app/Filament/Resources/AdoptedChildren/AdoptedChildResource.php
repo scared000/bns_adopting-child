@@ -24,6 +24,15 @@ class AdoptedChildResource extends Resource
 
     protected static string|null|\UnitEnum $navigationGroup = 'OVERVIEW';
 
+    public static function getNavigationBadge(): ?string
+    {
+        return static::getModel()::count();
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
 
     public static function form(Schema $schema): Schema
     {
