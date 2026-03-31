@@ -49,19 +49,19 @@ class AdminPanelProvider extends PanelProvider
                     <div>
                         <div
                             x-data
-                            :class=\"\$store.sidebar.isOpen ? 'px-6' : 'px-2 justify-center'\"
-                            class='flex items-center gap-x-3 py-4 transition-all duration-300'>
-                            <img src='{{ asset('storage/side-bar_logo/ddo-logo.png') }}' alt='Logo' class='h-10 w-auto flex-shrink-0'>
+                            :class=\"\$store.sidebar.isOpen ? 'px-6' : 'px-3 justify-center'\"
+                            class='flex items-center gap-x-4 py-6 transition-all duration-300'>
+                            <img src='{{ asset('storage/side-bar_logo/ddo-logo.png') }}' alt='Logo' class='h-16 w-auto flex-shrink-0'>
                             <span
                                 x-show='\$store.sidebar.isOpen'
                                 x-transition:enter='transition ease-out duration-300'
                                 x-transition:enter-start='opacity-0'
                                 x-transition:enter-end='opacity-100'
-                                class='text-sm font-bold leading-tight tracking-tight text-gray-950 dark:text-white whitespace-nowrap'>
+                                class='text-base font-bold leading-snug tracking-tight text-gray-950 dark:text-white whitespace-nowrap'>
                                 BNS & <br> Adopt-A-Child
                             </span>
                         </div>
-                        <div class='px-4 pb-2'>
+                        <div class='px-4 pb-3'>
                             <hr class='border-gray-200 dark:border-white/10'>
                         </div>
                     </div>
