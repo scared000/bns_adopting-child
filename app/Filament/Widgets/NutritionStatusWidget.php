@@ -4,32 +4,39 @@ namespace App\Filament\Widgets;
 
 use App\Models\AdoptedChild;
 use App\Models\OfficeChildVisit;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\Widget;
 
 class NutritionStatusWidget extends Widget
 {
+    use InteractsWithPageFilters;
     protected static ?int $sort = 2;
     protected string $view = 'filament.widgets.nutrition-status-widget';
     protected int|string|array $columnSpan = 2;
 
+    protected function getExtraAttributes(): array
+    {
+        return [
+            'class' => 'h-full',
+        ];
+    }
     public function getNutritionDataProperty(): array
     {
-        // Get all children with their latest visit status
-        $children = \App\Models\AdoptedChild::with([
-            'officeVisits' => fn ($q) => $q->orderBy('visit_date', 'desc')->limit(1),
+        $year = (int) ($this->filters['year'] ?? now()->year);
+        $children = AdoptedChild::with([
+            'officeVisits' => fn ($q) => $q
+                ->whereYear('visit_date', $year)
+                ->orderBy('visit_date', 'desc')
+                ->limit(1),
         ])->get();
 
         $total = $children->count();
 
         $dominant = $children->map(function ($child) {
-            // Use latest visit status if available, fallback to static field
-            $status = $child->officeVisits->first()?->status
-                ?? $child->nutritional_status
-                ?? '';
-
+            $status = $child->officeVisits->first()?->status ?? '';
             $s = strtolower($status);
 
-            if (empty($s)) return 'Normal';
+            if (empty($s)) return null;
 
             return match(true) {
                 str_contains($s, 'severely')    => 'Severely UW',
@@ -39,9 +46,9 @@ class NutritionStatusWidget extends Widget
                 str_contains($s, 'overweight')  => 'Overweight',
                 str_contains($s, 'underweight') => 'Underweight',
                 str_contains($s, 'normal')      => 'Normal',
-                default                         => 'Normal',
+                default                         => null,
             };
-        });
+        })->filter();
 
         $groups = [
             'Normal'         => ['color' => '#22c55e', 'bg' => 'bg-green-500'],
@@ -65,6 +72,10 @@ class NutritionStatusWidget extends Widget
             ];
         }
 
-        return ['items' => $result, 'total' => $total];
+        return [
+            'items' => $result,
+            'total' => $total,
+            'year'  => $year,
+        ];
     }
 }

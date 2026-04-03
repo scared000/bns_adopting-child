@@ -3,7 +3,10 @@
         <div class="flex items-center justify-between mb-5">
             <div>
                 <h3 class="text-base font-semibold text-gray-900 dark:text-white">Recent Visits</h3>
-                <p class="text-xs text-gray-400 mt-0.5">Latest recorded home visits across all BNS</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                    Latest recorded office visits across all BNS
+                    &mdash; {{ $this->selectedYear }}
+                </p>
             </div>
             <a href="{{ url('/admin/office-visits') }}"
                class="text-xs font-medium text-orange-500 hover:text-orange-600 hover:underline transition-colors">
@@ -88,7 +91,7 @@
                     <tr>
                         <td colspan="6" class="py-12 text-center">
                             <x-heroicon-o-clipboard-document-check class="w-10 h-10 mx-auto text-gray-300 mb-2" />
-                            <p class="text-sm text-gray-400">No visits recorded yet.</p>
+                            <p class="text-sm text-gray-400">No visits recorded for {{ $this->selectedYear }}.</p>
                         </td>
                     </tr>
                 @endforelse

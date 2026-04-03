@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\ChildVisitDetail;
+use App\Filament\Pages\Dashboard;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use App\Filament\Pages\ChildVisitLog;
 use App\Filament\Resources\AdoptedChildren\Pages\ListFamilyProfiles;
@@ -77,6 +78,7 @@ class AdminPanelProvider extends PanelProvider
                 ListFamilyProfiles::class,
                 ChildVisitLog::class,
                 ChildVisitDetail::class,
+                Dashboard::class,
             ])
             ->widgets([
                 AccountWidget::class,

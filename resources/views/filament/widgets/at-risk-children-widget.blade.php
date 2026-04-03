@@ -1,12 +1,15 @@
 <x-filament-widgets::widget>
-    <x-filament::section>
+    <x-filament::section class="h-full min-h-[300px]">
         <div class="flex items-center justify-between mb-5">
             <div>
                 <h3 class="text-base font-semibold text-gray-900 dark:text-white flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
                     At-Risk Children
                 </h3>
-                <p class="text-xs text-gray-400 mt-0.5">Severely UW · Wasted · Obese · Stunted</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                    Severely UW · Wasted · Obese · Stunted
+                    &mdash; {{ $this->selectedYear }}
+                </p>
             </div>
             <a href="{{ url('/admin/child-visit-log') }}"
                class="text-xs font-medium text-orange-500 hover:text-orange-600 hover:underline">
@@ -55,7 +58,7 @@
             <div class="text-center py-10">
                 <x-heroicon-o-check-badge class="w-10 h-10 mx-auto text-green-400 mb-2" />
                 <p class="text-sm font-medium text-gray-700 dark:text-white">No at-risk children</p>
-                <p class="text-xs text-gray-400 mt-1">All children are in good nutritional status</p>
+                <p class="text-xs text-gray-400 mt-1">No at-risk records found for {{ $this->selectedYear }}</p>
             </div>
         @endforelse
     </x-filament::section>

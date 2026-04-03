@@ -5,51 +5,50 @@ namespace App\Filament\Widgets;
 use App\Models\AdoptedChild;
 use App\Models\BaranggayNutritionScholars;
 use App\Models\OfficeChildVisit;
+use Filament\Widgets\Concerns\InteractsWithPageFilters;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class StatsOverview extends BaseWidget
 {
+    use InteractsWithPageFilters;
     protected static ?int $sort = 1;
     protected int|string|array $columnSpan = 'full';
 
     protected function getStats(): array
     {
-        $totalChildren = AdoptedChild::count();
-        $totalBns      = BaranggayNutritionScholars::count();
-        $totalVisits   = OfficeChildVisit::count();
-
-        $latestVisitIds = OfficeChildVisit::selectRaw('MAX(id) as id')
+        $year = (int) ($this->filters['year'] ?? now()->year);
+        $activeChildrenCount = AdoptedChild::whereHas('officeVisits', function ($query) use ($year) {
+            $query->whereYear('visit_date', $year);
+        })->count();
+        $totalBns = BaranggayNutritionScholars::count();
+        $totalVisits = OfficeChildVisit::whereYear('visit_date', $year)->count();
+        $latestVisitIds = OfficeChildVisit::whereYear('visit_date', $year)
+            ->selectRaw('MAX(id) as id')
             ->groupBy('adopted_id')
             ->pluck('id');
 
-        $latestStatuses = OfficeChildVisit::whereIn('id', $latestVisitIds)
-            ->pluck('status');
-
-        $normalCount = $latestStatuses->filter(
-            fn ($s) => str_contains(strtolower($s ?? ''), 'normal')
-        )->count();
-
+        $latestStatuses = OfficeChildVisit::whereIn('id', $latestVisitIds)->pluck('status');
+        $normalCount = $latestStatuses->filter(fn ($s) => str_contains(strtolower($s ?? ''), 'normal'))->count();
         $atRiskCount = $latestStatuses->filter(function ($s) {
             $s = strtolower($s ?? '');
             return str_contains($s, 'severely') ||
-                    str_contains($s, 'wasted') ||
-                    str_contains($s, 'obese') ||
-                    str_contains($s, 'stunted');
+                str_contains($s, 'wasted') ||
+                str_contains($s, 'obese') ||
+                str_contains($s, 'stunted');
         })->count();
 
-        $normalPercent = $totalChildren > 0
-            ? round(($normalCount / $totalChildren) * 100, 1)
-            : 0;
-
-        $thisMonthVisits = OfficeChildVisit::whereMonth('visit_date', now()->month)
-            ->whereYear('visit_date', now()->year)
+        $normalPercent = $activeChildrenCount > 0? round(($normalCount / $activeChildrenCount) * 100, 1): 0;
+        $thisMonthVisits = OfficeChildVisit::whereYear('visit_date', $year)
+            ->whereMonth('visit_date', now()->month)
             ->count();
 
+        $yearLabel = (string) $year;
+
         return [
-            Stat::make('Total Children', number_format($totalChildren))
-                ->description('Registered in the system')
-                ->descriptionIcon('heroicon-m-arrow-trending-up')
+            Stat::make('Total Children', number_format($activeChildrenCount))
+                ->description("Monitored in {$yearLabel}")
+                ->descriptionIcon('heroicon-m-user-group')
                 ->color('info')
                 ->icon('heroicon-o-user-group'),
 
@@ -60,25 +59,25 @@ class StatsOverview extends BaseWidget
                 ->icon('heroicon-o-heart'),
 
             Stat::make('Normal Status', number_format($normalCount))
-                ->description("{$normalPercent}% of total children")
+                ->description("{$normalPercent}% of children monitored in {$yearLabel}")
                 ->descriptionIcon('heroicon-m-check-circle')
                 ->color('success')
                 ->icon('heroicon-o-check-circle'),
 
             Stat::make('At-Risk Children', number_format($atRiskCount))
-                ->description('Severely UW, Wasted, Obese or Stunned')
+                ->description("Found in {$yearLabel} visits")
                 ->descriptionIcon('heroicon-m-exclamation-triangle')
                 ->color('danger')
                 ->icon('heroicon-o-exclamation-triangle'),
 
             Stat::make('Total Visits', number_format($totalVisits))
-                ->description('All recorded visits')
+                ->description("All records for {$yearLabel}")
                 ->descriptionIcon('heroicon-m-clipboard-document-check')
                 ->color('gray')
                 ->icon('heroicon-o-clipboard-document-check'),
 
             Stat::make('Visits This Month', number_format($thisMonthVisits))
-                ->description(now()->format('F Y'))
+                ->description(now()->format('F') . " {$yearLabel}")
                 ->descriptionIcon('heroicon-m-calendar-days')
                 ->color('primary')
                 ->icon('heroicon-o-calendar-days'),
