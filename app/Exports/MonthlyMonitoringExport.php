@@ -10,12 +10,14 @@ class MonthlyMonitoringExport implements WithMultipleSheets
         public int   $month,
         public int   $year,
         public array $signatories = [],
+        public string $municipality = '',
+        public string $batch = '',
     ) {}
 
     public function sheets(): array
     {
         return [
-            new MonthlyNutritionalStatusSheet($this->month, $this->year, $this->signatories),
+            new MonthlyNutritionalStatusSheet($this->month, $this->year, $this->signatories, $this->municipality, $this->batch),
             new MonthlyVisitItemsSheet($this->month, $this->year, $this->signatories),
         ];
     }

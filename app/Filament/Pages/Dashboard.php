@@ -7,6 +7,7 @@ use App\Filament\Widgets\AtRiskChildrenWidget;
 use App\Filament\Widgets\NutritionStatusWidget;
 use App\Filament\Widgets\RecentVisitsWidget;
 use App\Filament\Widgets\StatsOverview;
+use App\Models\Municipality;
 use Filament\Actions\Action;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -57,7 +58,7 @@ class Dashboard extends \Filament\Pages\Dashboard
                 ->color('warning')
                 ->modalWidth('5xl')
                 ->form([
-                    Section::make('Report Period')
+                    Section::make('Report Coverage')
                         ->columns(2)
                         ->schema([
                             Select::make('month')
@@ -76,6 +77,23 @@ class Dashboard extends \Filament\Pages\Dashboard
                                 ->default(now()->year)
                                 ->required()
                                 ->native(false),
+
+                            Select::make('municipality_id')
+                                ->label('Municipality')
+                                ->options(
+                                    Municipality::with('province')
+                                        ->get()
+                                        ->mapWithKeys(fn ($record) => [$record->citymunDesc => "Municipality of {$record->citymunDesc}".' '."({$record->province->provDesc})"])
+                                )
+                                ->searchable()
+                                ->required()
+                                ->native(false),
+
+                            TextInput::make('batch')
+                                ->label('Batch')
+                                ->numeric()
+                                ->placeholder('e.g. 1, 2, 3')
+                                ->required(),
                         ]),
 
                     Section::make('Signatories')
@@ -124,6 +142,8 @@ class Dashboard extends \Filament\Pages\Dashboard
                         new MonthlyMonitoringExport(
                             month: $data['month'],
                             year:  $data['year'],
+                            municipality: $data['municipality_id'],
+                            batch: $data['batch'],
                             signatories: [
                                 'prepared_by_name' => strtoupper($data['prepared_by_name']),
                                 'prepared_by_title' => $data['prepared_by_title'],
@@ -132,6 +152,7 @@ class Dashboard extends \Filament\Pages\Dashboard
                                 'approved_by_name'   => strtoupper($data['approved_by_name']),
                                 'approved_by_title' => $data['approved_by_title'],
                             ],
+
                         ),
                         'monthly-monitoring-'
                         . $data['year'] . '-'

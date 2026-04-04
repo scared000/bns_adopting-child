@@ -25,16 +25,41 @@ class MonthlyNutritionalStatusSheet implements FromArray, WithTitle, WithStyles,
         public int   $month,
         public int   $year,
         public array $signatories = [],
+        public string $municipality = '',
+        public string $batch = '',
     ) {}
 
     public function title(): string { return 'Nutritional Status'; }
 
+    private function ordinal(int $n): string
+    {
+        $suffix = match (true) {
+            $n % 100 >= 11 && $n % 100 <= 13 => 'TH',
+            $n % 10 === 1 => 'ST',
+            $n % 10 === 2 => 'ND',
+            $n % 10 === 3 => 'RD',
+            default => 'TH',
+        };
+        return $n . $suffix;
+    }
+
     public function columnWidths(): array
     {
         return [
-            'A' => 32, 'B' => 5,  'C' => 12, 'D' => 9,  'E' => 12,
-            'F' => 20, 'G' => 15, 'H' => 12, 'I' => 9,  'J' => 9,
-            'K' => 9,  'L' => 9,  'M' => 15, 'N' => 15,
+            'A' => 32,
+            'B' => 5,
+            'C' => 12,
+            'D' => 9,
+            'E' => 12,
+            'F' => 20,
+            'G' => 15,
+            'H' => 12,
+            'I' => 9,
+            'J' => 9,
+            'K' => 9,
+            'L' => 9,
+            'M' => 15,
+            'N' => 15,
         ];
     }
 
@@ -82,14 +107,14 @@ class MonthlyNutritionalStatusSheet implements FromArray, WithTitle, WithStyles,
 
         $rows[] = $blank;
         $rows[] = $blank;
-
         $rows[] = ['REPUBLIC OF THE PHILIPPINES', '', '', '', '', '', '', '', '', '', '', '', '', ''];
         $rows[] = ['PROVINCIAL HEALTH OFFICE',    '', '', '', '', '', '', '', '', '', '', '', '', ''];
         $rows[] = ['Nabunturan, Davao de Oro',     '', '', '', '', '', '', '', '', '', '', '', '', ''];
         $rows[] = $blank;
         $rows[] = ['NUTRITIONAL STATUS REPORT',                       '', '', '', '', '', '', '', '', '', '', '', '', ''];
         $rows[] = ['G-WORKS PARA SA WASTONG NUTRISYON BENEFICIARIES',  '', '', '', '', '', '', '', '', '', '', '', '', ''];
-        $rows[] = ['Monthly Monitoring — ' . $monthName,              '', '', '', '', '', '', '', '', '', '', '', '', ''];
+        $subtitle = $this->municipality && $this->batch ? 'MUNICIPALITY OF '.$this->municipality . ' — ' . $this->ordinal((int)$this->batch). ' BATCH' : 'Monthly Monitoring — ' . $monthName;
+        $rows[] = [$subtitle, '', '', '', '', '', '', '', '', '', '', '', '', ''];
         $rows[] = $blank;
 
         $rows[] = [
@@ -100,9 +125,19 @@ class MonthlyNutritionalStatusSheet implements FromArray, WithTitle, WithStyles,
         ];
 
         $rows[] = [
-            '', 'Sex',
-            'Age in months', 'Wt. kg.', 'BL Ht. cm.', 'N.S', 'Date of Weighing',
-            'Age in Months', 'WT', 'NS (WFA)', 'HT', 'NS (HFA)', 'WT/FOR H/L-NS',
+            '',
+            'Sex',
+            'Age in months',
+            'Wt. kg.',
+            'BL Ht. cm.',
+            'N.S',
+            'Date of Weighing',
+            'Age in Months',
+            'WT',
+            'NS (WFA)',
+            'HT',
+            'NS (HFA)',
+            'WT/FOR H/L-NS',
             '',
         ];
 
@@ -232,18 +267,16 @@ class MonthlyNutritionalStatusSheet implements FromArray, WithTitle, WithStyles,
                 'font'=>['bold'=>true,'size'=>14,'name'=>'Times New Roman'],
                 'alignment'=>['horizontal'=>Alignment::HORIZONTAL_CENTER]],
             8  => [
-                'font'=>['bold'=>true,'size'=>11,'name'=>'Times New Roman'],
+                'font'=>['bold'=>true,'size'=>11,'name'=>'Times New Roman', 'underline'=>true],
                 'alignment'=>['horizontal'=>Alignment::HORIZONTAL_CENTER]],
             9  => [
-                'font'=>['bold'=>true,'name'=>'Times New Roman'],
+                'font'=>['bold'=>true,'name'=>'Times New Roman', 'underline'=>true],
                 'alignment'=>['horizontal'=>Alignment::HORIZONTAL_CENTER]],
             11 => [
-                'font'=>['bold'=>true,'color'=>['rgb'=>'FFFFFF'],'name'=>'Times New Roman'],
-                'fill'=>['fillType'=>Fill::FILL_SOLID,'color'=>['rgb'=>'E97316']],
+                'font'=>['bold'=>true,'color'=>['rgb'=>'000000'],'name'=>'Times New Roman'],
                 'alignment'=>['horizontal'=>Alignment::HORIZONTAL_CENTER,'wrapText'=>true]],
             12 => [
-                'font'=>['bold'=>true,'color'=>['rgb'=>'FFFFFF'],'name'=>'Times New Roman'],
-                'fill'=>['fillType'=>Fill::FILL_SOLID,'color'=>['rgb'=>'E97316']],
+                'font'=>['bold'=>true,'color'=>['rgb'=>'000000'],'name'=>'Times New Roman'],
                 'alignment'=>['horizontal'=>Alignment::HORIZONTAL_CENTER,'wrapText'=>true]],
         ];
     }
