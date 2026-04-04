@@ -22,7 +22,10 @@ class Dashboard extends \Filament\Pages\Dashboard
     protected static ?string $title = 'DASHBOARD';
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-home';
     protected static string $routePath = '/';
-
+    public static function canAccess(): bool
+    {
+        return auth()->user()->hasRole('super_admin');
+    }
     public int $exportMonth;
     public int $exportYear;
 

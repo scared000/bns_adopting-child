@@ -3,17 +3,16 @@
 namespace App\Filament\Resources\AdoptedChildren\Pages;
 
 use App\Models\AdoptedChild;
-use App\Models\FamilyProfile;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
 use Filament\Tables\Contracts\HasTable;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
 
 class ListFamilyProfiles extends Page implements HasTable
 {
-    use InteractsWithTable;
+    use InteractsWithTable, HasPageShield;
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-users';
     protected static ?string $navigationLabel = 'Family Status';
     protected static string|null|\UnitEnum $navigationGroup = 'OVERVIEW';

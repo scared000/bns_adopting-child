@@ -3,6 +3,7 @@
 namespace App\Filament\Pages;
 
 use App\Models\VisitItems;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Pages\Page;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Concerns\InteractsWithTable;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\Builder;
 
 class VisitItemsLog extends Page implements HasTable
 {
-    use InteractsWithTable;
+    use InteractsWithTable, HasPageShield;
 
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static string|null|\UnitEnum $navigationGroup = 'LOG';

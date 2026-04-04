@@ -3,10 +3,12 @@
 namespace App\Filament\Pages;
 
 use App\Models\AdoptedChild;
+use BezhanSalleh\FilamentShield\Traits\HasPageShield;
 use Filament\Pages\Page;
 
 class ChildVisitLog extends Page
 {
+    use HasPageShield;
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-calendar-days';
     protected static string|null|\UnitEnum $navigationGroup = 'LOG';
     protected static ?int $navigationSort = 4;

@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Models;
-use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -22,4 +21,24 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    public function canImpersonate(): bool
+    {
+        return $this->hasRole('super_admin');
+    }
+
+    public function canBeImpersonated(): bool
+    {
+        return ! $this->hasRole('super_admin');
+    }
+
+    public function getImpersonateRedirectTo(): string
+    {
+        if ($this->hasRole('super_admin')) {
+            return route('filament.admin.pages.dashboard');
+        }
+
+        return route('filament.admin.auth.profile');
+    }
+
 }

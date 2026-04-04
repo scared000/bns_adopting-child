@@ -2,13 +2,13 @@
     @php
         $perPage        = 5;
 
-        // ── Children pagination data ───────────────────────────────
+        //Children pagination data
         $totalChildren  = $record->childAssignments()->count();
         $totalChildPages = max(1, (int) ceil($totalChildren / $perPage));
         $assignments    = $record->childAssignments()->with('child')->latest()
                             ->forPage($this->childrenPage, $perPage)->get();
 
-        // ── Visits pagination data ─────────────────────────────────
+        //Visits pagination data
         $totalVisits    = $record->officeVisits()->count();
         $totalVisitPages = max(1, (int) ceil($totalVisits / $perPage));
         $visits         = $record->officeVisits()->with(['child', 'visitItems'])->latest('visit_date')

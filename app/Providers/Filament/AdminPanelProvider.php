@@ -40,6 +40,10 @@ class AdminPanelProvider extends PanelProvider
             ->topbar(false)
             ->globalSearch(false)
             ->userMenu(position: UserMenuPosition::Sidebar)
+            ->homeUrl(fn () => auth()->user()?->hasRole('super_admin')
+                ? route('filament.admin.pages.dashboard')
+                : route('filament.admin.auth.profile'))
+            ->profile(isSimple: false)
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
                 'primary' => Color::Amber,
