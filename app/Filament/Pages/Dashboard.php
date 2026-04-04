@@ -142,8 +142,6 @@ class Dashboard extends \Filament\Pages\Dashboard
                         new MonthlyMonitoringExport(
                             month: $data['month'],
                             year:  $data['year'],
-                            municipality: $data['municipality_id'],
-                            batch: $data['batch'],
                             signatories: [
                                 'prepared_by_name' => strtoupper($data['prepared_by_name']),
                                 'prepared_by_title' => $data['prepared_by_title'],
@@ -152,7 +150,8 @@ class Dashboard extends \Filament\Pages\Dashboard
                                 'approved_by_name'   => strtoupper($data['approved_by_name']),
                                 'approved_by_title' => $data['approved_by_title'],
                             ],
-
+                            municipality: $data['municipality_id'],
+                            batch: $data['batch'],
                         ),
                         'monthly-monitoring-'
                         . $data['year'] . '-'
