@@ -16,7 +16,7 @@ class EditUser extends EditRecord
         return [
             Impersonate::make()
                 ->record($this->getRecord())
-                ->redirectTo(route('filament.admin.pages.dashboard')),
+                ->redirectTo(fn ($record) => $record->getImpersonateRedirectTo()),
             DeleteAction::make(),
         ];
     }

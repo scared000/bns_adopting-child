@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\ChildVisitDetail;
 use App\Filament\Pages\Dashboard;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
@@ -36,14 +37,14 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->brandName('Davao de Oro')
             ->login()
-            ->registration()
+//            ->registration()
             ->topbar(false)
             ->globalSearch(false)
             ->userMenu(position: UserMenuPosition::Sidebar)
             ->homeUrl(fn () => auth()->user()?->hasRole('super_admin')
                 ? route('filament.admin.pages.dashboard')
                 : route('filament.admin.auth.profile'))
-            ->profile(isSimple: false)
+            ->profile(isSimple: false, page: EditProfile::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
                 'primary' => Color::Amber,
