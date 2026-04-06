@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\BaranggayNutritionScholars;
 
+use AlizHarb\ActivityLog\RelationManagers\ActivitiesRelationManager;
 use App\Filament\Resources\BaranggayNutritionScholars\Pages\CreateBaranggayNutritionScholars;
 use App\Filament\Resources\BaranggayNutritionScholars\Pages\EditBaranggayNutritionScholars;
 use App\Filament\Resources\BaranggayNutritionScholars\Pages\ListBaranggayNutritionScholars;
@@ -45,7 +46,7 @@ class BaranggayNutritionScholarsResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ActivitiesRelationManager::class,
         ];
     }
 

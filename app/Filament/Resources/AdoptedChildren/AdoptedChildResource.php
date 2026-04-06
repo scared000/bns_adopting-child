@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AdoptedChildren;
 
+use AlizHarb\ActivityLog\RelationManagers\ActivitiesRelationManager;
 use App\Filament\Resources\AdoptedChildren\Pages\CreateAdoptedChild;
 use App\Filament\Resources\AdoptedChildren\Pages\EditAdoptedChild;
 use App\Filament\Resources\AdoptedChildren\Pages\ListAdoptedChildren;
@@ -47,7 +48,7 @@ class AdoptedChildResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ActivitiesRelationManager::class,
         ];
     }
 

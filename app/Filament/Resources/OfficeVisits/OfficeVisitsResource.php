@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OfficeVisits;
 
+use AlizHarb\ActivityLog\RelationManagers\ActivitiesRelationManager;
 use App\Filament\Resources\OfficeVisits\Pages\CreateOfficeVisits;
 use App\Filament\Resources\OfficeVisits\Pages\EditOfficeVisits;
 use App\Filament\Resources\OfficeVisits\Pages\ListOfficeVisits;
@@ -45,7 +46,7 @@ class OfficeVisitsResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ActivitiesRelationManager::class,
         ];
     }
 

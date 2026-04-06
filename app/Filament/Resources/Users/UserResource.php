@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Users;
 
+use AlizHarb\ActivityLog\RelationManagers\ActivitiesRelationManager;
 use App\Filament\Resources\Users\Pages\CreateUser;
 use App\Filament\Resources\Users\Pages\EditUser;
 use App\Filament\Resources\Users\Pages\ListUsers;
@@ -20,7 +21,7 @@ class UserResource extends Resource
 
     protected static string|null|\UnitEnum $navigationGroup = 'SYSTEM MANAGEMENT';
 
-    protected static ?int $navigationSort = 99;
+    protected static ?int $navigationSort = 200;
 
     public static function form(Schema $schema): Schema
     {
@@ -30,6 +31,13 @@ class UserResource extends Resource
     public static function table(Table $table): Table
     {
         return UsersTable::configure($table);
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            ActivitiesRelationManager::class,
+        ];
     }
 
     public static function getPages(): array

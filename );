@@ -1,0 +1,15 @@
+[90m= [39m[34;4mAlizHarb\ActivityLog\Models\Activity[39;24m {#7675
+    [34mid[39m: [35m3[39m,
+    [34mlog_name[39m: "[32mdefault[39m",
+    [34mdescription[39m: "[32mUser was updated[39m",
+    [34msubject_type[39m: "[32mApp\Models\User[39m",
+    [34msubject_id[39m: [35m2[39m,
+    [34mcauser_type[39m: "[32mApp\Models\User[39m",
+    [34mcauser_id[39m: [35m2[39m,
+    [34mproperties[39m: "[32m{"attributes":{"name":"Admin"},"old":{"name":"Super Admin"}}[39m",
+    [34mcreated_at[39m: "[32m2026-04-06 01:52:25[39m",
+    [34mupdated_at[39m: "[32m2026-04-06 01:52:25[39m",
+    [34mevent[39m: "[32mupdated[39m",
+    [34mbatch_uuid[39m: [36mnull[39m,
+  }
+

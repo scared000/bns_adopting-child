@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Immunizations;
 
+use AlizHarb\ActivityLog\RelationManagers\ActivitiesRelationManager;
 use App\Filament\Resources\Immunizations\Pages\CreateImmunizations;
 use App\Filament\Resources\Immunizations\Pages\EditImmunizations;
 use App\Filament\Resources\Immunizations\Pages\ListImmunizations;
@@ -38,6 +39,12 @@ class ImmunizationsResource extends Resource
         return static::getModel()::count();
     }
 
+    public static function getRelations(): array
+    {
+        return [
+            ActivitiesRelationManager::class,
+        ];
+    }
     public static function getNavigationBadgeColor(): ?string
     {
         return 'warning';

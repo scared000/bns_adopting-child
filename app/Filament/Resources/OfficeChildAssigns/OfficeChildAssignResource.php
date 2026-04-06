@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OfficeChildAssigns;
 
+use AlizHarb\ActivityLog\RelationManagers\ActivitiesRelationManager;
 use App\Filament\Resources\OfficeChildAssigns\Pages\CreateOfficeChildAssign;
 use App\Filament\Resources\OfficeChildAssigns\Pages\ListOfficeChildAssigns;
 use App\Models\AdoptedChild;
@@ -34,6 +35,13 @@ class OfficeChildAssignResource extends Resource
     public static function getNavigationBadge(): ?string
     {
         return static::getModel()::count();
+    }
+
+    public static function getRelations(): array
+    {
+        return [
+            ActivitiesRelationManager::class,
+        ];
     }
 
     public static function getNavigationBadgeColor(): ?string

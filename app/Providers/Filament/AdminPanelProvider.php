@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use AlizHarb\ActivityLog\ActivityLogPlugin;
 use App\Filament\Pages\Auth\EditProfile;
 use App\Filament\Pages\ChildVisitDetail;
 use App\Filament\Pages\Dashboard;
@@ -101,6 +102,11 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
+                ActivitylogPlugin::make()
+                    ->label('Activity log')
+                    ->navigationGroup('SYSTEM MANAGEMENT')
+                    ->navigationSort(200)
+                    ->navigationIcon('heroicon-o-clipboard-document-list'),
                 FilamentShieldPlugin::make()
                     ->gridColumns([
                         'default' => 1,
@@ -118,7 +124,7 @@ class AdminPanelProvider extends PanelProvider
                         'sm' => 2,
                     ])
                     ->navigationGroup('SYSTEM MANAGEMENT')
-                    ->navigationSort(100)
+                    ->navigationSort(200)
                     ->navigationIcon('heroicon-o-shield-check'),
             ])
             ->authMiddleware([

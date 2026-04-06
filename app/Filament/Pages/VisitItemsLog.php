@@ -17,7 +17,7 @@ class VisitItemsLog extends Page implements HasTable
 
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static string|null|\UnitEnum $navigationGroup = 'LOG';
-    protected static ?int $navigationSort = 3;
+    protected static ?int $navigationSort = 2;
     protected static ?string $navigationLabel = 'Visit Items Log';
     protected static ?string $title = 'Visit Items Log';
 

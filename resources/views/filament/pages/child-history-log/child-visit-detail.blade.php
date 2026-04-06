@@ -91,14 +91,21 @@
                        {{ $this->activeTab === 'history'
                            ? 'bg-orange-500 text-white shadow'
                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' }}">
-                Visit History
+                    Visit History
             </button>
             <button wire:click="setTab('items')"
                     class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all
                        {{ $this->activeTab === 'items'
                            ? 'bg-orange-500 text-white shadow'
                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' }}">
-                Visit Items
+                    Visit Items
+            </button>
+            <button wire:click="setTab('activity')"
+                    class="px-4 py-1.5 rounded-lg text-sm font-medium transition-all
+                        {{ $this->activeTab === 'activity'
+                           ? 'bg-orange-500 text-white shadow'
+                           : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300' }}">
+                Activity Log
             </button>
         </div>
 
@@ -285,6 +292,169 @@
                     @endforelse
                     </tbody>
                 </table>
+            </div>
+        @endif
+
+        {{-- Activity Log Tab --}}
+        @if ($this->activeTab === 'activity')
+            @php $activities = $this->activities; @endphp
+
+            <div class="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+                {{-- Section Header --}}
+                <div class="px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                        <x-heroicon-o-clock class="w-5 h-5 text-purple-600 dark:text-purple-400"/>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-semibold text-gray-900 dark:text-white">Activity Log</h2>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">
+                            {{ $activities->count() }} {{ Str::plural('event', $activities->count()) }} recorded
+                        </p>
+                    </div>
+                </div>
+
+                @if ($activities->isEmpty())
+                    <div class="flex flex-col items-center justify-center py-16 text-center">
+                        <div class="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+                            <x-heroicon-o-clock class="w-8 h-8 text-gray-400"/>
+                        </div>
+                        <p class="text-sm font-medium text-gray-900 dark:text-white">No activity recorded yet</p>
+                        <p class="text-xs text-gray-500 mt-1">Changes to this child's records will appear here</p>
+                    </div>
+                @else
+                    <div class="px-6 py-6">
+                        <ol class="relative border-l-2 border-orange-200 dark:border-orange-900/50 space-y-0">
+                            @foreach ($activities as $activity)
+                                @php
+                                    $old = collect($activity->properties->get('old', []));
+                                    $new = collect($activity->properties->get('attributes', []));
+                                    $trackedKeys = ['weight', 'height', 'status', 'visit_date', 'firstname', 'lastname'];
+                                    $changedKeys = $new->keys()->intersect(
+                                        $old->isNotEmpty() ? $old->keys() : $new->keys()
+                                    )->intersect($trackedKeys);
+
+                                    $eventColors = match($activity->event) {
+                                        'created' => ['dot' => 'bg-green-500', 'badge' => 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400'],
+                                        'updated' => ['dot' => 'bg-orange-500', 'badge' => 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400'],
+                                        'deleted' => ['dot' => 'bg-red-500',   'badge' => 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-400'],
+                                        default   => ['dot' => 'bg-gray-400',  'badge' => 'bg-gray-100 text-gray-600'],
+                                    };
+                                @endphp
+
+                                <li class="mb-8 ml-6 last:mb-0">
+                                    {{-- Timeline dot --}}
+                                    <span class="absolute -left-[9px] flex items-center justify-center
+                                         w-4 h-4 rounded-full ring-4 ring-white dark:ring-gray-900
+                                         {{ $eventColors['dot'] }}">
+                            </span>
+
+                                    {{-- Card --}}
+                                    <div class="bg-gray-50 dark:bg-gray-800/60 rounded-xl border border-gray-100 dark:border-gray-700 p-4">
+
+                                        {{-- Header row --}}
+                                        <div class="flex items-center justify-between flex-wrap gap-2 mb-3">
+                                            <div class="flex items-center gap-2">
+                                        <span class="text-xs font-semibold px-2 py-0.5 rounded-full {{ $eventColors['badge'] }}">
+                                            {{ ucfirst($activity->event ?? 'action') }}
+                                        </span>
+                                                <span class="text-xs font-medium text-gray-700 dark:text-gray-300">
+                                            {{ $activity->description }}
+                                        </span>
+                                            </div>
+                                            <div class="flex items-center gap-1.5 text-xs text-gray-400">
+                                                <x-heroicon-m-clock class="w-3.5 h-3.5"/>
+                                                <time datetime="{{ $activity->created_at->toIso8601String() }}">
+                                                    {{ $activity->created_at->format('M d, Y · h:i A') }}
+                                                </time>
+                                            </div>
+                                        </div>
+
+                                        {{-- Causer --}}
+                                        @if ($activity->causer)
+                                            <p class="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                                        <span class="font-medium text-gray-700 dark:text-gray-300">
+                                            By: {{ $activity->causer->name ?? 'System' }}
+                                        </span>
+                                            </p>
+                                        @endif
+
+                                        {{-- Changed attributes: old → new --}}
+                                        @if ($changedKeys->isNotEmpty())
+                                            <div class="space-y-2">
+                                                @foreach ($changedKeys as $key)
+                                                    @php
+                                                        $oldVal = $old->get($key);
+                                                        $newVal = $new->get($key);
+                                                        $label  = match($key) {
+                                                            'weight'     => 'Weight',
+                                                            'height'     => 'Height',
+                                                            'status'     => 'Status',
+                                                            'visit_date' => 'Visit Date',
+                                                            'firstname'  => 'First Name',
+                                                            'lastname'   => 'Last Name',
+                                                            default      => ucfirst(str_replace('_', ' ', $key)),
+                                                        };
+                                                        $unit = match($key) {
+                                                            'weight' => ' kg',
+                                                            'height' => ' cm',
+                                                            default  => '',
+                                                        };
+                                                    @endphp
+
+                                                    <div class="flex items-center gap-2 text-xs flex-wrap">
+                                                <span class="w-20 shrink-0 font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+                                                    {{ $label }}
+                                                </span>
+
+                                                        {{-- Old value --}}
+                                                        @if ($old->isNotEmpty() && $oldVal !== null)
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md
+                                                                 bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400
+                                                                 line-through font-mono">
+                                                        {{ $oldVal }}{{ $unit }}
+                                                    </span>
+                                                            <x-heroicon-m-arrow-right class="w-3.5 h-3.5 text-gray-400 shrink-0"/>
+                                                        @endif
+
+                                                        {{-- New value --}}
+                                                        @if ($newVal !== null)
+                                                            <span class="inline-flex items-center px-2 py-0.5 rounded-md
+                                                                 bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-400
+                                                                 font-mono font-semibold">
+                                                        {{ $newVal }}{{ $unit }}
+                                                    </span>
+                                                        @endif
+                                                    </div>
+                                                @endforeach
+                                            </div>
+
+                                            {{-- Created event: just list all new values --}}
+                                        @elseif ($activity->event === 'created' && $new->isNotEmpty())
+                                            <div class="space-y-1">
+                                                @foreach ($new->only($trackedKeys) as $key => $val)
+                                                    @if ($val !== null)
+                                                        <div class="flex items-center gap-2 text-xs">
+                                                    <span class="w-20 shrink-0 font-semibold text-gray-500 uppercase tracking-wide">
+                                                        {{ ucfirst(str_replace('_', ' ', $key)) }}
+                                                    </span>
+                                                            <span class="px-2 py-0.5 rounded-md bg-green-50 text-green-700
+                                                                 dark:bg-green-900/30 dark:text-green-400 font-mono">
+                                                        {{ $val }}
+                                                    </span>
+                                                        </div>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <p class="text-xs text-gray-400 italic">No tracked field changes recorded.</p>
+                                        @endif
+                                    </div>
+                                </li>
+                            @endforeach
+                        </ol>
+                    </div>
+                @endif
             </div>
         @endif
 
