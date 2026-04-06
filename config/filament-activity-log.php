@@ -129,7 +129,7 @@ return [
             'revert' => true,
             'restore' => true,
             'delete' => true,
-            'export' => true,
+            'export' => false,
         ],
         'bulk_actions' => [
             'delete' => true,
