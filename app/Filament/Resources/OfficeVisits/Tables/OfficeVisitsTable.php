@@ -20,6 +20,7 @@ class OfficeVisitsTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->defaultSort('visit_date', 'desc')
             ->columns([
                 TextColumn::make('child.firstname')
                     ->weight('bold')

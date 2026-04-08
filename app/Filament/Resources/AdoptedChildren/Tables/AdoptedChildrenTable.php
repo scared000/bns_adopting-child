@@ -21,6 +21,7 @@ class AdoptedChildrenTable
     {
         return $table
             ->columns(self::columns())
+            ->defaultSort('created_at', 'desc')
             ->filters(self::filters())
             ->recordActions(self::recordActions())
             ->recordActionsColumnLabel('ACTION')
@@ -46,7 +47,7 @@ class AdoptedChildrenTable
                         'rounded'    => 'true',
                     ])
                 )
-                ->grow(false),                          // ← don't let image column stretch
+                ->grow(false),
 
             TextColumn::make('firstname')
                 ->label('NAME')
@@ -66,9 +67,9 @@ class AdoptedChildrenTable
                     ? (function () use ($record) {
                     $age    = \Carbon\Carbon::parse($record->birthdate)->diff(now());
                     $months = ($age->y * 12) + $age->m;
-                    return $age->y >= 5
-                        ? $age->y . ' yrs old'
-                        : $age->y . 'y ' . $age->m . 'm (' . $months . ' months)';
+                    return $age->y > 0
+                        ? $age->y . 'y ' . $age->m . 'm (' . $months . ' months)'
+                        : $months . ' months';
                 })()
                     : 'N/A'
                 ),
@@ -78,14 +79,22 @@ class AdoptedChildrenTable
                 ->suffix('cm')
                 ->numeric()
                 ->grow(false)
-                ->width('110px'),
+                ->width('110px')
+                ->getStateUsing(function ($record) {
+                    $latest_ht = $record->officeVisits->first()?->height;
+                    return $latest_ht ?? $record->height_cm ?? '—';
+                }),
 
             TextColumn::make('weight_kg')
                 ->label('WEIGHT KG')
                 ->suffix('kg')
                 ->numeric()
                 ->grow(false)
-                ->width('110px'),
+                ->width('110px')
+                ->getStateUsing(function ($record) {
+                    $latest_wt = $record->officeVisits->first()?->weight;
+                    return $latest_wt ?? $record->weight_kg ?? '—';
+                }),
 
             TextColumn::make('nutritional_status')
                 ->label('NUTRITIONAL STATUS')

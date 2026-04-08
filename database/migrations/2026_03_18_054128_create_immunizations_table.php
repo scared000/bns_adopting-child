@@ -15,6 +15,9 @@ return new class extends Migration
             $table->date('dose_1')->nullable();
             $table->date('dose_2')->nullable();
             $table->date('dose_3')->nullable();
+            $table->date('dose_4')->nullable();
+            $table->date('dose_5')->nullable();
+            $table->integer('total_doses')->default(3);
             $table->string('status')->default('incomplete');
             $table->text('remarks')->nullable();
             $table->timestamps();

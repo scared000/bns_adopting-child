@@ -15,7 +15,11 @@ class Immunizations extends Model
     public function getActivitylogOptions(): LogOptions
     {
         return LogOptions::defaults()
-            ->logOnly(['child_id', 'vaccine_description', 'dose_1', 'dose_2', 'dose_3', 'status', 'remarks'])
+            ->logOnly([
+                'child_id', 'vaccine_description',
+                'dose_1', 'dose_2', 'dose_3', 'dose_4', 'dose_5',
+                'status', 'remarks'
+            ])
             ->logOnlyDirty()
             ->dontSubmitEmptyLogs()
             ->useLogName('immunization')
@@ -28,6 +32,9 @@ class Immunizations extends Model
         'dose_1',
         'dose_2',
         'dose_3',
+        'dose_4',
+        'dose_5',
+        'total_doses',
         'status',
         'remarks',
     ];
@@ -36,14 +43,24 @@ class Immunizations extends Model
         'dose_1' => 'date',
         'dose_2' => 'date',
         'dose_3' => 'date',
+        'dose_4' => 'date',
+        'dose_5' => 'date',
     ];
 
     protected static function booted(): void
     {
         static::saving(function (self $model) {
-            $model->status = ($model->dose_1 && $model->dose_2 && $model->dose_3)
-                ? 'complete'
-                : 'incomplete';
+            $maxRequired = $model->total_doses ?? 3;
+            $isComplete = true;
+
+            for ($i = 1; $i <= $maxRequired; $i++) {
+                $value = $model->{"dose_$i"};
+                if (is_null($value) || trim((string)$value) === '') {
+                    $isComplete = false;
+                    break;
+                }
+            }
+            $model->status = $isComplete ? 'complete' : 'incomplete';
         });
     }
 

@@ -38,7 +38,7 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->brandName('Davao de Oro')
             ->login()
-//            ->registration()
+            ->topNavigation(false)
             ->topbar(false)
             ->globalSearch(false)
             ->userMenu(position: UserMenuPosition::Sidebar)

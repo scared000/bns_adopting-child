@@ -346,7 +346,15 @@ class AdoptedChildForm
                         ->required()
                         ->live()
                         ->minValue(40)
-                        ->maxValue(250),
+                        ->maxValue(250)
+                        ->afterStateHydrated(function (TextInput $component, $record) {
+                            if ($record) {
+                                $latest = $record->officeVisits()->latest('visit_date')->first();
+                                if ($latest && $latest->height) {
+                                    $component->state($latest->height);
+                                }
+                            }
+                        }),
 
                     TextInput::make('weight_kg')
                         ->label('Weight')
@@ -355,7 +363,15 @@ class AdoptedChildForm
                         ->required()
                         ->live()
                         ->minValue(1)
-                        ->maxValue(300),
+                        ->maxValue(300)
+                        ->afterStateHydrated(function (TextInput $component, $record) {
+                            if ($record) {
+                                $latest = $record->officeVisits()->latest('visit_date')->first();
+                                if ($latest && $latest->weight) {
+                                    $component->state($latest->weight);
+                                }
+                            }
+                        }),
                 ]),
 
             Placeholder::make('nutritional_status_preview')

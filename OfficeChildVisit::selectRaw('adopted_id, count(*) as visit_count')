@@ -1,0 +1,75 @@
+[90m= [39m[34;4mIlluminate\Database\Eloquent\Collection[39;24m {#7258
+    [34mall[39m: [
+      [34;4mApp\Models\AdoptedChild[39;24m {#7257
+        [34mid[39m: [35m16[39m,
+        [34mfirstname[39m: "[32mJohn Mark[39m",
+        [34mlastname[39m: "[32mAgacita[39m",
+        [34mcreated_at[39m: "[32m2026-04-06 23:36:12[39m",
+        +[1mage[22m: [36mnull[39m,
+      },
+      [34;4mApp\Models\AdoptedChild[39;24m {#7256
+        [34mid[39m: [35m17[39m,
+        [34mfirstname[39m: "[32mZoey Canono[39m",
+        [34mlastname[39m: "[32mAsna[39m",
+        [34mcreated_at[39m: "[32m2026-04-06 23:36:12[39m",
+        +[1mage[22m: [36mnull[39m,
+      },
+      [34;4mApp\Models\AdoptedChild[39;24m {#7255
+        [34mid[39m: [35m18[39m,
+        [34mfirstname[39m: "[32mSyjan Ventula[39m",
+        [34mlastname[39m: "[32mBacalso[39m",
+        [34mcreated_at[39m: "[32m2026-04-06 23:36:12[39m",
+        +[1mage[22m: [36mnull[39m,
+      },
+      [34;4mApp\Models\AdoptedChild[39;24m {#7702
+        [34mid[39m: [35m19[39m,
+        [34mfirstname[39m: "[32mCrystal Shine Manilong[39m",
+        [34mlastname[39m: "[32mBalbin[39m",
+        [34mcreated_at[39m: "[32m2026-04-06 23:36:12[39m",
+        +[1mage[22m: [36mnull[39m,
+      },
+      [34;4mApp\Models\AdoptedChild[39;24m {#7692
+        [34mid[39m: [35m20[39m,
+        [34mfirstname[39m: "[32mSamantha[39m",
+        [34mlastname[39m: "[32mBerido[39m",
+        [34mcreated_at[39m: "[32m2026-04-06 23:36:12[39m",
+        +[1mage[22m: [36mnull[39m,
+      },
+      [34;4mApp\Models\AdoptedChild[39;24m {#7689
+        [34mid[39m: [35m21[39m,
+        [34mfirstname[39m: "[32mFritz Rogelle[39m",
+        [34mlastname[39m: "[32mBomidiano[39m",
+        [34mcreated_at[39m: "[32m2026-04-06 23:36:12[39m",
+        +[1mage[22m: [36mnull[39m,
+      },
+      [34;4mApp\Models\AdoptedChild[39;24m {#7246
+        [34mid[39m: [35m22[39m,
+        [34mfirstname[39m: "[32mJohn Miguel Soro[39m",
+        [34mlastname[39m: "[32mCacayan[39m",
+        [34mcreated_at[39m: "[32m2026-04-06 23:36:12[39m",
+        +[1mage[22m: [36mnull[39m,
+      },
+      [34;4mApp\Models\AdoptedChild[39;24m {#7274
+        [34mid[39m: [35m23[39m,
+        [34mfirstname[39m: "[32mJamia[39m",
+        [34mlastname[39m: "[32mDano[39m",
+        [34mcreated_at[39m: "[32m2026-04-06 23:36:12[39m",
+        +[1mage[22m: [36mnull[39m,
+      },
+      [34;4mApp\Models\AdoptedChild[39;24m {#7697
+        [34mid[39m: [35m24[39m,
+        [34mfirstname[39m: "[32mZia Genon[39m",
+        [34mlastname[39m: "[32mDelote[39m",
+        [34mcreated_at[39m: "[32m2026-04-06 23:36:12[39m",
+        +[1mage[22m: [36mnull[39m,
+      },
+      [34;4mApp\Models\AdoptedChild[39;24m {#7275
+        [34mid[39m: [35m25[39m,
+        [34mfirstname[39m: "[32mAngeline Grace Impas[39m",
+        [34mlastname[39m: "[32mEstanda[39m",
+        [34mcreated_at[39m: "[32m2026-04-06 23:36:12[39m",
+        +[1mage[22m: [36mnull[39m,
+      },
+    ],
+  }
+

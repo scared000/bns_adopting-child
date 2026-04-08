@@ -3,24 +3,54 @@
 namespace App\Filament\Resources\AdoptedChildren\Infolists;
 
 use App\Filament\Resources\AdoptedChildren\Tables\AdoptedChildrenTable;
+use App\Livewire\ChildImmunizationTable;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Group;
+use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
-
 class AdoptedChildInfolist
 {
     //Entry point
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
-            self::sectionChildInformation(),
-            self::sectionGuardianInformation(),
-            self::sectionFamilyMembers(),
-            self::sectionFamilyStatus(),
+            Tabs::make()
+                ->contained(false)
+                ->columnSpanFull()
+                ->tabs([
+                    Tab::make('Child Details')
+                        ->icon('heroicon-o-user-circle')
+                        ->schema([
+                            self::sectionChildInformation(),
+                        ]),
+
+                    Tab::make('Immunization Records')
+                        ->icon('heroicon-o-shield-check')
+                        ->badge(fn ($record) => $record->immunizations()->count())
+                        ->schema([
+                            Livewire::make(ChildImmunizationTable::class)
+                                ->key(fn ($record) => 'imm-' . $record->id)
+                                ->data(fn ($record) => [
+                                    'childId' => $record->id,
+                                ]),
+                            ]),
+
+                    Tab::make('Assigment & Visits')
+                        ->icon('heroicon-o-user-plus'),
+                    Tab::make('Family Profile')
+                        ->icon('heroicon-o-user-group')
+                        ->schema([
+                            self::sectionGuardianInformation(),
+                            self::sectionFamilyMembers(),
+                            self::sectionFamilyStatus(),
+                        ]),
+                ])
         ]);
     }
 
@@ -68,11 +98,27 @@ class AdoptedChildInfolist
 
                 TextEntry::make('height_cm')
                     ->label(new HtmlString('<span style="font-weight:750;">Height</span>'))
-                    ->suffix(' cm'),
+                    ->suffix(' cm')
+                    ->getStateUsing(function ($record) {
+                        return $record->officeVisits()
+                            ->latest('visit_date')
+                            ->first()
+                            ?->height
+                            ?? $record->height_cm;
+                    })
+                    ->placeholder('—'),
 
                 TextEntry::make('weight_kg')
                     ->label(new HtmlString('<span style="font-weight:750;">Weight</span>'))
-                    ->suffix(' kg'),
+                    ->suffix(' kg')
+                    ->getStateUsing(function ($record) {
+                        return $record->officeVisits()
+                            ->latest('visit_date')
+                            ->first()
+                            ?->weight
+                            ?? $record->weight_kg;
+                    })
+                    ->placeholder('—'),
 
                 TextEntry::make('birthplace')
                     ->label(new HtmlString('<span style="font-weight:750;">Place of Birth</span>')),

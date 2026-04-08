@@ -7,10 +7,13 @@ use App\Filament\Widgets\AtRiskChildrenWidget;
 use App\Filament\Widgets\NutritionStatusWidget;
 use App\Filament\Widgets\RecentVisitsWidget;
 use App\Filament\Widgets\StatsOverview;
+use App\Imports\MonthlyMonitoringImport;
 use App\Models\Municipality;
 use Filament\Actions\Action;
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Pages\Dashboard\Concerns\HasFiltersForm;
 use Filament\Schemas\Schema;
 use Filament\Schemas\Components\Section;
@@ -55,6 +58,74 @@ class Dashboard extends \Filament\Pages\Dashboard
     protected function getHeaderActions(): array
     {
         return [
+            Action::make('import')
+                ->label('Import Report')
+                ->icon('heroicon-o-arrow-up-tray')
+                ->color('success')
+                ->modalWidth('lg')
+                ->form([
+                    Section::make('Upload Excel File')
+                        ->description('Upload a Monthly Monitoring Excel file (.xlsx) to import visit records.')
+                        ->schema([
+                            FileUpload::make('file')
+                                ->label('Excel File')
+                                ->acceptedFileTypes(['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
+                                ->required()
+                                ->disk('local')
+                                ->directory('imports')
+                                ->preserveFilenames(),
+                        ]),
+                ])
+                ->action(function (array $data) {
+                    $import = new MonthlyMonitoringImport();
+
+                    \Maatwebsite\Excel\Facades\Excel::import(
+                        $import,
+                        $data['file'],
+                        'local'
+                    );
+
+                    $imported = $import->getImported();
+                    $created  = $import->getCreated();
+                    $skipped  = $import->getSkipped();
+                    $errors   = $import->getErrors();
+
+                    // Verify: fetch recently imported records
+                    $recentVisits = \App\Models\OfficeChildVisit::with('child')
+                        ->whereDate('created_at', today())
+                        ->orderBy('created_at', 'desc')
+                        ->take(5)
+                        ->get();
+
+                    $preview = $recentVisits->map(fn ($v) =>
+                        ($v->child->lastname ?? '?') . ', ' . ($v->child->firstname ?? '?') .
+                        ' | ' . $v->visit_date .
+                        ' | WT: ' . $v->weight .
+                        ' | HT: ' . $v->height
+                    )->implode("\n");
+
+                    if ($imported > 0) {
+                        Notification::make()
+                            ->title("Import Complete")
+                            ->body(
+                                "{$imported} record(s) imported. " .
+                                ($created > 0 ? "{$created} new child(ren) created. " : '') .
+                                ($skipped  > 0 ? "{$skipped} row(s) skipped.\n" : "\n") .
+                                "\nRecent imports:\n" . $preview
+                            )
+                            ->success()
+                            ->send();
+                    }
+
+                    if (!empty($errors)) {
+                        Notification::make()
+                            ->title("Some rows were skipped")
+                            ->body(implode("\n", array_slice($errors, 0, 5)))
+                            ->warning()
+                            ->send();
+                    }
+                }),
+
             Action::make('export')
                 ->label('Export Report')
                 ->icon('heroicon-o-arrow-down-tray')

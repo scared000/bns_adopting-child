@@ -7,6 +7,7 @@ use App\Filament\Resources\AdoptedChildren\Pages\CreateAdoptedChild;
 use App\Filament\Resources\AdoptedChildren\Pages\EditAdoptedChild;
 use App\Filament\Resources\AdoptedChildren\Pages\ListAdoptedChildren;
 use App\Filament\Resources\AdoptedChildren\Pages\ViewAdoptedChild;
+use App\Filament\Resources\AdoptedChildren\RelationManagers\ImmunizationsChildRelationManager;
 use App\Filament\Resources\AdoptedChildren\Schemas\AdoptedChildForm;
 use App\Filament\Resources\AdoptedChildren\Tables\AdoptedChildrenTable;
 use App\Models\AdoptedChild;
@@ -49,6 +50,7 @@ class AdoptedChildResource extends Resource
     {
         return [
             ActivitiesRelationManager::class,
+//            ImmunizationsChildRelationManager::class,
         ];
     }
 
