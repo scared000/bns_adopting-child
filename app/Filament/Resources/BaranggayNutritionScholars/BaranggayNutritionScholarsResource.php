@@ -21,7 +21,7 @@ class BaranggayNutritionScholarsResource extends Resource
     protected static ?string $model = BaranggayNutritionScholars::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-heart';
-    protected static string|null|\UnitEnum $navigationGroup = 'OVERVIEW';
+    protected static string|null|\UnitEnum $navigationGroup = 'MONITORING';
     public static ?int $navigationSort = 3;
     public static function getNavigationBadge(): ?string
     {

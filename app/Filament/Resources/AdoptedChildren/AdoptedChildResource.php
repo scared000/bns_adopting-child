@@ -23,8 +23,7 @@ class AdoptedChildResource extends Resource
     protected static ?string $modelLabel = 'Child';
     protected static ?string $pluralModelLabel = 'Children';
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-face-smile';
-
-    protected static string|null|\UnitEnum $navigationGroup = 'OVERVIEW';
+    protected static string|null|\UnitEnum $navigationGroup = 'MONITORING';
 
     public static function getNavigationBadge(): ?string
     {
