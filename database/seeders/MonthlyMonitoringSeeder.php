@@ -217,12 +217,24 @@ class MonthlyMonitoringSeeder extends Seeder
 
     private function resolveBnsId(): ?int
     {
-        $row = DB::table('barangay_nutrition_scholars')->first();
+        $row = DB::table('barangay_nutrition_scholars')
+            ->whereNotNull('user_id')
+            ->whereExists(function ($query) {
+                $query->select(DB::raw(1))
+                    ->from('model_has_roles')
+                    ->join('roles', 'roles.id', '=', 'model_has_roles.role_id')
+                    ->whereColumn('model_has_roles.model_id', 'barangay_nutrition_scholars.user_id')
+                    ->where('model_has_roles.model_type', 'App\\Models\\User')
+                    ->where('roles.name', 'bns');
+            })
+            ->first();
+
         if ($row) {
             $this->command->line('  → Using BNS id=' . $row->id);
             return $row->id;
         }
-        $this->command->error('No rows in [barangay_nutrition_scholars] table.');
+
+        $this->command->error('No BNS found with bns role. Please create a user with bns role first.');
         return null;
     }
 }
