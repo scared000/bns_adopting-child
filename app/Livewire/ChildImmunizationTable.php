@@ -25,7 +25,6 @@ class ChildImmunizationTable extends Component implements HasForms, HasActions
     public ?int $editingDoseRow = null;
     public ?string $editingDoseField = null;
     public string $doseDate = '';
-    public string $otherVaccine = '';
     public int $extraDoses = 0;
 
     public ?int $confirmDeleteId = null;
@@ -59,14 +58,7 @@ class ChildImmunizationTable extends Component implements HasForms, HasActions
     public function saveDose(): void
     {
         $record = Immunizations::findOrFail($this->editingDoseRow);
-
-        if ($this->editingDoseField === 'vaccine') {
-            $finalValue = ($this->doseDate === 'Other') ? $this->otherVaccine : $this->doseDate;
-            $record->vaccine_description = $finalValue;
-        } else {
-            $record->{$this->editingDoseField} = !empty($this->doseDate) ? $this->doseDate : null;
-        }
-
+        $record->{$this->editingDoseField} = !empty($this->doseDate) ? $this->doseDate : null;
         $record->save();
         $this->cancelEdit();
     }
