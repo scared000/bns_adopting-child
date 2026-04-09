@@ -7,9 +7,7 @@ use App\Filament\Resources\OfficeVisits\Schemas\OfficeVisitsForm;
 use App\Livewire\ChildImmunizationTable;
 use App\Models\BaranggayNutritionScholars;
 use App\Models\Office;
-use App\Models\OfficeChildAssign;
 use App\Models\OfficeChildVisit;
-use App\Models\VisitItems;
 use Carbon\Carbon;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
@@ -46,6 +44,15 @@ class AdoptedChildInfolist
                             self::sectionChildInformation(),
                         ]),
 
+                    Tab::make('Assigment & Visits')
+                        ->icon('heroicon-o-user-plus')
+                        ->badge(fn ($record) => $record->officeVisits()->count())
+                        ->schema([
+                            self::sectionAssignmentSummary(),
+                            self::sectionRecordVisitAction(),
+                            self::sectionVisitHistory(),
+                        ]),
+
                     Tab::make('Immunization Records')
                         ->icon('heroicon-o-shield-check')
                         ->badge(fn ($record) => $record->immunizations()->count())
@@ -55,15 +62,6 @@ class AdoptedChildInfolist
                                 ->data(fn ($record) => [
                                     'childId' => $record->id,
                                 ]),
-                        ]),
-
-                    Tab::make('Assigment & Visits')
-                        ->icon('heroicon-o-user-plus')
-                        ->badge(fn ($record) => $record->officeVisits()->count())
-                        ->schema([
-                            self::sectionAssignmentSummary(),
-                            self::sectionRecordVisitAction(),
-                            self::sectionVisitHistory(),
                         ]),
 
                     Tab::make('Family Profile')
@@ -569,7 +567,7 @@ class AdoptedChildInfolist
                             };
                         };
 
-                        // Visit History rows
+                        //Visit History rows
                         $historyRows = '';
                         if ($visits->isEmpty()) {
                             $historyRows = "<tr><td colspan='5' style='padding:40px;text-align:center;color:#9ca3af;font-size:13px;'>No visits recorded yet.</td></tr>";
@@ -583,17 +581,17 @@ class AdoptedChildInfolist
                                 $bs      = $badgeStyle($visit->status ?? '');
 
                                 $historyRows .= "
-                                <tr style='border-bottom:1px solid #f3f4f6;'>
-                                    <td style='padding:12px 16px;font-size:13px;font-weight:600;white-space:nowrap;color:#111827;'>{$date}</td>
-                                    <td style='padding:12px 16px;font-size:13px;color:#6b7280;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>{$address}</td>
-                                    <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$height}</td>
-                                    <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$weight}</td>
-                                    <td style='padding:12px 16px;font-size:13px;'>
-                                        <span style='padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;{$bs}white-space:nowrap;display:inline-block;'>
-                                            {$status}
-                                        </span>
-                                    </td>
-                                </tr>";
+                            <tr class='{$uid}_hrow' style='border-bottom:1px solid #f3f4f6;'>
+                                <td style='padding:12px 16px;font-size:13px;font-weight:600;white-space:nowrap;color:#111827;'>{$date}</td>
+                                <td style='padding:12px 16px;font-size:13px;color:#6b7280;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>{$address}</td>
+                                <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$height}</td>
+                                <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$weight}</td>
+                                <td style='padding:12px 16px;font-size:13px;'>
+                                    <span style='padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;{$bs}white-space:nowrap;display:inline-block;'>
+                                        {$status}
+                                    </span>
+                                </td>
+                            </tr>";
                             }
                         }
 
@@ -607,17 +605,15 @@ class AdoptedChildInfolist
                                 $desc   = htmlspecialchars($item->Item_description ?? '—');
                                 $qty    = htmlspecialchars((string) ($item->item_quantity ?? '—'));
                                 $rawAmt = $item->item_amount ?? null;
-                                $amount = $rawAmt !== null
-                                    ? '₱' . number_format((float) $rawAmt, 2)
-                                    : '—';
+                                $amount = $rawAmt !== null ? '₱' . number_format((float) $rawAmt, 2) : '—';
 
                                 $itemRows .= "
-                                <tr style='border-bottom:1px solid #f3f4f6;'>
-                                    <td style='padding:12px 16px;font-size:13px;font-weight:600;white-space:nowrap;color:#111827;'>{$date}</td>
-                                    <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$desc}</td>
-                                    <td style='padding:12px 16px;font-size:13px;color:#374151;text-align:center;'>{$qty}</td>
-                                    <td style='padding:12px 16px;font-size:13px;color:#374151;text-align:right;'>{$amount}</td>
-                                </tr>";
+                            <tr class='{$uid}_irow' style='border-bottom:1px solid #f3f4f6;'>
+                                <td style='padding:12px 16px;font-size:13px;font-weight:600;white-space:nowrap;color:#111827;'>{$date}</td>
+                                <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$desc}</td>
+                                <td style='padding:12px 16px;font-size:13px;color:#374151;text-align:center;'>{$qty}</td>
+                                <td style='padding:12px 16px;font-size:13px;color:#374151;text-align:right;'>{$amount}</td>
+                            </tr>";
                             }
                         }
 
@@ -626,61 +622,141 @@ class AdoptedChildInfolist
                         }
 
                         return new HtmlString("
-                        <div style='border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;'>
+                            <div style='border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;'>
 
-                            <div style='display:flex;gap:0;border-bottom:1px solid #e5e7eb;background:#f9fafb;padding:0 20px;'>
-                                <button id='{$uid}_btn_history'
-                                    onclick=\"
-                                        document.getElementById('{$uid}_history').style.display='block';
-                                        document.getElementById('{$uid}_items').style.display='none';
-                                        this.style.cssText='padding:12px 18px;font-size:13px;font-weight:600;border:none;background:transparent;cursor:pointer;color:#f97316;border-bottom:2px solid #f97316;margin-bottom:-1px;';
-                                        document.getElementById('{$uid}_btn_items').style.cssText='padding:12px 18px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;';
-                                    \"
-                                    style='padding:12px 18px;font-size:13px;font-weight:600;border:none;background:transparent;cursor:pointer;color:#f97316;border-bottom:2px solid #f97316;margin-bottom:-1px;'>
-                                    🗓️ Visit History
-                                </button>
-                                <button id='{$uid}_btn_items'
-                                    onclick=\"
-                                        document.getElementById('{$uid}_history').style.display='none';
-                                        document.getElementById('{$uid}_items').style.display='block';
-                                        this.style.cssText='padding:12px 18px;font-size:13px;font-weight:600;border:none;background:transparent;cursor:pointer;color:#f97316;border-bottom:2px solid #f97316;margin-bottom:-1px;';
-                                        document.getElementById('{$uid}_btn_history').style.cssText='padding:12px 18px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;';
-                                    \"
-                                    style='padding:12px 18px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;'>
-                                    📦 Visit Items
-                                </button>
+                                <!-- Tabs -->
+                                <div style='display:flex;gap:0;border-bottom:1px solid #e5e7eb;background:#f9fafb;padding:0 20px;'>
+                                    <button id='{$uid}_btn_history'
+                                        style='padding:12px 18px;font-size:13px;font-weight:600;border:none;background:transparent;cursor:pointer;color:#f97316;border-bottom:2px solid #f97316;margin-bottom:-1px;'>
+                                        🗓️ Visit History
+                                    </button>
+                                    <button id='{$uid}_btn_items'
+                                        style='padding:12px 18px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;'>
+                                        📦 Visit Items
+                                    </button>
+                                </div>
+
+                                <!-- Visit History Tab -->
+                                <div id='{$uid}_history' style='display:block;overflow-x:auto;'>
+                                    <table style='width:100%;border-collapse:collapse;'>
+                                        <thead>
+                                            <tr style='background:#f9fafb;'>
+                                                <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;'>Visit Date</th>
+                                                <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Address</th>
+                                                <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Height</th>
+                                                <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Weight</th>
+                                                <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Nutritional Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id='{$uid}_hbody'>{$historyRows}</tbody>
+                                    </table>
+                                    <div id='{$uid}_hpager' style='display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #f3f4f6;background:#f9fafb;'></div>
+                                </div>
+
+                                <!-- Visit Items Tab -->
+                                <div id='{$uid}_items' style='display:none;overflow-x:auto;'>
+                                    <table style='width:100%;border-collapse:collapse;'>
+                                        <thead>
+                                            <tr style='background:#f9fafb;'>
+                                                <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;'>Visit Date</th>
+                                                <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Item Description</th>
+                                                <th style='padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Quantity</th>
+                                                <th style='padding:10px 16px;text-align:right;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id='{$uid}_ibody'>{$itemRows}</tbody>
+                                    </table>
+                                    <div id='{$uid}_ipager' style='display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #f3f4f6;background:#f9fafb;'></div>
+                                </div>
+
                             </div>
 
-                            <div id='{$uid}_history' style='display:block;overflow-x:auto;'>
-                                <table style='width:100%;border-collapse:collapse;'>
-                                    <thead>
-                                        <tr style='background:#f9fafb;'>
-                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;'>Visit Date</th>
-                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Address</th>
-                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Height</th>
-                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Weight</th>
-                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Nutritional Status</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>{$historyRows}</tbody>
-                                </table>
-                            </div>
+                            <script>
+                            (function() {
+                                var PER_PAGE = 6;
+                                var uid = '{$uid}';
 
-                            <div id='{$uid}_items' style='display:none;overflow-x:auto;'>
-                                <table style='width:100%;border-collapse:collapse;'>
-                                    <thead>
-                                        <tr style='background:#f9fafb;'>
-                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;'>Visit Date</th>
-                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Item Description</th>
-                                            <th style='padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Quantity</th>
-                                            <th style='padding:10px 16px;text-align:right;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Amount</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>{$itemRows}</tbody>
-                                </table>
-                            </div>
+                                // Tab switching
+                                var btnHistory = document.getElementById(uid + '_btn_history');
+                                var btnItems   = document.getElementById(uid + '_btn_items');
+                                var tabHistory = document.getElementById(uid + '_history');
+                                var tabItems   = document.getElementById(uid + '_items');
 
-                        </div>");
+                                var activeStyle   = 'padding:12px 18px;font-size:13px;font-weight:600;border:none;background:transparent;cursor:pointer;color:#f97316;border-bottom:2px solid #f97316;margin-bottom:-1px;';
+                                var inactiveStyle = 'padding:12px 18px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;';
+
+                                btnHistory.addEventListener('click', function() {
+                                    tabHistory.style.display = 'block';
+                                    tabItems.style.display   = 'none';
+                                    btnHistory.style.cssText = activeStyle;
+                                    btnItems.style.cssText   = inactiveStyle;
+                                });
+
+                                btnItems.addEventListener('click', function() {
+                                    tabHistory.style.display = 'none';
+                                    tabItems.style.display   = 'block';
+                                    btnItems.style.cssText   = activeStyle;
+                                    btnHistory.style.cssText = inactiveStyle;
+                                });
+
+                                // Pagination
+                                function paginate(rowClass, pagerId) {
+                                    var rows  = Array.from(document.querySelectorAll('.' + rowClass));
+                                    var pager = document.getElementById(pagerId);
+                                    var page  = 1;
+                                    var total = rows.length;
+                                    var pages = Math.ceil(total / PER_PAGE);
+
+                                    if (total === 0) {
+                                        pager.style.display = 'none';
+                                        return;
+                                    }
+
+                                    function render() {
+                                        rows.forEach(function(r, i) {
+                                            r.style.display = (i >= (page - 1) * PER_PAGE && i < page * PER_PAGE) ? '' : 'none';
+                                        });
+
+                                        var from = (page - 1) * PER_PAGE + 1;
+                                        var to   = Math.min(page * PER_PAGE, total);
+
+                                        var prevBtn = document.createElement('button');
+                                        prevBtn.textContent = '‹ Prev';
+                                        prevBtn.disabled    = (page === 1);
+                                        prevBtn.style.cssText = 'padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;cursor:' + (page === 1 ? 'default;color:#d1d5db;' : 'pointer;color:#374151;');
+                                        prevBtn.addEventListener('click', function() {
+                                            if (page > 1) { page--; render(); }
+                                        });
+
+                                        var nextBtn = document.createElement('button');
+                                        nextBtn.textContent = 'Next ›';
+                                        nextBtn.disabled    = (page === pages);
+                                        nextBtn.style.cssText = 'padding:5px 12px;font-size:12px;border-radius:6px;border:1px solid #e5e7eb;background:#fff;cursor:' + (page === pages ? 'default;color:#d1d5db;' : 'pointer;color:#374151;');
+                                        nextBtn.addEventListener('click', function() {
+                                            if (page < pages) { page++; render(); }
+                                        });
+
+                                        var info = document.createElement('span');
+                                        info.style.cssText  = 'font-size:12px;color:#6b7280;';
+                                        info.textContent    = 'Showing ' + from + '\u2013' + to + ' of ' + total;
+
+                                        var controls = document.createElement('div');
+                                        controls.style.cssText = 'display:flex;gap:6px;';
+                                        controls.appendChild(prevBtn);
+                                        controls.appendChild(nextBtn);
+
+                                        pager.innerHTML = '';
+                                        pager.appendChild(info);
+                                        pager.appendChild(controls);
+                                    }
+
+                                    render();
+                                }
+
+                                paginate(uid + '_hrow', uid + '_hpager');
+                                paginate(uid + '_irow', uid + '_ipager');
+                            })();
+                            </script>");
                     }),
             ])
             ->extraAttributes(['style' => 'padding:0;border:none;box-shadow:none;background:transparent;']);
