@@ -46,7 +46,7 @@
                 <div>
                     <p class="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-medium">Total BNS</p>
                     <p class="text-xl font-bold text-gray-900 dark:text-white">
-                        {{ \App\Models\BaranggayNutritionScholars::count() }}
+                        {{ \App\Models\BaranggayNutritionScholars::whereHas('user', fn($q) => $q->role('bns'))->count() }}
                     </p>
                 </div>
             </div>

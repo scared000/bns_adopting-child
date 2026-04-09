@@ -55,7 +55,10 @@ class OfficeChildAssignResource extends Resource
                 Select::make('bns_id')
                     ->label('Barangay Nutrition Scholar (BNS)')
                     ->options(
-                        BaranggayNutritionScholars::all()
+                        BaranggayNutritionScholars::whereHas('user', function ($query){
+                            $query->role('bns');
+                        })
+                            ->get()
                             ->mapWithKeys(fn ($bns) => [
                                 $bns->id => $bns->firstname . ' ' . $bns->lastname . ' — ' . ($bns->barangay?->brgyDesc ?? 'No Barangay')
                             ])
@@ -78,9 +81,11 @@ class OfficeChildAssignResource extends Resource
                                 $child->id => $child->firstname . ' ' . $child->lastname
                             ]);
                     })
+                    ->dehydrated(true)
+                    ->multiple()
                     ->searchable()
                     ->required()
-                    ->disableOptionsWhenSelectedInSiblingRepeaterItems(),
+                    ->helperText('You can select multiple children at once.'),
 
                 Select::make('office_id')
                     ->label('Assigned Office')

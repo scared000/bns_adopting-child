@@ -63,31 +63,6 @@ class BaranggayNutritionScholarsForm
                     })
                     ->searchable()
                     ->required(),
-//                Select::make('barangay_name')
-//                    ->label('Barangay')
-//                    ->required()
-//                    ->searchable()
-//                    ->options(function () {
-//                        $barangays = Cache::remember('davao_de_oro_barangays', now()->addHours(24), function () {
-//                            $response = Http::get('https://psgc.cloud/api/provinces/1108200000/barangays');
-//                            return $response->successful() ? $response->json() : [];
-//                        });
-//
-//                        return collect($barangays)
-//                            ->pluck('name', 'name')
-//                            ->toArray();
-//                    })
-//                    ->getSearchResultsUsing(function (string $search) {
-//                        $barangays = Cache::remember('davao_de_oro_barangays', now()->addHours(24), function () {
-//                            $response = Http::get('https://psgc.cloud/api/provinces/1108200000/barangays');
-//                            return $response->successful() ? $response->json() : [];
-//                        });
-//
-//                        return collect($barangays)
-//                            ->filter(fn($b) => str_contains(strtolower($b['name']), strtolower($search)))
-//                            ->pluck('name', 'name')
-//                            ->toArray();
-//                    })
             ]);
     }
 }

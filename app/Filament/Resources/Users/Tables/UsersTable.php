@@ -36,6 +36,7 @@ class UsersTable
     private static function nameColumn(): TextColumn
     {
         return TextColumn::make('name')
+            ->formatStateUsing(fn ($record) => $record->firstname . ' ' . $record->lastname)
             ->searchable()
             ->sortable();
     }

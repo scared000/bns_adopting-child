@@ -13,10 +13,21 @@ return new class extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->string('firstname')->nullable();
+            $table->string('lastname')->nullable();
+            $table->string('middlename')->nullable();
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('suffix')->nullable();
+            $table->string('profile_path')->nullable();
+            $table->string('barangay_code')->nullable();
+            $table->string('barangay_name')->nullable();
+            $table->string('purok')->nullable();
+            $table->string('municipality_id')->nullable();
+            $table->string('barangay_id')->nullable();
+            $table->foreign('municipality_id')->references('citymunCode')->on('municipalities');
+            $table->foreign('barangay_id')->references('brgyCode')->on('barangays');
             $table->rememberToken();
             $table->timestamps();
         });

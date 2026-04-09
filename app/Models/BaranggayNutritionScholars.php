@@ -25,6 +25,7 @@ class BaranggayNutritionScholars extends Model
 
     protected $table = 'barangay_nutrition_scholars';
     protected $fillable = [
+        'user_id',
         'firstname',
         'lastname',
         'barangay_name',
@@ -36,6 +37,11 @@ class BaranggayNutritionScholars extends Model
         'purok',
         'municipality_id',
     ];
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 
     public function officeVisits(): HasMany
     {

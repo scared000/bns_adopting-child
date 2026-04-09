@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\Users\Schemas;
 
+use App\Models\Barangay;
 use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
@@ -23,9 +26,26 @@ class UserForm
     {
         return Section::make('User Information')
             ->schema([
-                self::nameField(),
                 self::emailField(),
                 self::passwordField(),
+                TextInput::make('firstname')->required(),
+                TextInput::make('middlename'),
+                TextInput::make('lastname')->required(),
+                TextInput::make('suffix'),
+                TextInput::make('purok'),
+                Select::make('municipality_id')
+                    ->relationship('municipality', 'citymunDesc')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->citymunDesc} ({$record->province->provDesc})")
+                    ->searchable()
+                    ->preload()
+                    ->live()
+                    ->required(),
+                Select::make('barangay_id')
+                    ->options(fn (Get $get) =>
+                        Barangay::where('citymunCode', $get('municipality_id'))
+                            ->pluck('brgyDesc', 'brgyCode')
+                    )
+                    ->searchable()->required(),
             ])
             ->columns(2);
     }
@@ -37,13 +57,6 @@ class UserForm
             ->schema([
                 self::rolesField(),
             ]);
-    }
-
-    private static function nameField(): TextInput
-    {
-        return TextInput::make('name')
-            ->required()
-            ->maxLength(255);
     }
 
     private static function emailField(): TextInput

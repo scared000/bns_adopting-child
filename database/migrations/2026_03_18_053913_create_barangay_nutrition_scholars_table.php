@@ -10,6 +10,7 @@ return new class extends Migration
     {
         Schema::create('barangay_nutrition_scholars', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->unique()->after('id')->constrained('users')->nullOnDelete();
             $table->string('municipality_id')->nullable();
             $table->string('barangay_id')->nullable();
             $table->foreign('municipality_id')->references('citymunCode')->on('municipalities');

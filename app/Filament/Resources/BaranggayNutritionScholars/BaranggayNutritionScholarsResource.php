@@ -13,7 +13,7 @@ use App\Models\BaranggayNutritionScholars;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Table;
 
 class BaranggayNutritionScholarsResource extends Resource
@@ -25,7 +25,9 @@ class BaranggayNutritionScholarsResource extends Resource
     public static ?int $navigationSort = 3;
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        return static::getModel()::whereHas('user', function ($query){
+            $query->role('bns');
+        })->count();
     }
 
     public static function getNavigationBadgeColor(): ?string
@@ -50,6 +52,13 @@ class BaranggayNutritionScholarsResource extends Resource
         ];
     }
 
+    public static function getEloquentQuery(): Builder
+    {
+        return parent::getEloquentQuery()
+            ->whereHas('user', function (Builder $query) {
+                $query->role('bns');
+            });
+    }
     public static function getPages(): array
     {
         return [
