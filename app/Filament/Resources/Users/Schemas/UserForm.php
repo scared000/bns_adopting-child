@@ -28,11 +28,14 @@ class UserForm
             ->schema([
                 self::emailField(),
                 self::passwordField(),
-                TextInput::make('firstname')->required(),
+                TextInput::make('firstname')
+                    ->required(),
                 TextInput::make('middlename'),
-                TextInput::make('lastname')->required(),
+                TextInput::make('lastname')
+                    ->required(),
                 TextInput::make('suffix'),
-                TextInput::make('purok'),
+                TextInput::make('purok')
+                    ->required(),
                 Select::make('municipality_id')
                     ->relationship('municipality', 'citymunDesc')
                     ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->citymunDesc} ({$record->province->provDesc})")
