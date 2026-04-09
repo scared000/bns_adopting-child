@@ -8,7 +8,6 @@ use App\Filament\Pages\ChildVisitDetail;
 use App\Filament\Pages\Dashboard;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use App\Filament\Pages\ChildVisitLog;
-use App\Filament\Resources\AdoptedChildren\Pages\ListFamilyProfiles;
 use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -81,7 +80,6 @@ class AdminPanelProvider extends PanelProvider
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->pages([
-                ListFamilyProfiles::class,
                 ChildVisitLog::class,
                 ChildVisitDetail::class,
                 Dashboard::class,

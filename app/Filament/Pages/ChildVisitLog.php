@@ -9,6 +9,7 @@ use Filament\Pages\Page;
 class ChildVisitLog extends Page
 {
     use HasPageShield;
+    protected static bool $shouldRegisterNavigation = false;
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-calendar-days';
     protected static string|null|\UnitEnum $navigationGroup = 'LOG';
     protected static ?int $navigationSort = 2;

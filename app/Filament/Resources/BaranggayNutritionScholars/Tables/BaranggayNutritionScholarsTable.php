@@ -70,12 +70,6 @@ class BaranggayNutritionScholarsTable
                         }
                         return $lastVisit->format('M d, Y');
                     })
-
-//                TextColumn::make('status')
-//                    ->label('STATUS')
-//                    ->searchable()
-//                    ->default('—'),
-
             ])
             ->filters([
                 //

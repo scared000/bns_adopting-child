@@ -109,6 +109,6 @@ class AdoptedChild extends Model
     }
 
     public function officeVisits(): HasMany {
-        return $this->hasMany(OfficeChildVisit::class, 'adopted_id');
+        return $this->hasMany(OfficeChildVisit::class, 'adopted_id')->latest();
     }
 }

@@ -17,10 +17,11 @@ use Filament\Tables\Table;
 
 class OfficeVisitsResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $model = OfficeChildVisit::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-clipboard-document-check';
-    protected static string|null|\UnitEnum $navigationGroup = 'MONITORING';
+//    protected static string|null|\UnitEnum $navigationGroup = 'MONITORING';
     protected static ?int $navigationSort = 2;
 
     public static function getNavigationBadge(): ?string

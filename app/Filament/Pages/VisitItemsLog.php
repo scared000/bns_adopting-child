@@ -15,6 +15,7 @@ class VisitItemsLog extends Page implements HasTable
 {
     use InteractsWithTable, HasPageShield;
 
+    protected static bool $shouldRegisterNavigation = false;
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-clipboard-document-list';
     protected static string|null|\UnitEnum $navigationGroup = 'LOG';
     protected static ?int $navigationSort = 2;

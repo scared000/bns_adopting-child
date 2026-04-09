@@ -27,10 +27,11 @@ use function Laravel\Prompts\search;
 
 class OfficeChildAssignResource extends Resource
 {
+    protected static bool $shouldRegisterNavigation = false;
     protected static ?string $model = OfficeChildAssign::class;
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-user-group';
     protected static ?string $navigationLabel = 'Child Assignments';
-    protected static string|null|\UnitEnum $navigationGroup = 'MONITORING';
+//    protected static string|null|\UnitEnum $navigationGroup = 'MONITORING';
     protected static ?int $navigationSort = 1;
     public static function getNavigationBadge(): ?string
     {

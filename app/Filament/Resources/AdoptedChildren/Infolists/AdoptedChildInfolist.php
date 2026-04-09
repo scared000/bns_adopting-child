@@ -3,9 +3,25 @@
 namespace App\Filament\Resources\AdoptedChildren\Infolists;
 
 use App\Filament\Resources\AdoptedChildren\Tables\AdoptedChildrenTable;
+use App\Filament\Resources\OfficeVisits\Schemas\OfficeVisitsForm;
 use App\Livewire\ChildImmunizationTable;
+use App\Models\BaranggayNutritionScholars;
+use App\Models\Office;
+use App\Models\OfficeChildAssign;
+use App\Models\OfficeChildVisit;
+use App\Models\VisitItems;
+use Carbon\Carbon;
+use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Actions;
 use Filament\Schemas\Components\Group;
 use Filament\Schemas\Components\Livewire;
 use Filament\Schemas\Components\Section;
@@ -14,9 +30,9 @@ use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Illuminate\Support\HtmlString;
+
 class AdoptedChildInfolist
 {
-    //Entry point
     public static function configure(Schema $schema): Schema
     {
         return $schema->components([
@@ -39,10 +55,17 @@ class AdoptedChildInfolist
                                 ->data(fn ($record) => [
                                     'childId' => $record->id,
                                 ]),
-                            ]),
+                        ]),
 
                     Tab::make('Assigment & Visits')
-                        ->icon('heroicon-o-user-plus'),
+                        ->icon('heroicon-o-user-plus')
+                        ->badge(fn ($record) => $record->officeVisits()->count())
+                        ->schema([
+                            self::sectionAssignmentSummary(),
+                            self::sectionRecordVisitAction(),
+                            self::sectionVisitHistory(),
+                        ]),
+
                     Tab::make('Family Profile')
                         ->icon('heroicon-o-user-group')
                         ->schema([
@@ -54,7 +77,6 @@ class AdoptedChildInfolist
         ]);
     }
 
-    //Child Information
     private static function sectionChildInformation(): Section
     {
         return Section::make('👤 Child Information')
@@ -151,7 +173,6 @@ class AdoptedChildInfolist
             ]);
     }
 
-    //Guardian Information
     private static function sectionGuardianInformation(): Section
     {
         return Section::make('👨‍👩‍👦 Guardian Information')
@@ -171,42 +192,39 @@ class AdoptedChildInfolist
                         TextEntry::make('motherProfile.birthdate')
                             ->label(new HtmlString('<span style="font-weight:750;">Birth Date</span>'))
                             ->formatStateUsing(fn ($state) =>
-                            $state
-                                ? \Carbon\Carbon::parse($state)->format('F d, Y')
-                                : '—'
-                            ),
+                            $state ? \Carbon\Carbon::parse($state)->format('F d, Y') : '—'),
                         TextEntry::make('motherProfile.relation')
                             ->label(new HtmlString('<span style="font-weight:750;">Relationship</span>'))
                             ->formatStateUsing(fn ($state) => match ($state) {
                                 'biological_mother' => 'Biological Mother',
-                                'adoptive_mother' => 'Adoptive Mother',
-                                'grandmother' => 'Grandmother',
-                                'aunt' => 'Aunt',
-                                'older_sibling' => 'Older Sibling',
-                                'legal_guardian' => 'Legal Guardian',
-                                'foster_parent' => 'Foster Parent',
-                                'court_appointed' => 'Court-Appointed Guardian',
-                                'family_friend' => 'Family Friend',
-                                default => ucwords(str_replace('_', ' ', $state ?? '—')),
+                                'adoptive_mother'   => 'Adoptive Mother',
+                                'grandmother'       => 'Grandmother',
+                                'aunt'              => 'Aunt',
+                                'older_sibling'     => 'Older Sibling',
+                                'legal_guardian'    => 'Legal Guardian',
+                                'foster_parent'     => 'Foster Parent',
+                                'court_appointed'   => 'Court-Appointed Guardian',
+                                'family_friend'     => 'Family Friend',
+                                default             => ucwords(str_replace('_', ' ', $state ?? '—')),
                             }),
                         TextEntry::make('motherProfile.occupation')
                             ->label(new HtmlString('<span style="font-weight:750;">Occupation</span>')),
                         TextEntry::make('motherProfile.educational_attainment')
                             ->label(new HtmlString('<span style="font-weight:750;">Education</span>'))
                             ->formatStateUsing(fn ($state) => match ($state) {
-                                'no_formal_education' => 'No Formal Education',
+                                'no_formal_education'   => 'No Formal Education',
                                 'elementary_undergraduate' => 'Elementary Undergraduate',
-                                'elementary_graduate' => 'Elementary Graduate',
-                                'jhs_undergraduate' => 'Junior High School Undergraduate',
-                                'jhs_graduate' => 'Junior High School Graduate (Grade 10)',
-                                'shs_undergraduate' => 'Senior High School Undergraduate',
-                                'shs_graduate' => 'Senior High School Graduate (Grade 12)',
-                                'vocational' => 'Vocational / Technical Course',
+                                'elementary_graduate'   => 'Elementary Graduate',
+                                'jhs_undergraduate'     => 'Junior High School Undergraduate',
+                                'jhs_graduate'          => 'Junior High School Graduate (Grade 10)',
+                                'shs_undergraduate'     => 'Senior High School Undergraduate',
+                                'shs_graduate'          => 'Senior High School Graduate (Grade 12)',
+                                'vocational'            => 'Vocational / Technical Course',
                                 'college_undergraduate' => 'College Undergraduate',
-                                'college_graduate' => 'College Graduate',
-                                'masters' => "Master's Degree",
-                                'doctorate' => 'Doctorate Degree',
-                                default => ucwords(str_replace('_', ' ', $state ?? '—')),
+                                'college_graduate'      => 'College Graduate',
+                                'masters'               => "Master's Degree",
+                                'doctorate'             => 'Doctorate Degree',
+                                default                 => ucwords(str_replace('_', ' ', $state ?? '—')),
                             }),
                     ]),
 
@@ -224,51 +242,44 @@ class AdoptedChildInfolist
                         TextEntry::make('fatherProfile.birthdate')
                             ->label(new HtmlString('<span style="font-weight:750;">Birth Date</span>'))
                             ->formatStateUsing(fn ($state) =>
-                            $state
-                                ? \Carbon\Carbon::parse($state)->format('F d, Y')
-                                : '—'
-                            ),
+                            $state ? \Carbon\Carbon::parse($state)->format('F d, Y') : '—'),
                         TextEntry::make('fatherProfile.relation')
                             ->label(new HtmlString('<span style="font-weight:750;">Relationship</span>'))
                             ->formatStateUsing(fn ($state) => match ($state) {
                                 'biological_mother' => 'Biological Mother',
-                                'adoptive_mother' => 'Adoptive Mother',
-                                'grandmother' => 'Grandmother',
-                                'aunt' => 'Aunt',
-                                'older_sibling' => 'Older Sibling',
-                                'legal_guardian' => 'Legal Guardian',
-                                'foster_parent' => 'Foster Parent',
-                                'court_appointed' => 'Court-Appointed Guardian',
-                                'family_friend' => 'Family Friend',
-                                default => ucwords(str_replace('_', ' ', $state ?? '—')),
+                                'adoptive_mother'   => 'Adoptive Mother',
+                                'grandmother'       => 'Grandmother',
+                                'aunt'              => 'Aunt',
+                                'older_sibling'     => 'Older Sibling',
+                                'legal_guardian'    => 'Legal Guardian',
+                                'foster_parent'     => 'Foster Parent',
+                                'court_appointed'   => 'Court-Appointed Guardian',
+                                'family_friend'     => 'Family Friend',
+                                default             => ucwords(str_replace('_', ' ', $state ?? '—')),
                             }),
-
                         TextEntry::make('fatherProfile.occupation')
                             ->label(new HtmlString('<span style="font-weight:750;">Occupation</span>')),
-
                         TextEntry::make('fatherProfile.educational_attainment')
-                            ->label('Education')
                             ->label(new HtmlString('<span style="font-weight:750;">Education</span>'))
                             ->formatStateUsing(fn ($state) => match ($state) {
-                                'no_formal_education' => 'No Formal Education',
+                                'no_formal_education'   => 'No Formal Education',
                                 'elementary_undergraduate' => 'Elementary Undergraduate',
-                                'elementary_graduate' => 'Elementary Graduate',
-                                'jhs_undergraduate' => 'Junior High School Undergraduate',
-                                'jhs_graduate' => 'Junior High School Graduate (Grade 10)',
-                                'shs_undergraduate' => 'Senior High School Undergraduate',
-                                'shs_graduate' => 'Senior High School Graduate (Grade 12)',
-                                'vocational' => 'Vocational / Technical Course',
+                                'elementary_graduate'   => 'Elementary Graduate',
+                                'jhs_undergraduate'     => 'Junior High School Undergraduate',
+                                'jhs_graduate'          => 'Junior High School Graduate (Grade 10)',
+                                'shs_undergraduate'     => 'Senior High School Undergraduate',
+                                'shs_graduate'          => 'Senior High School Graduate (Grade 12)',
+                                'vocational'            => 'Vocational / Technical Course',
                                 'college_undergraduate' => 'College Undergraduate',
-                                'college_graduate' => 'College Graduate',
-                                'masters' => "Master's Degree",
-                                'doctorate' => 'Doctorate Degree',
-                                default => ucwords(str_replace('_', ' ', $state ?? '—')),
+                                'college_graduate'      => 'College Graduate',
+                                'masters'               => "Master's Degree",
+                                'doctorate'             => 'Doctorate Degree',
+                                default                 => ucwords(str_replace('_', ' ', $state ?? '—')),
                             }),
                     ]),
             ]);
     }
 
-    //Family Members
     private static function sectionFamilyMembers(): Section
     {
         return Section::make('👨‍👩‍👧‍👦 Family Members')
@@ -282,35 +293,10 @@ class AdoptedChildInfolist
 
                         if ($members->isEmpty()) {
                             return new HtmlString('
-                            <div style="
-                                display: flex;
-                                flex-direction: column;
-                                align-items: center;
-                                justify-content: center;
-                                padding: 32px 16px;
-                                border-radius: 10px;
-                                border: 2px dashed #e5e7eb;
-                                background: #f9fafb;
-                                text-align: center;
-                            ">
-                                <div style="
-                                    width: 48px; height: 48px;
-                                    border-radius: 50%;
-                                    background: #f3f4f6;
-                                    display: flex;
-                                    align-items: center;
-                                    justify-content: center;
-                                    margin-bottom: 12px;
-                                ">
-                                    <svg style="width:24px;height:24px;" fill="none" stroke="#9ca3af" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                    </svg>
-                                </div>
+                            <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 16px;border-radius:10px;border:2px dashed #e5e7eb;background:#f9fafb;text-align:center;">
                                 <p style="margin:0;font-size:14px;font-weight:600;color:#374151;">No Family Members</p>
                                 <p style="margin:4px 0 0;font-size:13px;color:#9ca3af;">No family members have been recorded for this child yet.</p>
-                            </div>
-                        ');
+                            </div>');
                         }
 
                         $rows = '';
@@ -332,8 +318,7 @@ class AdoptedChildInfolist
                                 <td style=\"padding:8px 0;font-size:14px;width:33%;\">{$name}</td>
                                 <td style=\"padding:8px 0;font-size:14px;width:33%;\">{$weight}</td>
                                 <td style=\"padding:8px 0;font-size:14px;width:33%;\">{$status}</td>
-                            </tr>
-                        ";
+                            </tr>";
                         }
 
                         return new HtmlString("
@@ -346,13 +331,361 @@ class AdoptedChildInfolist
                                 </tr>
                             </thead>
                             <tbody>{$rows}</tbody>
-                        </table>
-                    ");
+                        </table>");
                     })()),
             ]);
     }
 
-    //Family Status
+    private static function sectionAssignmentSummary(): Section
+    {
+        return Section::make()
+            ->schema([
+                TextEntry::make('Assignment')
+                    ->columnSpanFull()
+                    ->getStateUsing(function ($record) {
+                        $assignment  = $record->officeAssignments()->with('bns', 'office')->latest()->first();
+                        $bns         = $assignment?->bns;
+                        $office      = $assignment?->office;
+                        $totalVisits = $record->officeVisits()->count();
+                        $bnsName     = $bns ? trim("{$bns->firstname} {$bns->lastname}") : '—';
+                        $officeName  = $office?->office ?? '—';
+
+                        return new HtmlString("
+                        <div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-top:4px solid #f97316;border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);'>
+                            <div style='text-align:center;padding:20px 16px;'>
+                                <p style='font-size:28px;font-weight:800;color:#111827;margin:0;'>{$totalVisits}</p>
+                                <p style='font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:4px 0 0;'>Total Visits</p>
+                            </div>
+                            <div style='text-align:center;padding:20px 16px;border-left:1px solid #f3f4f6;border-right:1px solid #f3f4f6;'>
+                                <p style='font-size:18px;font-weight:700;color:#111827;margin:0;'>{$bnsName}</p>
+                                <p style='font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:4px 0 0;'>Assigned BNS</p>
+                            </div>
+                            <div style='text-align:center;padding:20px 16px;'>
+                                <p style='font-size:15px;font-weight:700;color:#111827;margin:0;'>{$officeName}</p>
+                                <p style='font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:4px 0 0;'>Assigned Office</p>
+                            </div>
+                        </div>");
+                    }),
+            ])
+            ->extraAttributes(['style' => 'padding:0;border:none;box-shadow:none;background:transparent;']);
+    }
+
+    private static function sectionRecordVisitAction(): Actions
+    {
+        return Actions::make([
+            Action::make('record_visit')
+                ->label('Record New Visit')
+                ->icon('heroicon-o-plus-circle')
+                ->color('warning')
+                ->modalHeading('Record Visit')
+                ->modalDescription(fn ($record) => 'Recording a visit for ' . $record->firstname . ' ' . $record->lastname)
+                ->modalWidth('4xl')
+                ->modalSubmitActionLabel('Save Visit')
+                ->fillForm(function ($record): array {
+                    $assignment = $record->officeAssignments()->with('bns', 'office')->latest()->first();
+
+                    $addressParts = [
+                        $record->purok ? "{$record->purok}" : null,
+                        $record->barangay?->brgyDesc,
+                        $record->municipality?->citymunDesc,
+                        $record->municipality?->province?->provDesc,
+                    ];
+
+                    $ageMonths = null;
+                    if ($record->birthdate) {
+                        $diff      = Carbon::parse($record->birthdate)->diff(now());
+                        $ageMonths = ($diff->y * 12) + $diff->m;
+                    }
+
+                    return [
+                        'office_assign_id' => $assignment?->id,
+                        'adopted_id'       => $record->id,
+                        'bns_id'           => $assignment?->bns_id,
+                        'office_id'        => $assignment?->office_id,
+                        'visit_address'    => collect($addressParts)->filter()->implode(', '),
+                        'visit_date'       => now()->toDateString(),
+                        'sex'              => $record->sex,
+                        'age_months'       => $ageMonths,
+                    ];
+                })
+                ->form([
+                    Hidden::make('adopted_id'),
+                    Hidden::make('sex'),
+                    Hidden::make('age_months'),
+
+                    Grid::make(2)->schema([
+                        DatePicker::make('visit_date')
+                            ->label('Visit Date')
+                            ->required()
+                            ->default(now()),
+
+                        TextInput::make('visit_address')
+                            ->label('Visit Address')
+                            ->required(),
+                    ]),
+
+                    Grid::make(2)->schema([
+                        Select::make('bns_id')
+                            ->label('BNS')
+                            ->options(
+                                BaranggayNutritionScholars::all()
+                                    ->mapWithKeys(fn ($b) => [
+                                        $b->id => $b->firstname . ' ' . $b->lastname
+                                    ])
+                            )
+                            ->searchable()
+                            ->required(),
+
+                        Select::make('office_id')
+                            ->label('Office')
+                            ->options(
+                                Office::all()->mapWithKeys(fn ($o) => [
+                                    $o->id => $o->office . ' (' . $o->short_name . ')'
+                                ])
+                            )
+                            ->searchable()
+                            ->required(),
+                    ]),
+
+                    Grid::make(2)->schema([
+                        TextInput::make('height')
+                            ->label('Height')
+                            ->numeric()
+                            ->suffix('cm')
+                            ->step(0.1)
+                            ->minValue(0)
+                            ->required(),
+
+                        TextInput::make('weight')
+                            ->label('Weight')
+                            ->numeric()
+                            ->suffix('kg')
+                            ->step(0.1)
+                            ->minValue(0)
+                            ->required(),
+                    ]),
+
+                    FileUpload::make('visit_documentation')
+                        ->label('Visit Photos / Documents')
+                        ->multiple()
+                        ->disk('public')
+                        ->directory('visit_docs')
+                        ->visibility('public')
+                        ->image()
+                        ->maxFiles(10)
+                        ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
+                        ->helperText('Upload up to 10 images or PDFs'),
+
+                    Repeater::make('visitItems')
+                        ->label('Items Distributed')
+                        ->schema([
+                            TextInput::make('Item_description')
+                                ->label('Item Description')
+                                ->placeholder('e.g. Rice, Vitamins')
+                                ->required()
+                                ->columnSpan(2),
+
+                            TextInput::make('item_quantity')
+                                ->label('Quantity')
+                                ->numeric()
+                                ->default(1)
+                                ->required()
+                                ->columnSpan(1),
+
+                            TextInput::make('item_amount')
+                                ->label('Amount / Value')
+                                ->numeric()
+                                ->prefix('₱')
+                                ->placeholder('0.00')
+                                ->columnSpan(1),
+                        ])
+                        ->columns(4)
+                        ->addActionLabel('Add Item')
+                        ->defaultItems(0),
+                ])
+                ->action(function (array $data, $record): void {
+                    // Resolve nutritional status
+                    $data = OfficeVisitsForm::resolveStatus($data);
+
+                    $items = $data['visitItems'] ?? [];
+                    unset($data['visitItems']);
+
+                    $visit = OfficeChildVisit::create([
+                        'office_assign_id' => $data['office_assign_id'] ?? null,
+                        'adopted_id' => $record->id,
+                        'bns_id' => $data['bns_id'],
+                        'office_id' => $data['office_id'],
+                        'visit_date' => $data['visit_date'],
+                        'visit_address' => $data['visit_address'],
+                        'height' => $data['height'],
+                        'weight' => $data['weight'],
+                        'status' => $data['status'] ?? null,
+                        'visit_documentation' => $data['visit_documentation'] ?? null,
+                    ]);
+
+                    foreach ($items as $item) {
+                        $visit->visitItems()->create([
+                            'Item_description' => $item['Item_description'],
+                            'item_quantity'    => $item['item_quantity'],
+                            'item_amount'      => $item['item_amount'] ?? null,
+                        ]);
+                    }
+
+                    Notification::make()
+                        ->title('Visit recorded successfully')
+                        ->success()
+                        ->send();
+                }),
+        ]);
+    }
+
+    private static function sectionVisitHistory(): Section
+    {
+        return Section::make()
+            ->schema([
+                TextEntry::make('Visits')
+                    ->label('')
+                    ->columnSpanFull()
+                    ->getStateUsing(function ($record) {
+                        $visits = $record->officeVisits()
+                            ->with('visitItems', 'bns', 'office')
+                            ->latest('visit_date')
+                            ->get();
+
+                        $uid = 'vt_' . $record->id;
+
+                        $badgeStyle = function (string $status): string {
+                            $s = strtolower($status);
+                            return match (true) {
+                                str_contains($s, 'severely') ||
+                                str_contains($s, 'wasted') ||
+                                str_contains($s, 'obese') => 'background:#fee2e2;color:#b91c1c;',
+                                str_contains($s, 'underweight') ||
+                                str_contains($s, 'stunted') ||
+                                str_contains($s, 'overweight') ||
+                                str_contains($s, 'at risk') => 'background:#fef9c3;color:#a16207;',
+                                str_contains($s, 'normal') => 'background:#dcfce7;color:#15803d;',
+                                default => 'background:#f3f4f6;color:#374151;',
+                            };
+                        };
+
+                        // Visit History rows
+                        $historyRows = '';
+                        if ($visits->isEmpty()) {
+                            $historyRows = "<tr><td colspan='5' style='padding:40px;text-align:center;color:#9ca3af;font-size:13px;'>No visits recorded yet.</td></tr>";
+                        } else {
+                            foreach ($visits as $visit) {
+                                $date    = $visit->visit_date ? $visit->visit_date->format('M d, Y') : '—';
+                                $height  = $visit->height ? $visit->height . ' cm' : '—';
+                                $weight  = $visit->weight ? $visit->weight . ' kg' : '—';
+                                $status  = htmlspecialchars($visit->status ?? '—');
+                                $address = htmlspecialchars($visit->visit_address ?? '—');
+                                $bs      = $badgeStyle($visit->status ?? '');
+
+                                $historyRows .= "
+                                <tr style='border-bottom:1px solid #f3f4f6;'>
+                                    <td style='padding:12px 16px;font-size:13px;font-weight:600;white-space:nowrap;color:#111827;'>{$date}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#6b7280;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>{$address}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$height}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$weight}</td>
+                                    <td style='padding:12px 16px;font-size:13px;'>
+                                        <span style='padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;{$bs}white-space:nowrap;display:inline-block;'>
+                                            {$status}
+                                        </span>
+                                    </td>
+                                </tr>";
+                            }
+                        }
+
+                        // Visit Items rows
+                        $itemRows    = '';
+                        $hasAnyItems = false;
+                        foreach ($visits as $visit) {
+                            foreach ($visit->visitItems as $item) {
+                                $hasAnyItems = true;
+                                $date   = $visit->visit_date ? $visit->visit_date->format('M d, Y') : '—';
+                                $desc   = htmlspecialchars($item->Item_description ?? '—');
+                                $qty    = htmlspecialchars((string) ($item->item_quantity ?? '—'));
+                                $rawAmt = $item->item_amount ?? null;
+                                $amount = $rawAmt !== null
+                                    ? '₱' . number_format((float) $rawAmt, 2)
+                                    : '—';
+
+                                $itemRows .= "
+                                <tr style='border-bottom:1px solid #f3f4f6;'>
+                                    <td style='padding:12px 16px;font-size:13px;font-weight:600;white-space:nowrap;color:#111827;'>{$date}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$desc}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#374151;text-align:center;'>{$qty}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#374151;text-align:right;'>{$amount}</td>
+                                </tr>";
+                            }
+                        }
+
+                        if (! $hasAnyItems) {
+                            $itemRows = "<tr><td colspan='4' style='padding:40px;text-align:center;color:#9ca3af;font-size:13px;'>No items distributed yet.</td></tr>";
+                        }
+
+                        return new HtmlString("
+                        <div style='border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;'>
+
+                            <div style='display:flex;gap:0;border-bottom:1px solid #e5e7eb;background:#f9fafb;padding:0 20px;'>
+                                <button id='{$uid}_btn_history'
+                                    onclick=\"
+                                        document.getElementById('{$uid}_history').style.display='block';
+                                        document.getElementById('{$uid}_items').style.display='none';
+                                        this.style.cssText='padding:12px 18px;font-size:13px;font-weight:600;border:none;background:transparent;cursor:pointer;color:#f97316;border-bottom:2px solid #f97316;margin-bottom:-1px;';
+                                        document.getElementById('{$uid}_btn_items').style.cssText='padding:12px 18px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;';
+                                    \"
+                                    style='padding:12px 18px;font-size:13px;font-weight:600;border:none;background:transparent;cursor:pointer;color:#f97316;border-bottom:2px solid #f97316;margin-bottom:-1px;'>
+                                    🗓️ Visit History
+                                </button>
+                                <button id='{$uid}_btn_items'
+                                    onclick=\"
+                                        document.getElementById('{$uid}_history').style.display='none';
+                                        document.getElementById('{$uid}_items').style.display='block';
+                                        this.style.cssText='padding:12px 18px;font-size:13px;font-weight:600;border:none;background:transparent;cursor:pointer;color:#f97316;border-bottom:2px solid #f97316;margin-bottom:-1px;';
+                                        document.getElementById('{$uid}_btn_history').style.cssText='padding:12px 18px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;';
+                                    \"
+                                    style='padding:12px 18px;font-size:13px;font-weight:500;border:none;background:transparent;cursor:pointer;color:#6b7280;border-bottom:2px solid transparent;margin-bottom:-1px;'>
+                                    📦 Visit Items
+                                </button>
+                            </div>
+
+                            <div id='{$uid}_history' style='display:block;overflow-x:auto;'>
+                                <table style='width:100%;border-collapse:collapse;'>
+                                    <thead>
+                                        <tr style='background:#f9fafb;'>
+                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;'>Visit Date</th>
+                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Address</th>
+                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Height</th>
+                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Weight</th>
+                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Nutritional Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>{$historyRows}</tbody>
+                                </table>
+                            </div>
+
+                            <div id='{$uid}_items' style='display:none;overflow-x:auto;'>
+                                <table style='width:100%;border-collapse:collapse;'>
+                                    <thead>
+                                        <tr style='background:#f9fafb;'>
+                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap;'>Visit Date</th>
+                                            <th style='padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Item Description</th>
+                                            <th style='padding:10px 16px;text-align:center;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Quantity</th>
+                                            <th style='padding:10px 16px;text-align:right;font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;'>Amount</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>{$itemRows}</tbody>
+                                </table>
+                            </div>
+
+                        </div>");
+                    }),
+            ])
+            ->extraAttributes(['style' => 'padding:0;border:none;box-shadow:none;background:transparent;']);
+    }
+
     private static function sectionFamilyStatus(): Section
     {
         return Section::make('🏠 Family Status')
@@ -361,126 +694,107 @@ class AdoptedChildInfolist
                 TextEntry::make('familyStatus.status')
                     ->label(new HtmlString('<span style="font-weight:750;">Civil Status</span>'))
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        'civil' => 'Civil',
-                        'church' => 'Church / Religious',
+                        'civil'      => 'Civil',
+                        'church'     => 'Church / Religious',
                         'common_law' => 'Common Law',
-                        'none' => 'N/A',
-                        default => ucwords(str_replace('_', ' ', $state ?? '—')),
+                        'none'       => 'N/A',
+                        default      => ucwords(str_replace('_', ' ', $state ?? '—')),
                     }),
                 TextEntry::make('familyStatus.type_of_marriage')
                     ->label(new HtmlString('<span style="font-weight:750;">Type of Marriage</span>'))
                     ->formatStateUsing(fn ($state) => match ($state) {
-                        'single' => 'Single',
-                        'married' => 'Married',
-                        'widowed' => 'Widowed',
-                        'separated' => 'Separated',
+                        'single'     => 'Single',
+                        'married'    => 'Married',
+                        'widowed'    => 'Widowed',
+                        'separated'  => 'Separated',
                         'cohabiting' => 'Live-in / Cohabiting',
-                        default => ucwords(str_replace('_', ' ', $state ?? '—')),
+                        default      => ucwords(str_replace('_', ' ', $state ?? '—')),
                     }),
                 TextEntry::make('familyStatus.monthly_income')
                     ->label(new HtmlString('<span style="font-weight:750;">Monthly Income</span>'))
-                    ->formatStateUsing(fn ($record) =>
-                    match ($record->familyStatus->first()?->monthly_income) {
-                        'below_5000' => 'Below ₱5,000',
-                        '5000-9999' => '₱5,000 - ₱9,999',
-                        '10000-14999' => '₱10,000 - ₱14,999',
-                        '15000-19999' => '₱15,000 - ₱19,999',
-                        '20000-above' => '₱20,000 and above',
-                        default => '—',
-                    }
-                    ),
+                    ->formatStateUsing(fn ($record) => match ($record->familyStatus->first()?->monthly_income) {
+                        'below_5000'   => 'Below ₱5,000',
+                        '5000-9999'    => '₱5,000 - ₱9,999',
+                        '10000-14999'  => '₱10,000 - ₱14,999',
+                        '15000-19999'  => '₱15,000 - ₱19,999',
+                        '20000-above'  => '₱20,000 and above',
+                        default        => '—',
+                    }),
                 TextEntry::make('familyStatus.source_income')
                     ->label(new HtmlString('<span style="font-weight:750;">Source of Income</span>'))
-                    ->formatStateUsing(fn ($record) =>
-                        $record->familyStatus->first()?->source_income ?? '—'
-                    ),
+                    ->formatStateUsing(fn ($record) => $record->familyStatus->first()?->source_income ?? '—'),
                 TextEntry::make('familyStatus.phil_member')
                     ->label(new HtmlString('<span style="font-weight:750;">PhilHealth Member?</span>'))
-                    ->formatStateUsing(fn ($record) =>
-                    match ($record->familyStatus->first()?->phil_member) {
+                    ->formatStateUsing(fn ($record) => match ($record->familyStatus->first()?->phil_member) {
                         'yes' => 'Yes', 'no' => 'No', default => '—',
-                    }
-                    ),
+                    }),
                 TextEntry::make('familyStatus.family_plan_method')
                     ->label(new HtmlString('<span style="font-weight:750;">Family Planning</span>'))
-                    ->formatStateUsing(fn($state) => match ($state) {
-                        'natural' => 'Natural',
-                        'pills' => 'Pills',
-                        'condom' => 'Condom',
-                        'iud' => 'IUD',
-                        'ligation' => 'Ligation',
+                    ->formatStateUsing(fn ($state) => match ($state) {
+                        'natural'   => 'Natural',
+                        'pills'     => 'Pills',
+                        'condom'    => 'Condom',
+                        'iud'       => 'IUD',
+                        'ligation'  => 'Ligation',
                         'vasectomy' => 'Vasectomy',
-                        'none' => 'None',
-                        default => ucwords(str_replace('_', ' ', $state ?? '—')),
+                        'none'      => 'None',
+                        default     => ucwords(str_replace('_', ' ', $state ?? '—')),
                     }),
                 TextEntry::make('familyStatus.have_electricity')
                     ->label(new HtmlString('<span style="font-weight:750;">Has Electricity?</span>'))
-                    ->formatStateUsing(fn ($record) =>
-                    match ($record->familyStatus->first()?->have_electricity) {
+                    ->formatStateUsing(fn ($record) => match ($record->familyStatus->first()?->have_electricity) {
                         'yes' => 'Yes', 'no' => 'No', default => '—',
-                    }
-                    ),
+                    }),
                 TextEntry::make('familyStatus.water_source')
                     ->label(new HtmlString('<span style="font-weight:750;">Water Source</span>'))
-                    ->formatStateUsing(fn ($record) =>
-                    match ($record->familyStatus->first()?->water_source) {
-                        'tap' => 'Tap / Piped Water',
-                        'well' => 'Deep Well',
-                        'spring' => 'Spring',
-                        'river' => 'River / Stream',
-                        'rain' => 'Rainwater',
+                    ->formatStateUsing(fn ($record) => match ($record->familyStatus->first()?->water_source) {
+                        'tap'       => 'Tap / Piped Water',
+                        'well'      => 'Deep Well',
+                        'spring'    => 'Spring',
+                        'river'     => 'River / Stream',
+                        'rain'      => 'Rainwater',
                         'delivered' => 'Delivered Water',
-                        default => '—',
-                    }
-                    ),
+                        default     => '—',
+                    }),
                 TextEntry::make('familyStatus.toilet_facility')
                     ->label(new HtmlString('<span style="font-weight:750;">Toilet Facility</span>'))
-                    ->formatStateUsing(fn ($record) =>
-                    match ($record->familyStatus->first()?->toilet_facility) {
-                        'flush' => 'Water-sealed / Flush',
-                        'pit' => 'Pit Latrine',
-                        'open' => 'Open Defecation',
+                    ->formatStateUsing(fn ($record) => match ($record->familyStatus->first()?->toilet_facility) {
+                        'flush'  => 'Water-sealed / Flush',
+                        'pit'    => 'Pit Latrine',
+                        'open'   => 'Open Defecation',
                         'shared' => 'Shared Toilet',
-                        default => '—',
-                    }
-                    ),
+                        default  => '—',
+                    }),
                 TextEntry::make('familyStatus.roofing')
                     ->label(new HtmlString('<span style="font-weight:750;">Roofing</span>'))
-                    ->formatStateUsing(fn ($record) =>
-                    match ($record->familyStatus->first()?->roofing) {
+                    ->formatStateUsing(fn ($record) => match ($record->familyStatus->first()?->roofing) {
                         'galvanized' => 'Galvanized Iron',
-                        'concrete' => 'Concrete',
-                        'nipa' => 'Nipa / Cogon',
-                        'wood' => 'Wood',
-                        default => '—',
-                    }
-                    ),
+                        'concrete'   => 'Concrete',
+                        'nipa'       => 'Nipa / Cogon',
+                        'wood'       => 'Wood',
+                        default      => '—',
+                    }),
                 TextEntry::make('familyStatus.walls')
                     ->label(new HtmlString('<span style="font-weight:750;">Wall Material</span>'))
-                    ->formatStateUsing(fn ($record) =>
-                    match ($record->familyStatus->first()?->walls) {
+                    ->formatStateUsing(fn ($record) => match ($record->familyStatus->first()?->walls) {
                         'concrete' => 'Concrete / Hollow Blocks',
-                        'wood' => 'Wood',
-                        'bamboo' => 'Bamboo',
-                        'mixed' => 'Mixed Materials',
-                        default => '—',
-                    }
-                    ),
+                        'wood'     => 'Wood',
+                        'bamboo'   => 'Bamboo',
+                        'mixed'    => 'Mixed Materials',
+                        default    => '—',
+                    }),
                 TextEntry::make('familyStatus.flooring')
                     ->label(new HtmlString('<span style="font-weight:750;">Flooring</span>'))
-                    ->formatStateUsing(fn ($record) =>
-                    match ($record->familyStatus->first()?->flooring) {
+                    ->formatStateUsing(fn ($record) => match ($record->familyStatus->first()?->flooring) {
                         'concrete' => 'Concrete',
-                        'wood' => 'Wood',
-                        'earth' => 'Earth / Soil',
-                        'tile' => 'Tile',
-                        default => '—',
-                    }
-                    ),
+                        'wood'     => 'Wood',
+                        'earth'    => 'Earth / Soil',
+                        'tile'     => 'Tile',
+                        default    => '—',
+                    }),
             ]);
     }
 
-    //badge color map
     private static function statusColor(string $state): string
     {
         return AdoptedChildrenTable::statusColor($state);

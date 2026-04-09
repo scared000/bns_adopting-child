@@ -348,9 +348,9 @@ class OfficeVisitsForm
     public static function resolveStatus(array $data): array
     {
         $months = (int)  ($data['age_months'] ?? 0);
-        $weight = (float)($data['weight']     ?? 0);
-        $height = (float)($data['height']     ?? 0);
-        $sex    =         $data['sex']         ?? '';
+        $weight = (float)($data['weight'] ?? 0);
+        $height = (float)($data['height'] ?? 0);
+        $sex = $data['sex'] ?? '';
 
         if ($months > 0 && $weight > 0 && $height > 0 && in_array($sex, ['male', 'female'])) {
             $data['status'] = NutritionalStatus::classify($months, $weight, $height, $sex);
