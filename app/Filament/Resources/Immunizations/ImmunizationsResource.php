@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Immunizations;
 
 use AlizHarb\ActivityLog\RelationManagers\ActivitiesRelationManager;
+use App\Filament\Resources\AdoptedChildren\AdoptedChildrenResource;
+use App\Filament\Resources\AdoptedChildren\AdoptedChildResource;
 use App\Filament\Resources\Immunizations\Pages\CreateImmunizations;
 use App\Filament\Resources\Immunizations\Pages\EditImmunizations;
 use App\Filament\Resources\Immunizations\Pages\ListImmunizations;
@@ -10,10 +12,6 @@ use App\Models\AdoptedChild;
 use App\Models\Immunizations;
 use BackedEnum;
 use Carbon\Carbon;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -37,15 +35,16 @@ class ImmunizationsResource extends Resource
         return static::getModel()::count();
     }
 
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
+    }
+
     public static function getRelations(): array
     {
         return [
             ActivitiesRelationManager::class,
         ];
-    }
-    public static function getNavigationBadgeColor(): ?string
-    {
-        return 'warning';
     }
 
     public static function form(Schema $schema): Schema
@@ -80,18 +79,9 @@ class ImmunizationsResource extends Resource
                 ->searchable()
                 ->required(),
 
-
-            DatePicker::make('dose_1')
-                ->label('1st Dose Date')
-                ->native(false),
-
-            DatePicker::make('dose_2')
-                ->label('2nd Dose Date')
-                ->native(false),
-
-            DatePicker::make('dose_3')
-                ->label('3rd Dose Date')
-                ->native(false),
+            DatePicker::make('dose_1')->label('1st Dose Date')->native(false),
+            DatePicker::make('dose_2')->label('2nd Dose Date')->native(false),
+            DatePicker::make('dose_3')->label('3rd Dose Date')->native(false),
 
             Textarea::make('remarks')
                 ->label('Remarks')
@@ -107,7 +97,20 @@ class ImmunizationsResource extends Resource
                 Immunizations::query()->with(['child.municipality.province'])
             )
             ->heading('Immunization Records')
-            ->description('EPI vaccine tracking per child')
+            ->description('EPI vaccine tracking per child — click any row to view the child\'s full immunization history.')
+
+            //Row click → child view page on the Immunization tab
+            ->recordUrl(function (Immunizations $record): ?string {
+                if (! $record->child_id) {
+                    return null;
+                }
+
+                // Adjust the tab query-string key if your setup differs
+                return AdoptedChildResource::getUrl('view', [
+                        'record' => $record->child_id,
+                    ]) . '?tab=-immunization-records-tab';
+            })
+
             ->columns([
                 TextColumn::make('child.firstname')
                     ->label('CHILD')
@@ -115,19 +118,12 @@ class ImmunizationsResource extends Resource
                     ->formatStateUsing(fn ($record) =>
                         ($record->child?->firstname ?? '') . ' ' . ($record->child?->lastname ?? '')
                     )
+                    ->description(fn ($record) => self::formatAge($record->child?->birthdate))
                     ->searchable(query: fn ($query, $search) =>
                     $query->whereHas('child', fn ($q) =>
                     $q->where('firstname', 'like', "%$search%")
                         ->orWhere('lastname', 'like', "%$search%")
                     )
-                    ),
-
-                TextColumn::make('child.birthdate')
-                    ->label('AGE')
-                    ->formatStateUsing(fn ($record) => self::formatAge($record->child?->birthdate))
-                    ->sortable(query: fn ($query, $direction) =>
-                    $query->join('adopted_children', 'immunizations.child_id', '=', 'adopted_children.id')
-                        ->orderBy('adopted_children.birthdate', $direction)
                     ),
 
                 TextColumn::make('vaccine_description')
@@ -136,33 +132,54 @@ class ImmunizationsResource extends Resource
                     ->color('info')
                     ->searchable(),
 
-                TextColumn::make('dose_1')
-                    ->label('1ST DOSE')
-                    ->formatStateUsing(fn ($state) => $state ? $state->format('M d, Y') : '—')
-                    ->icon(fn ($state) => $state ? 'heroicon-s-check-circle' : 'heroicon-s-x-circle')
-                    ->iconColor(fn ($state) => $state ? 'success' : 'gray')
-                    ->alignCenter(),
+                // Dynamic dose schedule
+                // Shows only as many dose pills as total_doses recorded per row.
+                // This mirrors real-world EPI cards where each vaccine has its
+                // own schedule (BCG=1, HepB=3, Pentavalent=3, OPV=3, etc.).
+                TextColumn::make('dose_schedule_html')
+                    ->label('DOSE SCHEDULE')
+                    ->html()
+                    ->getStateUsing(function (Immunizations $record): string {
+                        $totalDoses = max((int) ($record->total_doses ?? 1), 1);
+                        $pills      = '';
 
-                TextColumn::make('dose_2')
-                    ->label('2ND DOSE')
-                    ->formatStateUsing(fn ($state) => $state ? $state->format('M d, Y') : '—')
-                    ->icon(fn ($state) => $state ? 'heroicon-s-check-circle' : 'heroicon-s-x-circle')
-                    ->iconColor(fn ($state) => $state ? 'success' : 'gray')
-                    ->alignCenter(),
+                        for ($i = 1; $i <= $totalDoses; $i++) {
+                            $field = "dose_{$i}";
+                            $date  = $record->$field ?? null;
 
-                TextColumn::make('dose_3')
-                    ->label('3RD DOSE')
-                    ->formatStateUsing(fn ($state) => $state ? $state->format('M d, Y') : '—')
-                    ->icon(fn ($state) => $state ? 'heroicon-s-check-circle' : 'heroicon-s-x-circle')
-                    ->iconColor(fn ($state) => $state ? 'success' : 'gray')
-                    ->alignCenter(),
+                            if ($date) {
+                                $formatted = Carbon::parse($date)->format('M d, Y');
+                                $pills .= <<<HTML
+                                    <div style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;margin-right:10px;">
+                                        <span style="font-size:9px;font-weight:800;color:#9ca3af;letter-spacing:.08em;text-transform:uppercase;">Dose {$i}</span>
+                                        <span style="display:inline-flex;align-items:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:2px 8px;font-size:11px;font-weight:600;color:#15803d;white-space:nowrap;">
+                                            <svg style="width:12px;height:12px;flex-shrink:0;" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd"/></svg>
+                                            {$formatted}
+                                        </span>
+                                    </div>
+                                HTML;
+                            } else {
+                                $pills .= <<<HTML
+                                    <div style="display:inline-flex;flex-direction:column;align-items:flex-start;gap:2px;margin-right:10px;">
+                                        <span style="font-size:9px;font-weight:800;color:#9ca3af;letter-spacing:.08em;text-transform:uppercase;">Dose {$i}</span>
+                                        <span style="display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;border:2px dashed #e5e7eb;background:#fafafa;">
+                                            <svg style="width:12px;height:12px;color:#d1d5db;" viewBox="0 0 20 20" fill="currentColor"><path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z"/></svg>
+                                        </span>
+                                    </div>
+                                HTML;
+                            }
+                        }
+                        return '<div style="display:flex;flex-wrap:wrap;align-items:flex-end;gap:4px 0;">' . $pills . '</div>';
+                    }),
 
                 TextColumn::make('status')
                     ->label('STATUS')
                     ->badge()
-                    ->color(fn (string $state) => $state === 'complete' ? 'success' : 'danger')
-                    ->formatStateUsing(fn (string $state) => ucfirst($state)),
+                    ->color(fn (string $state) => $state === 'complete' ? 'success' : 'warning')
+                    ->formatStateUsing(fn (string $state) => ucfirst($state))
+                    ->alignCenter(),
             ])
+
             ->filters([
                 SelectFilter::make('status')
                     ->options([
@@ -177,31 +194,29 @@ class ImmunizationsResource extends Resource
                         'Hepatitis B' => 'Hepatitis B',
                         'Pentavalent' => 'Pentavalent',
                         'OPV' => 'OPV',
+                        'IPV' => 'IPV',
+                        'PCV' => 'PCV',
+                        'MMR' => 'MMR',
                         'MCV' => 'MCV',
                         'Vitamin A' => 'Vitamin A',
+                        'Rotavirus' => 'Rotavirus',
+                        'Influenza' => 'Influenza',
                     ]),
             ])
-            ->recordActionsColumnLabel('ACTION')
-            ->recordActions([
-                EditAction::make()->icon('heroicon-o-pencil')->badge(),
-                DeleteAction::make()->icon('heroicon-o-trash')->badge(),
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->recordActions([])
+            ->toolbarActions([]);
     }
 
     private static function formatAge(?string $birthdate): string
     {
-        if (!$birthdate) return '—';
-        $diff = Carbon::parse($birthdate)->diff(now());
+        if (! $birthdate) return '—';
+        $diff   = Carbon::parse($birthdate)->diff(now());
         $years  = $diff->y;
         $months = $diff->m;
+
         return $years > 0
-            ? "{$years}y {$months}m"
-            : "{$months}m";
+            ? "{$years}y {$months}m old"
+            : "{$months}m old";
     }
 
     public static function getPages(): array
