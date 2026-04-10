@@ -604,8 +604,32 @@ class AdoptedChildInfolist
 
                         //Visit History rows
                         $historyRows = '';
+                        $origHeight = $record->height_cm ? $record->height_cm . ' cm' : '—';
+                        $origWeight = $record->weight_kg ? $record->weight_kg . ' kg' : '—';
+                        $historyRows .= "
+                        <tr style='border-bottom:1px solid #f3f4f6;background:#fefce8;'>
+                            <td style='padding:12px 16px;font-size:13px;white-space:nowrap;color:#111827;'>
+                                <span style='display:inline-flex;align-items:center;gap:6px;'>
+                                    <span style='padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;background:#fde68a;color:#92400e;text-transform:uppercase;letter-spacing:.05em;'>
+                                        📋 Original
+                                    </span>
+                                </span>
+                            </td>
+                            <td style='padding:12px 16px;font-size:13px;color:#6b7280;font-style:italic;'>Initial record on enrollment</td>
+                            <td style='padding:12px 16px;font-size:13px;color:#374151;font-weight:600;'>{$origHeight}</td>
+                            <td style='padding:12px 16px;font-size:13px;color:#374151;font-weight:600;'>{$origWeight}</td>
+                            <td style='padding:12px 16px;font-size:13px;'>
+                                    " . ($record->nutritional_status
+                                    ? "<span style='padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;" .
+                                    $badgeStyle($record->nutritional_status) . "white-space:nowrap;display:inline-block;'>" .
+                                    htmlspecialchars($record->nutritional_status) . "</span>"
+                                    : "<span style='color:#6b7280;font-style:italic;'>—</span>"
+                                ) . "
+                            </td>
+                        </tr>";
+
                         if ($visits->isEmpty()) {
-                            $historyRows = "<tr><td colspan='5' style='padding:40px;text-align:center;color:#9ca3af;font-size:13px;'>No visits recorded yet.</td></tr>";
+                            $historyRows .= "<tr><td colspan='5' style='padding:40px;text-align:center;color:#9ca3af;font-size:13px;'>No visits recorded yet.</td></tr>";
                         } else {
                             foreach ($visits as $visit) {
                                 $date    = $visit->visit_date ? $visit->visit_date->format('M d, Y') : '—';
@@ -616,45 +640,56 @@ class AdoptedChildInfolist
                                 $bs      = $badgeStyle($visit->status ?? '');
 
                                 $historyRows .= "
-                            <tr class='{$uid}_hrow' style='border-bottom:1px solid #f3f4f6;'>
-                                <td style='padding:12px 16px;font-size:13px;font-weight:600;white-space:nowrap;color:#111827;'>{$date}</td>
-                                <td style='padding:12px 16px;font-size:13px;color:#6b7280;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>{$address}</td>
-                                <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$height}</td>
-                                <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$weight}</td>
-                                <td style='padding:12px 16px;font-size:13px;'>
-                                    <span style='padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;{$bs}white-space:nowrap;display:inline-block;'>
-                                        {$status}
-                                    </span>
-                                </td>
-                            </tr>";
+                                <tr class='{$uid}_hrow' style='border-bottom:1px solid #f3f4f6;'>
+                                    <td style='padding:12px 16px;font-size:13px;font-weight:600;white-space:nowrap;color:#111827;'>{$date}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#6b7280;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'>{$address}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$height}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$weight}</td>
+                                    <td style='padding:12px 16px;font-size:13px;'>
+                                        <span style='padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;{$bs}white-space:nowrap;display:inline-block;'>
+                                            {$status}
+                                        </span>
+                                    </td>
+                                </tr>";
                             }
                         }
 
                         // Visit Items rows
                         $itemRows    = '';
                         $hasAnyItems = false;
+                        $grandTotal  = 0.0; // 👇 running total
+
                         foreach ($visits as $visit) {
                             foreach ($visit->visitItems as $item) {
                                 $hasAnyItems = true;
-                                $date   = $visit->visit_date ? $visit->visit_date->format('M d, Y') : '—';
-                                $desc   = htmlspecialchars($item->Item_description ?? '—');
-                                $qty    = htmlspecialchars((string) ($item->item_quantity ?? '—'));
-                                $rawAmt = $item->item_amount ?? null;
-                                $amount = $rawAmt !== null ? '₱' . number_format((float) $rawAmt, 2) : '—';
+                                $date    = $visit->visit_date ? $visit->visit_date->format('M d, Y') : '—';
+                                $desc    = htmlspecialchars($item->Item_description ?? '—');
+                                $qty     = htmlspecialchars((string) ($item->item_quantity ?? '—'));
+                                $rawAmt  = $item->item_amount ?? null;
+                                $amount  = $rawAmt !== null ? '₱' . number_format((float) $rawAmt, 2) : '—';
+                                $grandTotal += (float) ($rawAmt ?? 0); // 👇 accumulate
 
                                 $itemRows .= "
-                            <tr class='{$uid}_irow' style='border-bottom:1px solid #f3f4f6;'>
-                                <td style='padding:12px 16px;font-size:13px;font-weight:600;white-space:nowrap;color:#111827;'>{$date}</td>
-                                <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$desc}</td>
-                                <td style='padding:12px 16px;font-size:13px;color:#374151;text-align:center;'>{$qty}</td>
-                                <td style='padding:12px 16px;font-size:13px;color:#374151;text-align:right;'>{$amount}</td>
-                            </tr>";
+                                <tr class='{$uid}_irow' style='border-bottom:1px solid #f3f4f6;'>
+                                    <td style='padding:12px 16px;font-size:13px;font-weight:600;white-space:nowrap;color:#111827;'>{$date}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#374151;'>{$desc}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#374151;text-align:center;'>{$qty}</td>
+                                    <td style='padding:12px 16px;font-size:13px;color:#374151;text-align:right;'>{$amount}</td>
+                                </tr>";
                             }
                         }
 
                         if (! $hasAnyItems) {
                             $itemRows = "<tr><td colspan='4' style='padding:40px;text-align:center;color:#9ca3af;font-size:13px;'>No items distributed yet.</td></tr>";
                         }
+                        $totalFormatted = '₱' . number_format($grandTotal, 2);
+                        $itemsFooter = $hasAnyItems ? "
+                        <tfoot>
+                            <tr style='background:#f9fafb;border-top:2px solid #e5e7eb;'>
+                                <td colspan='3' style='padding:12px 16px;font-size:13px;font-weight:700;color:#111827;text-align:right;'>Total Amount</td>
+                                <td style='padding:12px 16px;font-size:14px;font-weight:800;color:#111827;text-align:right;'>{$totalFormatted}</td>
+                            </tr>
+                        </tfoot>" : '';
 
                         return new HtmlString("
                             <div style='border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;'>
@@ -700,6 +735,7 @@ class AdoptedChildInfolist
                                             </tr>
                                         </thead>
                                         <tbody id='{$uid}_ibody'>{$itemRows}</tbody>
+                                        {$itemsFooter}
                                     </table>
                                     <div id='{$uid}_ipager' style='display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-top:1px solid #f3f4f6;background:#f9fafb;'></div>
                                 </div>
