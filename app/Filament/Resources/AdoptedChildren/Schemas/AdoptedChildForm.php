@@ -472,6 +472,11 @@ class AdoptedChildForm
         ");
                 }),
 
+            TextInput::make('underlying_cause')
+                ->label('Underlying Cause')
+                ->type('textarea')
+                ->required(),
+
             FileUpload::make('profile_path')
                 ->label('Profile Picture')
                 ->disk('public')

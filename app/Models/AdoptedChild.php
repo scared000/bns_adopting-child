@@ -38,6 +38,7 @@ class AdoptedChild extends Model
         'weight_kg',
         'birthplace',
         'nutritional_status',
+        'underlying_cause',
         'lcr_registered',
         'breastfed',
         'v_suplemented',

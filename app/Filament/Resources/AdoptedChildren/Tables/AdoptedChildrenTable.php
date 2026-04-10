@@ -143,13 +143,13 @@ class AdoptedChildrenTable
     private static function recordActions(): array
     {
         return [
-            Action::make('visit_log')
-                ->label('Visit Log')
-                ->icon('heroicon-o-clock')
-                ->color('gray')
-                ->badge()
-                ->iconButton()
-                ->url(fn ($record) => url('/admin/child-visit-detail?childId=' . $record->id)),
+//            Action::make('visit_log')
+//                ->label('Visit Log')
+//                ->icon('heroicon-o-clock')
+//                ->color('gray')
+//                ->badge()
+//                ->iconButton()
+//                ->url(fn ($record) => url('/admin/child-visit-detail?childId=' . $record->id)),
 
             ViewAction::make()
                 ->label('Details')

@@ -157,9 +157,17 @@ class AdoptedChildInfolist
                     ->color(fn (string $state): string => self::statusColor($state))
                     ->columnSpan(1),
 
+                TextEntry::make('underlying_cause')
+                    ->label(new HtmlString('<span style="font-weight:750;">Underlying Cause</span>'))
+                    ->placeholder('—')
+                    ->wrap()
+                    ->columnSpan(1),
+
+
                 TextEntry::make('address')
                     ->label(new HtmlString('<span style="font-weight:750;">Address</span>'))
                     ->columnSpan(2)
+                    ->wrap()
                     ->getStateUsing(function ($record) {
                         return collect([
                             $record->purok,
