@@ -11,15 +11,19 @@ class AtRiskChildrenWidget extends Widget
     use InteractsWithPageFilters;
     protected static ?int $sort = 3;
     protected string $view = 'filament.widgets.at-risk-children-widget';
-    protected int|string|array $columnSpan = 2;
+    protected int|string|array $columnSpan = 1;
 
     public function getAtRiskProperty()
     {
         $year = (int) ($this->filters['year'] ?? now()->year);
+        $municipalityId = $this->filters['municipality_id'] ?? null;
 
         return OfficeChildVisit::whereIn(
             'id',
             OfficeChildVisit::whereYear('visit_date', $year)
+                ->when($municipalityId, fn ($q) => $q->whereHas(
+                    'child', fn ($q) => $q->where('municipality_id', $municipalityId)
+                ))
                 ->selectRaw('MAX(id)')
                 ->groupBy('adopted_id')
         )
@@ -34,12 +38,14 @@ class AtRiskChildrenWidget extends Widget
             ->take(3)
             ->get();
     }
+
     protected function getExtraAttributes(): array
     {
         return [
             'class' => 'h-full',
         ];
     }
+
     public function getSelectedYearProperty(): int
     {
         return (int) ($this->filters['year'] ?? now()->year);

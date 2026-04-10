@@ -6,8 +6,10 @@ use App\Exports\MonthlyMonitoringExport;
 use App\Filament\Widgets\AtRiskChildrenWidget;
 use App\Filament\Widgets\NutritionStatusWidget;
 use App\Filament\Widgets\RecentVisitsWidget;
+use App\Filament\Widgets\RehabilitationRateWidget;
 use App\Filament\Widgets\StatsOverview;
 use App\Imports\MonthlyMonitoringImport;
+use App\Models\AdoptedChild;
 use App\Models\Municipality;
 use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
@@ -43,17 +45,45 @@ class Dashboard extends \Filament\Pages\Dashboard
         $years = collect(range(now()->year - 4, now()->year))
             ->mapWithKeys(fn ($y) => [$y => (string) $y])
             ->all();
+//        $batches = AdoptedChild::query()
+//            ->whereNotNull('batch')
+//            ->distinct()
+//            ->orderBy('batch')
+//            ->pluck('batch')
+//            ->mapWithKeys(fn ($b) => [$b => "Batch {$b}"])
+//            ->all();
 
         return $schema->schema([
             Select::make('year')
-                ->label('Filter by Year')
+                ->label('Year')
                 ->options($years)
                 ->default(now()->year)
                 ->native(false)
                 ->placeholder('All years')
                 ->prefixIcon('heroicon-o-calendar-days'),
+
+            Select::make('municipality_id')
+                ->options(
+                    Municipality::with('province')
+                        ->get()
+                        ->mapWithKeys(fn ($m) => [
+                            $m->citymunCode => "Municipality of {$m->citymunDesc} ({$m->province->provDesc})",
+                        ])
+                )
+                ->searchable()
+                ->native(false)
+                ->placeholder('All municipalities')
+                ->prefixIcon('heroicon-o-map-pin'),
+
+//            Select::make('batch')
+//                ->label('Batch')
+//                ->options($batches)
+//                ->native(false)
+//                ->placeholder('All batches')
+//                ->prefixIcon('heroicon-o-queue-list'),
         ]);
     }
+
 
     protected function getHeaderActions(): array
     {
@@ -241,7 +271,7 @@ class Dashboard extends \Filament\Pages\Dashboard
         return [
             'default' => 1,
             'md'      => 2,
-            'xl'      => 4,
+            'xl'      => 3,
         ];
     }
 
@@ -250,6 +280,7 @@ class Dashboard extends \Filament\Pages\Dashboard
         return [
             StatsOverview::class,
             NutritionStatusWidget::class,
+            RehabilitationRateWidget::class,
             AtRiskChildrenWidget::class,
             RecentVisitsWidget::class,
         ];

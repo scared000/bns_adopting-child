@@ -18,17 +18,31 @@ class StatsOverview extends BaseWidget
     protected function getStats(): array
     {
         $year = (int) ($this->filters['year'] ?? now()->year);
-        $activeChildrenCount = AdoptedChild::whereHas('officeVisits', function ($query) use ($year) {
-            $query->whereYear('visit_date', $year);
-        })->count();
+        $municipalityId = $this->filters['municipality_id'] ?? null;
+
+        $activeChildrenCount = AdoptedChild::query()
+            ->when($municipalityId, fn ($q) => $q->where('municipality_id', $municipalityId))
+            ->whereHas('officeVisits', fn ($q) => $q->whereYear('visit_date', $year))
+            ->count();
+
         $totalBns = BaranggayNutritionScholars::count();
-        $totalVisits = OfficeChildVisit::whereYear('visit_date', $year)->count();
+
+        $totalVisits = OfficeChildVisit::whereYear('visit_date', $year)
+            ->when($municipalityId, fn ($q) => $q->whereHas(
+                'child', fn ($q) => $q->where('municipality_id', $municipalityId)
+            ))
+            ->count();
+
         $latestVisitIds = OfficeChildVisit::whereYear('visit_date', $year)
+            ->when($municipalityId, fn ($q) => $q->whereHas(
+                'child', fn ($q) => $q->where('municipality_id', $municipalityId)
+            ))
             ->selectRaw('MAX(id) as id')
             ->groupBy('adopted_id')
             ->pluck('id');
 
         $latestStatuses = OfficeChildVisit::whereIn('id', $latestVisitIds)->pluck('status');
+
         $normalCount = $latestStatuses->filter(fn ($s) => str_contains(strtolower($s ?? ''), 'normal'))->count();
         $atRiskCount = $latestStatuses->filter(function ($s) {
             $s = strtolower($s ?? '');
@@ -38,9 +52,15 @@ class StatsOverview extends BaseWidget
                 str_contains($s, 'stunted');
         })->count();
 
-        $normalPercent = $activeChildrenCount > 0? round(($normalCount / $activeChildrenCount) * 100, 1): 0;
+        $normalPercent = $activeChildrenCount > 0
+            ? round(($normalCount / $activeChildrenCount) * 100, 1)
+            : 0;
+
         $thisMonthVisits = OfficeChildVisit::whereYear('visit_date', $year)
             ->whereMonth('visit_date', now()->month)
+            ->when($municipalityId, fn ($q) => $q->whereHas(
+                'child', fn ($q) => $q->where('municipality_id', $municipalityId)
+            ))
             ->count();
 
         $yearLabel = (string) $year;
