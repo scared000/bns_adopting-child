@@ -157,6 +157,7 @@ class AdoptedChildForm
             'profile_path' => $record->profile_path,
             'age_display' => $ageDisplay,
             'age_months' => $ageMonths,
+            'underlying_cause' => $record->underlying_cause,
 
             // Guardian type selector
             'guardian_type' => $guardianType,
@@ -551,7 +552,6 @@ class AdoptedChildForm
         return Step::make('Guardian Information')
             ->icon('heroicon-o-users')
             ->schema([
-                //Guardian type selector
                 Section::make('Who is the child\'s guardian?')
                     ->description('Select the type of guardian setup for this child. Only the relevant fields will appear.')
                     ->schema([
@@ -559,9 +559,9 @@ class AdoptedChildForm
                             ->label('Guardian Type')
                             ->options([
                                 'mother_and_father' => '👨‍👩‍👦 Mother & Father',
-                                'mother_only' => '👩 Mother Only',
-                                'father_only' => '👨 Father Only',
-                                'guardian' => '🧑‍🤝‍🧑 Guardian',
+                                'mother_only'       => '👩 Mother Only',
+                                'father_only'       => '👨 Father Only',
+                                'guardian'          => '🧑‍🤝‍🧑 Guardian',
                             ])
                             ->default('mother_and_father')
                             ->inline()
@@ -570,99 +570,92 @@ class AdoptedChildForm
                             ->required(),
                     ]),
 
-                // Mother Section
-                Section::make('Mother Profile')
-                    ->icon('heroicon-o-user')
-                    ->hidden(fn (Get $get): bool => !in_array($get('guardian_type'), ['mother_and_father', 'mother_only']))
+                // ── Grid wrapper: Mother & Father sit side-by-side when both visible ──
+                Grid::make(2)
                     ->schema([
-                        TextInput::make('mother_firstname')
-                            ->label('First Name')
-                            ->required(fn (Get $get): bool => in_array($get('guardian_type'), ['mother_and_father', 'mother_only'])),
-                        Grid::make(2)
+
+                        // Mother Section
+                        Section::make('Mother Profile')
+                            ->icon('heroicon-o-user')
+                            ->hidden(fn (Get $get): bool => !in_array($get('guardian_type'), ['mother_and_father', 'mother_only']))
+                            ->columnSpan(fn (Get $get): int => $get('guardian_type') === 'mother_only' ? 2 : 1)
                             ->schema([
-                                TextInput::make('mother_middlename')
-                                    ->label('Middle Name'),
-                                TextInput::make('mother_lastname')
-                                    ->label('Last Name')
+                                TextInput::make('mother_firstname')
+                                    ->label('First Name')
                                     ->required(fn (Get $get): bool => in_array($get('guardian_type'), ['mother_and_father', 'mother_only'])),
-                                TextInput::make('mother_suffix')
-                                    ->label('Suffix'),
-                                DatePicker::make('mother_birthdate')
-                                    ->label('Birth Date'),
-                                Select::make('mother_relation')
-                                    ->label('Relationship to Child')
-                                    ->options(self::relationOptions('mother'))
-                                    ->searchable(),
-                                TextInput::make('mother_occupation')
-                                    ->label('Occupation & Skills'),
-                                Select::make('mother_educational_attainment')
-                                    ->label('Highest Educational Attainment')
-                                    ->options(self::educationalOptions())
-                                    ->native(false),
+                                Grid::make(2)->schema([
+                                    TextInput::make('mother_middlename')->label('Middle Name'),
+                                    TextInput::make('mother_lastname')
+                                        ->label('Last Name')
+                                        ->required(fn (Get $get): bool => in_array($get('guardian_type'), ['mother_and_father', 'mother_only'])),
+                                    TextInput::make('mother_suffix')->label('Suffix'),
+                                    DatePicker::make('mother_birthdate')->label('Birth Date'),
+                                    Select::make('mother_relation')
+                                        ->label('Relationship to Child')
+                                        ->options(self::relationOptions('mother'))
+                                        ->searchable(),
+                                    TextInput::make('mother_occupation')->label('Occupation & Skills'),
+                                    Select::make('mother_educational_attainment')
+                                        ->label('Highest Educational Attainment')
+                                        ->options(self::educationalOptions())
+                                        ->native(false),
+                                ]),
                             ]),
-                    ]),
 
-                // Father Section
-                Section::make('Father Profile')
-                    ->icon('heroicon-o-user')
-                    ->hidden(fn (Get $get): bool => !in_array($get('guardian_type'), ['mother_and_father', 'father_only']))
-                    ->schema([
-                        TextInput::make('father_firstname')
-                            ->label('First Name')
-                            ->required(fn (Get $get): bool => in_array($get('guardian_type'), ['mother_and_father', 'father_only'])),
-                        Grid::make(2)
+                        // Father Section
+                        Section::make('Father Profile')
+                            ->icon('heroicon-o-user')
+                            ->hidden(fn (Get $get): bool => !in_array($get('guardian_type'), ['mother_and_father', 'father_only']))
+                            ->columnSpan(fn (Get $get): int => $get('guardian_type') === 'father_only' ? 2 : 1)
                             ->schema([
-                                TextInput::make('father_middlename')
-                                    ->label('Middle Name'),
-                                TextInput::make('father_lastname')
-                                    ->label('Last Name')
+                                TextInput::make('father_firstname')
+                                    ->label('First Name')
                                     ->required(fn (Get $get): bool => in_array($get('guardian_type'), ['mother_and_father', 'father_only'])),
-                                TextInput::make('father_suffix')
-                                    ->label('Suffix'),
-                                DatePicker::make('father_birthdate')
-                                    ->label('Birth Date'),
-                                Select::make('father_relation')
-                                    ->label('Relationship to Child')
-                                    ->options(self::relationOptions('father'))
-                                    ->searchable(),
-                                TextInput::make('father_occupation')
-                                    ->label('Occupation & Skills'),
-                                Select::make('father_educational_attainment')
-                                    ->label('Highest Educational Attainment')
-                                    ->options(self::educationalOptions())
-                                    ->native(false),
+                                Grid::make(2)->schema([
+                                    TextInput::make('father_middlename')->label('Middle Name'),
+                                    TextInput::make('father_lastname')
+                                        ->label('Last Name')
+                                        ->required(fn (Get $get): bool => in_array($get('guardian_type'), ['mother_and_father', 'father_only'])),
+                                    TextInput::make('father_suffix')->label('Suffix'),
+                                    DatePicker::make('father_birthdate')->label('Birth Date'),
+                                    Select::make('father_relation')
+                                        ->label('Relationship to Child')
+                                        ->options(self::relationOptions('father'))
+                                        ->searchable(),
+                                    TextInput::make('father_occupation')->label('Occupation & Skills'),
+                                    Select::make('father_educational_attainment')
+                                        ->label('Highest Educational Attainment')
+                                        ->options(self::educationalOptions())
+                                        ->native(false),
+                                ]),
                             ]),
-                    ]),
 
-                // Guardian Section
-                Section::make('Guardian Profile')
-                    ->icon('heroicon-o-identification')
-                    ->hidden(fn (Get $get): bool => $get('guardian_type') !== 'guardian')
-                    ->schema([
-                        TextInput::make('guardian_firstname')
-                            ->label('First Name')
-                            ->required(fn (Get $get): bool => $get('guardian_type') === 'guardian'),
-                        Grid::make(2)
+                        // Guardian Section — always full width, only shown for 'guardian' type
+                        Section::make('Guardian Profile')
+                            ->icon('heroicon-o-identification')
+                            ->hidden(fn (Get $get): bool => $get('guardian_type') !== 'guardian')
+                            ->columnSpan(2)
                             ->schema([
-                                TextInput::make('guardian_middlename')
-                                    ->label('Middle Name'),
-                                TextInput::make('guardian_lastname')
-                                    ->label('Last Name')
+                                TextInput::make('guardian_firstname')
+                                    ->label('First Name')
                                     ->required(fn (Get $get): bool => $get('guardian_type') === 'guardian'),
-                                TextInput::make('guardian_suffix')
-                                    ->label('Suffix'),
-                                DatePicker::make('guardian_birthdate')
-                                    ->label('Birth Date'),
-                                Select::make('guardian_relation')
-                                    ->label('Relationship to Child')
-                                    ->options(self::guardianRelationOptions())
-                                    ->searchable(),
-                                TextInput::make('guardian_occupation')
-                                    ->label('Occupation & Skills'),
-                                Select::make('guardian_educational_attainment')
-                                    ->label('Highest Educational Attainment')
-                                    ->options(self::educationalOptions())
-                                    ->native(false),
+                                Grid::make(2)->schema([
+                                    TextInput::make('guardian_middlename')->label('Middle Name'),
+                                    TextInput::make('guardian_lastname')
+                                        ->label('Last Name')
+                                        ->required(fn (Get $get): bool => $get('guardian_type') === 'guardian'),
+                                    TextInput::make('guardian_suffix')->label('Suffix'),
+                                    DatePicker::make('guardian_birthdate')->label('Birth Date'),
+                                    Select::make('guardian_relation')
+                                        ->label('Relationship to Child')
+                                        ->options(self::guardianRelationOptions())
+                                        ->searchable(),
+                                    TextInput::make('guardian_occupation')->label('Occupation & Skills'),
+                                    Select::make('guardian_educational_attainment')
+                                        ->label('Highest Educational Attainment')
+                                        ->options(self::educationalOptions())
+                                        ->native(false),
+                                ]),
                             ]),
                     ]),
             ]);

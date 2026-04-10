@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('family_profiles', function (Blueprint $table) {
             $table->id();
             $table->foreignId('child_id')->constrained('adopted_children')->cascadeOnDelete();
-            $table->enum('type', ['mother', 'father', 'fam_member'])->default('mother');
+            $table->enum('type', ['mother', 'father', 'fam_member', 'guardian'])->default('mother');
             $table->string('firstname')->nullable();
             $table->string('lastname')->nullable();
             $table->string('middlename')->nullable();

@@ -83,6 +83,11 @@ class AdoptedChild extends Model
         return $this->hasOne(FamilyProfile::class, 'child_id')
             ->where('type', 'father');
     }
+    public function guardianProfile(): HasOne
+    {
+        return $this->hasOne(FamilyProfile::class, 'child_id')
+            ->where('type', 'guardian');
+    }
     public function familyMembers(): HasMany
     {
         return $this->hasMany(FamilyProfile::class, 'child_id')

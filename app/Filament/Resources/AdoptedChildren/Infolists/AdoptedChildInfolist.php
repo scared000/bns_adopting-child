@@ -185,14 +185,17 @@ class AdoptedChildInfolist
             ->columns(2)
             ->schema([
                 Section::make('Mother')
+                    ->visible(fn ($record) => (bool) $record->motherProfile)
+                    ->columnSpan(fn ($record) => ($record->motherProfile && $record->fatherProfile) ? 1 : 2)
+                    ->columns(3)
                     ->schema([
                         TextEntry::make('motherProfile.firstname')
                             ->label(new HtmlString('<span style="font-weight:750;">Full Name</span>'))
                             ->formatStateUsing(fn ($record) =>
                             trim(
-                                ($record->motherProfile?->firstname ?? '') . ' ' .
+                                ($record->motherProfile?->firstname  ?? '') . ' ' .
                                 ($record->motherProfile?->middlename ?? '') . ' ' .
-                                ($record->motherProfile?->lastname ?? '')
+                                ($record->motherProfile?->lastname   ?? '')
                             ) ?: '—'
                             ),
                         TextEntry::make('motherProfile.birthdate')
@@ -201,48 +204,27 @@ class AdoptedChildInfolist
                             $state ? \Carbon\Carbon::parse($state)->format('F d, Y') : '—'),
                         TextEntry::make('motherProfile.relation')
                             ->label(new HtmlString('<span style="font-weight:750;">Relationship</span>'))
-                            ->formatStateUsing(fn ($state) => match ($state) {
-                                'biological_mother' => 'Biological Mother',
-                                'adoptive_mother'   => 'Adoptive Mother',
-                                'grandmother'       => 'Grandmother',
-                                'aunt'              => 'Aunt',
-                                'older_sibling'     => 'Older Sibling',
-                                'legal_guardian'    => 'Legal Guardian',
-                                'foster_parent'     => 'Foster Parent',
-                                'court_appointed'   => 'Court-Appointed Guardian',
-                                'family_friend'     => 'Family Friend',
-                                default             => ucwords(str_replace('_', ' ', $state ?? '—')),
-                            }),
+                            ->formatStateUsing(fn ($state) => self::relationLabel($state ?? '')),
                         TextEntry::make('motherProfile.occupation')
-                            ->label(new HtmlString('<span style="font-weight:750;">Occupation</span>')),
+                            ->label(new HtmlString('<span style="font-weight:750;">Occupation</span>'))
+                            ->placeholder('—'),
                         TextEntry::make('motherProfile.educational_attainment')
                             ->label(new HtmlString('<span style="font-weight:750;">Education</span>'))
-                            ->formatStateUsing(fn ($state) => match ($state) {
-                                'no_formal_education'   => 'No Formal Education',
-                                'elementary_undergraduate' => 'Elementary Undergraduate',
-                                'elementary_graduate'   => 'Elementary Graduate',
-                                'jhs_undergraduate'     => 'Junior High School Undergraduate',
-                                'jhs_graduate'          => 'Junior High School Graduate (Grade 10)',
-                                'shs_undergraduate'     => 'Senior High School Undergraduate',
-                                'shs_graduate'          => 'Senior High School Graduate (Grade 12)',
-                                'vocational'            => 'Vocational / Technical Course',
-                                'college_undergraduate' => 'College Undergraduate',
-                                'college_graduate'      => 'College Graduate',
-                                'masters'               => "Master's Degree",
-                                'doctorate'             => 'Doctorate Degree',
-                                default                 => ucwords(str_replace('_', ' ', $state ?? '—')),
-                            }),
+                            ->formatStateUsing(fn ($state) => self::educationLabel($state ?? '')),
                     ]),
 
                 Section::make('Father')
+                    ->visible(fn ($record) => (bool) $record->fatherProfile)
+                    ->columnSpan(fn ($record) => ($record->motherProfile && $record->fatherProfile) ? 1 : 2)
+                    ->columns(3)
                     ->schema([
                         TextEntry::make('fatherProfile.firstname')
                             ->label(new HtmlString('<span style="font-weight:750;">Full Name</span>'))
                             ->formatStateUsing(fn ($record) =>
                             trim(
-                                ($record->fatherProfile?->firstname ?? '') . ' ' .
+                                ($record->fatherProfile?->firstname  ?? '') . ' ' .
                                 ($record->fatherProfile?->middlename ?? '') . ' ' .
-                                ($record->fatherProfile?->lastname ?? '')
+                                ($record->fatherProfile?->lastname   ?? '')
                             ) ?: '—'
                             ),
                         TextEntry::make('fatherProfile.birthdate')
@@ -251,39 +233,84 @@ class AdoptedChildInfolist
                             $state ? \Carbon\Carbon::parse($state)->format('F d, Y') : '—'),
                         TextEntry::make('fatherProfile.relation')
                             ->label(new HtmlString('<span style="font-weight:750;">Relationship</span>'))
-                            ->formatStateUsing(fn ($state) => match ($state) {
-                                'biological_mother' => 'Biological Mother',
-                                'adoptive_mother'   => 'Adoptive Mother',
-                                'grandmother'       => 'Grandmother',
-                                'aunt'              => 'Aunt',
-                                'older_sibling'     => 'Older Sibling',
-                                'legal_guardian'    => 'Legal Guardian',
-                                'foster_parent'     => 'Foster Parent',
-                                'court_appointed'   => 'Court-Appointed Guardian',
-                                'family_friend'     => 'Family Friend',
-                                default             => ucwords(str_replace('_', ' ', $state ?? '—')),
-                            }),
+                            ->formatStateUsing(fn ($state) => self::relationLabel($state ?? '')),
                         TextEntry::make('fatherProfile.occupation')
-                            ->label(new HtmlString('<span style="font-weight:750;">Occupation</span>')),
+                            ->label(new HtmlString('<span style="font-weight:750;">Occupation</span>'))
+                            ->placeholder('—'),
                         TextEntry::make('fatherProfile.educational_attainment')
                             ->label(new HtmlString('<span style="font-weight:750;">Education</span>'))
-                            ->formatStateUsing(fn ($state) => match ($state) {
-                                'no_formal_education'   => 'No Formal Education',
-                                'elementary_undergraduate' => 'Elementary Undergraduate',
-                                'elementary_graduate'   => 'Elementary Graduate',
-                                'jhs_undergraduate'     => 'Junior High School Undergraduate',
-                                'jhs_graduate'          => 'Junior High School Graduate (Grade 10)',
-                                'shs_undergraduate'     => 'Senior High School Undergraduate',
-                                'shs_graduate'          => 'Senior High School Graduate (Grade 12)',
-                                'vocational'            => 'Vocational / Technical Course',
-                                'college_undergraduate' => 'College Undergraduate',
-                                'college_graduate'      => 'College Graduate',
-                                'masters'               => "Master's Degree",
-                                'doctorate'             => 'Doctorate Degree',
-                                default                 => ucwords(str_replace('_', ' ', $state ?? '—')),
-                            }),
+                            ->formatStateUsing(fn ($state) => self::educationLabel($state ?? '')),
                     ]),
+
+                Section::make('Guardian')
+                    ->visible(fn ($record) => ! $record->motherProfile && ! $record->fatherProfile && (bool) $record->guardianProfile)
+                    ->columnSpan(2)
+                    ->columns(3)
+                    ->schema([
+                        TextEntry::make('guardianProfile.firstname')
+                            ->label(new HtmlString('<span style="font-weight:750;">Full Name</span>'))
+                            ->formatStateUsing(fn ($record) =>
+                            trim(
+                                ($record->guardianProfile?->firstname  ?? '') . ' ' .
+                                ($record->guardianProfile?->middlename ?? '') . ' ' .
+                                ($record->guardianProfile?->lastname   ?? '')
+                            ) ?: '—'
+                            ),
+                        TextEntry::make('guardianProfile.birthdate')
+                            ->label(new HtmlString('<span style="font-weight:750;">Birth Date</span>'))
+                            ->formatStateUsing(fn ($state) =>
+                            $state ? \Carbon\Carbon::parse($state)->format('F d, Y') : '—'),
+                        TextEntry::make('guardianProfile.relation')
+                            ->label(new HtmlString('<span style="font-weight:750;">Relationship</span>'))
+                            ->formatStateUsing(fn ($state) => self::relationLabel($state ?? '')),
+                        TextEntry::make('guardianProfile.occupation')
+                            ->label(new HtmlString('<span style="font-weight:750;">Occupation</span>'))
+                            ->placeholder('—'),
+                        TextEntry::make('guardianProfile.educational_attainment')
+                            ->label(new HtmlString('<span style="font-weight:750;">Education</span>'))
+                            ->formatStateUsing(fn ($state) => self::educationLabel($state ?? '')),
+                    ]),
+
             ]);
+    }
+
+    private static function relationLabel(string $state): string
+    {
+        return match ($state) {
+            'biological_mother' => 'Biological Mother',
+            'biological_father' => 'Biological Father',
+            'adoptive_mother'   => 'Adoptive Mother',
+            'adoptive_father'   => 'Adoptive Father',
+            'grandmother'       => 'Grandmother',
+            'grandfather'       => 'Grandfather',
+            'aunt'              => 'Aunt',
+            'uncle'             => 'Uncle',
+            'older_sibling'     => 'Older Sibling',
+            'legal_guardian'    => 'Legal Guardian',
+            'foster_parent'     => 'Foster Parent',
+            'court_appointed'   => 'Court-Appointed Guardian',
+            'family_friend'     => 'Family Friend',
+            default             => ucwords(str_replace('_', ' ', $state)),
+        };
+    }
+
+    private static function educationLabel(string $state): string
+    {
+        return match ($state) {
+            'no_formal_education'      => 'No Formal Education',
+            'elementary_undergraduate' => 'Elementary Undergraduate',
+            'elementary_graduate'      => 'Elementary Graduate',
+            'jhs_undergraduate'        => 'Junior High School Undergraduate',
+            'jhs_graduate'             => 'Junior High School Graduate (Grade 10)',
+            'shs_undergraduate'        => 'Senior High School Undergraduate',
+            'shs_graduate'             => 'Senior High School Graduate (Grade 12)',
+            'vocational'               => 'Vocational / Technical Course',
+            'college_undergraduate'    => 'College Undergraduate',
+            'college_graduate'         => 'College Graduate',
+            'masters'                  => "Master's Degree",
+            'doctorate'                => 'Doctorate Degree',
+            default                    => ucwords(str_replace('_', ' ', $state)),
+        };
     }
 
     private static function sectionFamilyMembers(): Section
