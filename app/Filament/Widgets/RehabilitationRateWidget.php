@@ -15,6 +15,7 @@ class RehabilitationRateWidget extends ApexChartWidget
     protected static ?string $chartId = 'rehabilitationRate';
     protected static ?string $heading = 'Rehabilitation Rate';
     protected static ?string $subheading = 'Based on WFA & WFH status';
+    protected static ?int $contentHeight = 172;
 
     public function updatedFilters(): void
     {
@@ -38,7 +39,7 @@ class RehabilitationRateWidget extends ApexChartWidget
 
     protected function getOptions(): array
     {
-        $year           = (int) ($this->filters['year'] ?? now()->year);
+        $year = (int) ($this->filters['year'] ?? now()->year);
         $municipalityId = $this->filters['municipality_id'] ?? null;
 
         $children = AdoptedChild::query()
@@ -50,9 +51,9 @@ class RehabilitationRateWidget extends ApexChartWidget
             ])
             ->get();
 
-        $rehabilitated    = 0;
+        $rehabilitated = 0;
         $notRehabilitated = 0;
-        $notAssessed      = 0;
+        $notAssessed = 0;
 
         foreach ($children as $child) {
             $latestVisit = $child->officeVisits->first();
@@ -69,53 +70,46 @@ class RehabilitationRateWidget extends ApexChartWidget
 
         $series = [$rehabilitated, $notRehabilitated];
         $labels = [
-            "Rehabilitated: {$rehabilitated}",
-            "Not Yet Rehabilitated: {$notRehabilitated}",
+            "Rehabilitated: $rehabilitated ",
+            "Not Yet Rehabilitated: $notRehabilitated",
         ];
         $colors = ['#22c55e', '#f97316'];
 
         if ($notAssessed > 0) {
             $series[] = $notAssessed;
-            $labels[] = "Not Yet Assessed: {$notAssessed}";
+            $labels[] = "Not Yet Assessed: $notAssessed";
             $colors[] = '#94a3b8';
         }
 
         return [
             'chart' => [
                 'type'    => 'pie',
-                'height'  => 320,
+                'height'  => 172,
                 'toolbar' => ['show' => false],
             ],
             'series' => $series,
             'labels' => $labels,
             'colors' => $colors,
             'legend' => [
-                'position' => 'bottom',
-                'fontSize' => '13px',
-                'markers'  => [
+                'position'  => 'right',
+                'fontSize'  => '12px',
+                'offsetY'   => 0,
+                'markers'   => [
                     'fillColors' => $colors,
                 ],
             ],
             'dataLabels' => [
-                'enabled' => true,
-                'style'   => ['fontSize' => '13px', 'fontWeight' => '700'],
-                'formatter' => 'function(val, opts) {
-                    var count = opts.w.config.series[opts.seriesIndex];
-                    var pct   = Math.round(val * 10) / 10;
-                    return count + " (" + pct + "%)";
-                }',
-                'dropShadow' => ['enabled' => false],
+                'enabled' => false,
             ],
             'tooltip' => [
-                'y' => [
-                    'formatter' => 'function(val) { return val + " children"; }',
-                ],
+                'enabled' => false,
             ],
             'plotOptions' => [
                 'pie' => [
-                    'dataLabels' => ['offset' => -20],
+                    'dataLabels' => ['offset' => -12],
                 ],
             ],
+            'stroke' => ['width' => 0],
         ];
     }
 }

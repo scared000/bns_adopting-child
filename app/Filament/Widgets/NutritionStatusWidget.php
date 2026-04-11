@@ -16,9 +16,7 @@ class NutritionStatusWidget extends Widget
 
     protected function getExtraAttributes(): array
     {
-        return [
-            'class' => 'h-full',
-        ];
+        return [];
     }
 
     public function getNutritionDataProperty(): array
