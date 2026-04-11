@@ -4,6 +4,7 @@ namespace App\Filament\Resources\AdoptedChildren\Infolists;
 
 use App\Filament\Resources\AdoptedChildren\Tables\AdoptedChildrenTable;
 use App\Filament\Resources\OfficeVisits\Schemas\OfficeVisitsForm;
+use App\Helpers\NutritionalStatus;
 use App\Livewire\ChildImmunizationTable;
 use App\Models\BaranggayNutritionScholars;
 use App\Models\Office;
@@ -13,9 +14,11 @@ use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Infolists\Components\ImageEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Notifications\Notification;
@@ -487,6 +490,7 @@ class AdoptedChildInfolist
                             ->suffix('cm')
                             ->step(0.1)
                             ->minValue(0)
+                            ->live()
                             ->required(),
 
                         TextInput::make('weight')
@@ -495,8 +499,123 @@ class AdoptedChildInfolist
                             ->suffix('kg')
                             ->step(0.1)
                             ->minValue(0)
+                            ->live()
                             ->required(),
                     ]),
+
+                    // Live nutritional status preview
+                    Placeholder::make('nutritional_status_preview')
+                        ->label('')
+                        ->hiddenLabel()
+                        ->content(function (Get $get): HtmlString {
+                            $months = $get('age_months');
+                            $weight = (float) $get('weight');
+                            $height = (float) $get('height');
+                            $sex    = $get('sex');
+
+                            if ($months === null || $weight <= 0 || $height <= 0
+                                || ! in_array($sex, ['male', 'female'])) {
+                                return new HtmlString('
+                                    <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;
+                                                border-radius:10px;border:2px dashed #d1d5db;background:#f9fafb;">
+                                        <svg style="width:24px;height:24px;color:#9ca3af;flex-shrink:0;"
+                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                  d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0
+                                                     002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2
+                                                     2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2
+                                                     2 0 01-2-2z"/>
+                                        </svg>
+                                        <div>
+                                            <p style="margin:0;font-size:13px;font-weight:600;color:#6b7280;">
+                                                Nutritional Status</p>
+                                            <p style="margin:0;font-size:12px;color:#9ca3af;">
+                                                Enter height &amp; weight to compute status</p>
+                                        </div>
+                                    </div>');
+                            }
+
+                            $status = NutritionalStatus::classify((int) $months, $weight, $height, $sex);
+
+                            $config = match (true) {
+                                str_contains($status, 'Obese'),
+                                str_contains($status, 'Severely Underweight'),
+                                str_contains($status, 'SUW'),
+                                str_contains($status, 'SST'),
+                                str_contains($status, 'Wasted (W)') => [
+                                    'bg' => '#fef2f2', 'border' => '#fca5a5', 'text' => '#dc2626',
+                                    'icon_bg' => '#fee2e2', 'icon_color' => '#dc2626',
+                                    'icon' => 'M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                                ],
+                                str_contains($status, 'Overweight'),
+                                str_contains($status, 'At Risk'),
+                                str_contains($status, 'OW') => [
+                                    'bg' => '#eff6ff', 'border' => '#93c5fd', 'text' => '#2563eb',
+                                    'icon_bg' => '#dbeafe', 'icon_color' => '#2563eb',
+                                    'icon' => 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                                ],
+                                str_contains($status, 'Underweight'),
+                                str_contains($status, 'Stunted'),
+                                str_contains($status, 'UW'),
+                                str_contains($status, 'ST'),
+                                str_contains($status, 'MW') => [
+                                    'bg' => '#fffbeb', 'border' => '#fcd34d', 'text' => '#d97706',
+                                    'icon_bg' => '#fef3c7', 'icon_color' => '#d97706',
+                                    'icon' => 'M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
+                                ],
+                                default => [
+                                    'bg' => '#f0fdf4', 'border' => '#86efac', 'text' => '#16a34a',
+                                    'icon_bg' => '#dcfce7', 'icon_color' => '#16a34a',
+                                    'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z',
+                                ],
+                            };
+
+                            $bmi = round($weight / (($height / 100) ** 2), 1);
+
+                            return new HtmlString("
+                                <div style=\"padding:20px;border-radius:12px;border:2px solid {$config['border']};background:{$config['bg']};\">
+                                    <div style=\"display:flex;align-items:center;gap:14px;\">
+                                        <div style=\"width:48px;height:48px;border-radius:50%;background:{$config['icon_bg']};
+                                                    display:flex;align-items:center;justify-content:center;flex-shrink:0;\">
+                                            <svg style=\"width:26px;height:26px;\" fill=\"none\"
+                                                 stroke=\"{$config['icon_color']}\" viewBox=\"0 0 24 24\">
+                                                <path stroke-linecap=\"round\" stroke-linejoin=\"round\"
+                                                      stroke-width=\"2\" d=\"{$config['icon']}\"/>
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <p style=\"margin:0;font-size:11px;font-weight:600;text-transform:uppercase;
+                                                       letter-spacing:0.08em;color:{$config['text']};opacity:0.8;\">
+                                                Nutritional Status</p>
+                                            <p style=\"margin:4px 0 0;font-size:20px;font-weight:800;color:{$config['text']};\">
+                                                {$status}</p>
+                                        </div>
+                                    </div>
+                                    <div style=\"display:flex;gap:20px;margin-top:12px;padding-top:12px;
+                                                border-top:1px solid {$config['border']};\">
+                                        <div style=\"text-align:center;\">
+                                            <p style=\"margin:0;font-size:11px;color:{$config['text']};font-weight:600;
+                                                       text-transform:uppercase;letter-spacing:0.05em;\">Height</p>
+                                            <p style=\"margin:4px 0 0;font-size:16px;font-weight:700;color:{$config['text']};\">{$height} cm</p>
+                                        </div>
+                                        <div style=\"text-align:center;\">
+                                            <p style=\"margin:0;font-size:11px;color:{$config['text']};font-weight:600;
+                                                       text-transform:uppercase;letter-spacing:0.05em;\">Weight</p>
+                                            <p style=\"margin:4px 0 0;font-size:16px;font-weight:700;color:{$config['text']};\">{$weight} kg</p>
+                                        </div>
+                                        <div style=\"text-align:center;\">
+                                            <p style=\"margin:0;font-size:11px;color:{$config['text']};font-weight:600;
+                                                       text-transform:uppercase;letter-spacing:0.05em;\">BMI</p>
+                                            <p style=\"margin:4px 0 0;font-size:16px;font-weight:700;color:{$config['text']};\">{$bmi}</p>
+                                        </div>
+                                        <div style=\"text-align:center;\">
+                                            <p style=\"margin:0;font-size:11px;color:{$config['text']};font-weight:600;
+                                                       text-transform:uppercase;letter-spacing:0.05em;\">Age</p>
+                                            <p style=\"margin:4px 0 0;font-size:16px;font-weight:700;color:{$config['text']};\">{$months} mos</p>
+                                        </div>
+                                    </div>
+                                </div>");
+                        }),
 
                     FileUpload::make('visit_documentation')
                         ->label('Visit Photos / Documents')
@@ -620,11 +739,11 @@ class AdoptedChildInfolist
                             <td style='padding:12px 16px;font-size:13px;color:#374151;font-weight:600;'>{$origWeight}</td>
                             <td style='padding:12px 16px;font-size:13px;'>
                                     " . ($record->nutritional_status
-                                    ? "<span style='padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;" .
-                                    $badgeStyle($record->nutritional_status) . "white-space:nowrap;display:inline-block;'>" .
-                                    htmlspecialchars($record->nutritional_status) . "</span>"
-                                    : "<span style='color:#6b7280;font-style:italic;'>—</span>"
-                                ) . "
+                                ? "<span style='padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;" .
+                                $badgeStyle($record->nutritional_status) . "white-space:nowrap;display:inline-block;'>" .
+                                htmlspecialchars($record->nutritional_status) . "</span>"
+                                : "<span style='color:#6b7280;font-style:italic;'>—</span>"
+                            ) . "
                             </td>
                         </tr>";
 
