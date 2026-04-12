@@ -63,6 +63,7 @@ class Dashboard extends \Filament\Pages\Dashboard
                 ->prefixIcon('heroicon-o-calendar-days'),
 
             Select::make('municipality_id')
+                ->label('Municipality')
                 ->options(
                     Municipality::with('province')
                         ->get()
