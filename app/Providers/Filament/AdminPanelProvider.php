@@ -45,7 +45,7 @@ class AdminPanelProvider extends PanelProvider
             ->homeUrl(fn () => auth()->user()?->hasRole('super_admin')
                 ? route('filament.admin.pages.dashboard')
                 : route('filament.admin.auth.profile'))
-            ->profile(isSimple: false, page: EditProfile::class)
+            ->profile(page: EditProfile::class, isSimple: false)
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->colors([
                 'primary' => Color::Amber,
