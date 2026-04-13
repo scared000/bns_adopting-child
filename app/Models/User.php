@@ -67,7 +67,7 @@ class User extends Authenticatable implements HasName
 
     public function getImpersonateRedirectTo(): string
     {
-        if ($this->hasRole('super_admin')) {
+        if ($this->hasAnyRole('super_admin', 'admin')) {
             return route('filament.admin.pages.dashboard');
         }
 
