@@ -2,3 +2,213 @@
 
 @source '../../../../app/Filament/Admin/**/*';
 @source '../../../../resources/views/filament/**/*';
+
+   /*Davao de Oro — Gold Palette Tokens*/
+:root {
+    --gold-50:  #fffbeb;
+    --gold-100: #fef3c7;
+    --gold-200: #fde68a;
+    --gold-300: #fbbf24;
+    --gold-400: #f59e0b;
+    --gold-500: #d97706;
+    --gold-600: #b45309;
+    --gold-700: #92400e;
+    --gold-800: #78350f;
+    --gold-900: #451a03;
+
+    --surface:        #ffffff;
+    --surface-2:      #fffbf2;
+    --border:         #fde68a;
+    --border-strong:  #f59e0b;
+    --text-primary:   #1c0a00;
+    --text-secondary: #78350f;
+    --text-muted:     #a16207;
+}
+.dark {
+    --surface:        #1c1008;
+    --surface-2:      #251508;
+    --border:         #78350f;
+    --border-strong:  #b45309;
+    --text-primary:   #fef3c7;
+    --text-secondary: #fbbf24;
+    --text-muted:     #d97706;
+}
+
+   /*SIDEBAR — Container & Background*/
+.fi-sidebar {
+    background-color: var(--surface) !important;
+    border-right: 1px solid var(--border) !important;
+}
+
+.dark .fi-sidebar {
+    background-color: var(--surface) !important;
+    border-right-color: var(--border) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR — Logo / Brand Header Area
+   ══════════════════════════════════════════════════════════════ */
+.fi-sidebar-header {
+    background-color: var(--surface) !important;
+    border-bottom: 1px solid var(--border) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR — Navigation Group Labels
+   ══════════════════════════════════════════════════════════════ */
+.fi-nav-group-label {
+    color: var(--text-muted) !important;
+    font-size: 0.65rem !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.1em !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR — Nav Items (default/inactive state)
+   ══════════════════════════════════════════════════════════════ */
+.fi-nav-item-button,
+.fi-nav-item > a {
+    color: var(--text-secondary) !important;
+    border-radius: 0.625rem !important;
+    transition: background 0.15s, color 0.15s !important;
+}
+
+.fi-nav-item-button:hover,
+.fi-nav-item > a:hover {
+    background-color: var(--gold-50) !important;
+    color: var(--gold-600) !important;
+}
+
+.dark .fi-nav-item-button:hover,
+.dark .fi-nav-item > a:hover {
+    background-color: rgba(120, 53, 15, 0.25) !important;
+    color: var(--gold-300) !important;
+}
+
+/* Nav item icons */
+.fi-nav-item-button .fi-icon,
+.fi-nav-item > a .fi-icon {
+    color: var(--text-muted) !important;
+}
+
+.fi-nav-item-button:hover .fi-icon,
+.fi-nav-item > a:hover .fi-icon {
+    color: var(--gold-500) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR — Active Nav Item
+   ══════════════════════════════════════════════════════════════ */
+.fi-nav-item-active > .fi-nav-item-button,
+.fi-nav-item-active > a {
+    background-color: var(--gold-100) !important;
+    color: var(--gold-700) !important;
+    font-weight: 700 !important;
+    box-shadow: inset 3px 0 0 var(--gold-500) !important;
+}
+
+.dark .fi-nav-item-active > .fi-nav-item-button,
+.dark .fi-nav-item-active > a {
+    background-color: rgba(120, 53, 15, 0.35) !important;
+    color: var(--gold-200) !important;
+    box-shadow: inset 3px 0 0 var(--gold-400) !important;
+}
+
+.fi-nav-item-active .fi-icon {
+    color: var(--gold-600) !important;
+}
+
+.dark .fi-nav-item-active .fi-icon {
+    color: var(--gold-300) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR — Badge Counts (e.g. "13", "2", "7")
+   ══════════════════════════════════════════════════════════════ */
+.fi-nav-item-badge {
+    background-color: var(--gold-100) !important;
+    color: var(--gold-700) !important;
+    font-weight: 700 !important;
+    border: 1px solid var(--gold-200) !important;
+}
+
+.fi-nav-item-active .fi-nav-item-badge {
+    background-color: var(--gold-500) !important;
+    color: #fff !important;
+    border-color: var(--gold-500) !important;
+}
+
+.dark .fi-nav-item-badge {
+    background-color: rgba(120, 53, 15, 0.35) !important;
+    color: var(--gold-300) !important;
+    border-color: var(--border) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR — Collapsible Group Toggle (chevron + label)
+   ══════════════════════════════════════════════════════════════ */
+.fi-nav-group > button {
+    color: var(--text-muted) !important;
+    transition: color 0.15s !important;
+}
+
+.fi-nav-group > button:hover {
+    color: var(--gold-600) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR — Footer (User Menu area)
+   ══════════════════════════════════════════════════════════════ */
+.fi-sidebar-footer {
+    background-color: var(--surface) !important;
+    border-top: 1px solid var(--border) !important;
+}
+
+.fi-user-menu-button {
+    color: var(--text-secondary) !important;
+    transition: background 0.15s !important;
+}
+
+.fi-user-menu-button:hover {
+    background-color: var(--gold-50) !important;
+}
+
+.dark .fi-user-menu-button:hover {
+    background-color: rgba(120, 53, 15, 0.25) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   SIDEBAR — Collapse Toggle Button
+   ══════════════════════════════════════════════════════════════ */
+.fi-sidebar-close-overlay-button,
+.fi-btn-sidebar-toggle {
+    color: var(--text-muted) !important;
+}
+
+.fi-btn-sidebar-toggle:hover {
+    background-color: var(--gold-50) !important;
+    color: var(--gold-600) !important;
+}
+
+.dark .fi-btn-sidebar-toggle:hover {
+    background-color: rgba(120, 53, 15, 0.25) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   TOPBAR (if topNavigation is ever enabled)
+   ══════════════════════════════════════════════════════════════ */
+.fi-topbar {
+    background-color: var(--surface) !important;
+    border-bottom: 1px solid var(--border) !important;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   PAGE WRAPPER — subtle warm tint on the main content area
+   ══════════════════════════════════════════════════════════════ */
+.fi-main {
+    background-color: #fafaf7 !important;
+}
+
+.dark .fi-main {
+    background-color: #130d06 !important;
+}

@@ -28,24 +28,63 @@ final class AssignmentSummarySection
             : '—';
         $officeName  = $assignment?->office?->office ?? '—';
 
+        // Colour constants (Davao de Oro gold palette)
+        $surface      = '#ffffff';
+        $surface2     = '#fffbf2';
+        $borderLight  = '#fde68a';
+        $borderStrong = '#d97706';
+        $textPrimary  = '#1c0a00';
+        $textMuted    = '#a16207';
+        $gold100      = '#fef3c7';
+        $gold200      = '#fde68a';
+        $gold600      = '#b45309';
+        $shadow       = '0 1px 6px rgba(180,83,9,0.08), 0 0 0 1px rgba(253,230,138,0.3)';
+
+        //Shared style fragments
+        $cardStyle = "display:grid;grid-template-columns:1fr 1fr 1fr;border-radius:14px;"
+            . "background:{$surface};overflow:hidden;"
+            . "border:1px solid {$borderLight};border-top:4px solid {$borderStrong};"
+            . "box-shadow:{$shadow};";
+
+        $cellBase = "text-align:center;padding:22px 16px;background:{$surface};";
+        $cellMid  = $cellBase . "border-left:1px solid {$borderLight};border-right:1px solid {$borderLight};";
+
+        $labelStyle = "font-size:10px;font-weight:700;text-transform:uppercase;"
+            . "letter-spacing:.1em;color:{$textMuted};margin:6px 0 0;";
+
+        $pillStyle = "display:inline-block;margin-top:6px;padding:2px 10px;border-radius:999px;"
+            . "font-size:10px;font-weight:800;"
+            . "background:{$gold100};color:{$gold600};border:1px solid {$gold200};";
+
+        $hoverOn  = "this.style.background='{$surface2}'";
+        $hoverOff = "this.style.background='{$surface}'";
+
         return new HtmlString("
-        <div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;border-top:4px solid #f97316;
-                    border-radius:12px;background:#fff;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);'>
-            <div style='text-align:center;padding:20px 16px;'>
-                <p style='font-size:28px;font-weight:800;color:#111827;margin:0;'>{$totalVisits}</p>
-                <p style='font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:4px 0 0;'>
-                    Total Visits</p>
+        <div style=\"{$cardStyle}\">
+
+            <div style=\"{$cellBase}\" onmouseover=\"{$hoverOn}\" onmouseout=\"{$hoverOff}\">
+                <p style=\"font-size:30px;font-weight:900;color:{$textPrimary};margin:0;line-height:1;\">
+                    {$totalVisits}
+                </p>
+                <p style=\"{$labelStyle}\">Total Visits</p>
             </div>
-            <div style='text-align:center;padding:20px 16px;border-left:1px solid #f3f4f6;border-right:1px solid #f3f4f6;'>
-                <p style='font-size:18px;font-weight:700;color:#111827;margin:0;'>{$bnsName}</p>
-                <p style='font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:4px 0 0;'>
-                    Assigned BNS</p>
+
+            <div style=\"{$cellMid}\" onmouseover=\"{$hoverOn}\" onmouseout=\"{$hoverOff}\">
+                <p style=\"font-size:17px;font-weight:800;color:{$textPrimary};margin:0;line-height:1.2;\">
+                    {$bnsName}
+                </p>
+                <p style=\"{$labelStyle}\">Assigned BNS</p>
+                <span style=\"{$pillStyle}\">BNS</span>
             </div>
-            <div style='text-align:center;padding:20px 16px;'>
-                <p style='font-size:15px;font-weight:700;color:#111827;margin:0;'>{$officeName}</p>
-                <p style='font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;margin:4px 0 0;'>
-                    Assigned Office</p>
+
+            <div style=\"{$cellBase}\" onmouseover=\"{$hoverOn}\" onmouseout=\"{$hoverOff}\">
+                <p style=\"font-size:14px;font-weight:700;color:{$textPrimary};margin:0;line-height:1.2;\">
+                    {$officeName}
+                </p>
+                <p style=\"{$labelStyle}\">Assigned Office</p>
+                <span style=\"{$pillStyle}\">Office</span>
             </div>
+
         </div>");
     }
 }
