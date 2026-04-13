@@ -29,7 +29,7 @@ class Dashboard extends \Filament\Pages\Dashboard
     protected static string $routePath = '/';
     public static function canAccess(): bool
     {
-        return auth()->user()->hasRole('super_admin');
+        return auth()->user()->hasAnyRole('super_admin', 'admin');
     }
     public int $exportMonth;
     public int $exportYear;
