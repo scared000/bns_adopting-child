@@ -14,12 +14,14 @@
             </div>
             {{ ($this->addVaccineAction)([]) }}
         </div>
+
         {{-- Table --}}
         <div class="overflow-x-auto">
             <table class="w-full text-sm text-left">
                 <thead>
                 <tr class="bg-gray-50/50 dark:bg-gray-800/50 border-b border-gray-100 dark:border-gray-800">
                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Vaccine Details</th>
+                    <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Recommended Doses</th>
                     <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Dose Schedule</th>
                     <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Status</th>
                     <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest">Actions</th>
@@ -27,7 +29,11 @@
                 </thead>
                 <tbody class="divide-y divide-gray-100 dark:divide-gray-800">
                 @forelse ($records as $record)
+                    @php
+                        $info = $vaccineInfo[$record->vaccine_description] ?? null;
+                    @endphp
                     <tr class="hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
+
                         {{-- Vaccine Name --}}
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-2.5">
@@ -38,6 +44,43 @@
                                     {{ $record->vaccine_description }}
                                 </span>
                             </div>
+                        </td>
+
+                        {{-- Recommended Doses (reference column) --}}
+                        <td class="px-6 py-4">
+                            @if ($info)
+                                <div class="flex flex-col gap-1.5">
+                                    {{-- Dose count badge --}}
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold"
+                                              style="background-color:#fff7ed;color:#c2410c;border:1px solid #fed7aa;">
+                                            <svg class="w-3 h-3 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                                <path d="M10 9a3 3 0 100-6 3 3 0 000 6zM6 8a2 2 0 11-4 0 2 2 0 014 0zm8 0a2 2 0 11-4 0 2 2 0 014 0zM3.293 13.293A1 1 0 014 13h12a1 1 0 01.707 1.707C15.187 16.237 12.738 17 10 17s-5.187-.763-6.707-2.293a1 1 0 010-1.414z"/>
+                                            </svg>
+                                            {{ $info['doses'] }} {{ $info['doses'] === 1 ? 'Dose' : 'Doses' }}
+                                        </span>
+                                    </div>
+                                    {{-- Schedule list --}}
+                                    <div class="flex flex-col gap-0.5">
+                                        @foreach ($info['schedule'] as $index => $when)
+                                            <div class="flex items-center gap-1.5">
+                                                <span class="w-4 h-4 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center flex-shrink-0 text-[9px] font-black text-orange-500">
+                                                    {{ $index + 1 }}
+                                                </span>
+                                                <span class="text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">{{ $when }}</span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @else
+                                {{-- Vaccine not in reference list (custom/other) --}}
+                                <span class="inline-flex items-center gap-1 text-xs text-gray-400 dark:text-gray-500 italic">
+                                    <svg class="w-3.5 h-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a.75.75 0 000 1.5h.253a.25.25 0 01.244.304l-.459 2.066A1.75 1.75 0 0010.747 15H11a.75.75 0 000-1.5h-.253a.25.25 0 01-.244-.304l.459-2.066A1.75 1.75 0 009.253 9H9z" clip-rule="evenodd"/>
+                                    </svg>
+                                    No reference data
+                                </span>
+                            @endif
                         </td>
 
                         {{-- Dose Schedule --}}
@@ -83,24 +126,24 @@
                                 @endfor
 
                                 {{-- Add/Remove Dose Buttons --}}
-                                    @php $vaccineSet = !empty($record->vaccine_description) && $record->vaccine_description !== 'Select vaccine'; @endphp
-                                    <div class="flex items-center gap-1 ml-1 self-end pb-0.5">
-                                        <button wire:click="incrementDose({{ $record->id }})"
-                                                @if(!$vaccineSet) disabled @endif
-                                                class="transition-colors {{ $vaccineSet ? 'text-gray-300 hover:text-emerald-500' : 'text-gray-200 dark:text-gray-700 cursor-not-allowed opacity-40' }}"
-                                                title="{{ $vaccineSet ? 'Add dose' : 'Select a vaccine first' }}">
-                                            <x-heroicon-s-plus-circle class="w-5 h-5" />
-                                        </button>
-                                        <button wire:click="decrementDose({{ $record->id }})"
-                                                class="text-gray-300 hover:text-red-400 transition-colors"
-                                                title="Remove dose">
-                                            <x-heroicon-s-minus-circle class="w-5 h-5" />
-                                        </button>
-                                    </div>
+                                @php $vaccineSet = !empty($record->vaccine_description) && $record->vaccine_description !== 'Select vaccine'; @endphp
+                                <div class="flex items-center gap-1 ml-1 self-end pb-0.5">
+                                    <button wire:click="incrementDose({{ $record->id }})"
+                                            @if(!$vaccineSet) disabled @endif
+                                            class="transition-colors {{ $vaccineSet ? 'text-gray-300 hover:text-emerald-500' : 'text-gray-200 dark:text-gray-700 cursor-not-allowed opacity-40' }}"
+                                            title="{{ $vaccineSet ? 'Add dose' : 'Select a vaccine first' }}">
+                                        <x-heroicon-s-plus-circle class="w-5 h-5" />
+                                    </button>
+                                    <button wire:click="decrementDose({{ $record->id }})"
+                                            class="text-gray-300 hover:text-red-400 transition-colors"
+                                            title="Remove dose">
+                                        <x-heroicon-s-minus-circle class="w-5 h-5" />
+                                    </button>
+                                </div>
                             </div>
                         </td>
 
-                        {{-- Status — styled like Image 2 --}}
+                        {{-- Status --}}
                         <td class="px-6 py-4 text-center">
                             @if($record->status === 'complete')
                                 <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold"
@@ -128,7 +171,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-6 py-16 text-center">
+                        <td colspan="5" class="px-6 py-16 text-center">
                             <div class="flex flex-col items-center gap-2 text-gray-400 dark:text-gray-600">
                                 <x-heroicon-o-shield-check class="w-8 h-8" />
                                 <span class="text-sm">No immunization records yet.</span>

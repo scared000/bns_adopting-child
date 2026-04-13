@@ -20,6 +20,7 @@ class ChildImmunizationTable extends Component implements HasForms, HasActions
 {
     use InteractsWithForms;
     use InteractsWithActions;
+
     #[Locked]
     public ?int $childId = null;
     public ?int $editingDoseRow = null;
@@ -41,6 +42,42 @@ class ChildImmunizationTable extends Component implements HasForms, HasActions
         'Vitamin A',
         'Rotavirus',
         'Influenza',
+    ];
+
+    /**
+     * Reference data: recommended dose count and schedule per vaccine.
+     * 'doses'    → total recommended doses
+     * 'schedule' → when each dose is given (array, one entry per dose)
+     */
+    public const array VACCINE_INFO = [
+        'BCG' => [
+            'doses'    => 1,
+            'schedule' => ['At birth'],
+        ],
+        'Hepatitis B' => [
+            'doses'    => 1,
+            'schedule' => ['At birth'],
+        ],
+        'Pentavalent' => [
+            'doses'    => 3,
+            'schedule' => ['1½ months', '2½ months', '3½ months'],
+        ],
+        'OPV (Oral Polio)' => [
+            'doses'    => 3,
+            'schedule' => ['1½ months', '2½ months', '3½ months'],
+        ],
+        'IPV (Inactivated Polio)' => [
+            'doses'    => 1,
+            'schedule' => ['3½ months'],
+        ],
+        'PCV (Pneumococcal)' => [
+            'doses'    => 3,
+            'schedule' => ['1½ months', '2½ months', '3½ months'],
+        ],
+        'MMR' => [
+            'doses'    => 2,
+            'schedule' => ['9 months', '12 months (1 year)'],
+        ],
     ];
 
     public function mount(?int $childId = null): void
@@ -78,7 +115,6 @@ class ChildImmunizationTable extends Component implements HasForms, HasActions
             ? trim($this->newOtherVaccine)
             : $this->newVaccine;
 
-        // Validate
         if (empty($vaccine) || $vaccine === 'Select Vaccine') {
             Notification::make()
                 ->title('Please select a valid vaccine.')
@@ -87,7 +123,6 @@ class ChildImmunizationTable extends Component implements HasForms, HasActions
             return;
         }
 
-        // Check for duplicate in same child
         $exists = Immunizations::where('child_id', $this->childId)
             ->where('vaccine_description', $vaccine)
             ->exists();
@@ -146,7 +181,6 @@ class ChildImmunizationTable extends Component implements HasForms, HasActions
         if ($record->total_doses > 1) {
             $fieldToClear = 'dose_' . $record->total_doses;
             $record->$fieldToClear = null;
-
             $record->decrement('total_doses');
         }
     }
@@ -168,7 +202,6 @@ class ChildImmunizationTable extends Component implements HasForms, HasActions
         if ($record) {
             $record->{$field} = null;
             $record->save();
-
             $this->dispatch('$refresh');
         }
     }
@@ -185,7 +218,7 @@ class ChildImmunizationTable extends Component implements HasForms, HasActions
 
     public function deleteRecord(): void
     {
-        if($this->confirmDeleteId === null) return;
+        if ($this->confirmDeleteId === null) return;
 
         $record = Immunizations::find($this->confirmDeleteId);
         if ($record) {
@@ -289,11 +322,13 @@ class ChildImmunizationTable extends Component implements HasForms, HasActions
                 }
             });
     }
+
     public function render()
     {
         return view('livewire.child-immunization-table', [
-            'records'  => Immunizations::where('child_id', $this->childId)->get(),
-            'maxDoses' => $this->getMaxDoses(),
+            'records'     => Immunizations::where('child_id', $this->childId)->get(),
+            'maxDoses'    => $this->getMaxDoses(),
+            'vaccineInfo' => self::VACCINE_INFO,
         ]);
     }
 }
