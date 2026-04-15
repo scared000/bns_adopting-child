@@ -27,6 +27,7 @@ use Spatie\Permission\Traits\HasRoles;
     'barangay_id',
     'purok',
     'municipality_id',
+    'office_id',
 ])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable implements HasName
@@ -87,5 +88,9 @@ class User extends Authenticatable implements HasName
     public function barangay(): BelongsTo
     {
         return $this->belongsTo(Barangay::class, 'barangay_id', 'brgyCode');
+    }
+    public function office(): BelongsTo
+    {
+        return $this->belongsTo(Office::class, 'office_id');
     }
 }

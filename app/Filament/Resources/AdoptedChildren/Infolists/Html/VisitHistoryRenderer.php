@@ -351,10 +351,11 @@ final readonly class VisitHistoryRenderer
                 $amount   = $rawAmt !== null ? '₱' . number_format((float) $rawAmt, 2) : '—';
 
                 $grandTotal += (float) ($rawAmt ?? 0);
-
+                $office = htmlspecialchars($visit->office?->short_name ?? $visit->bns?->name ?? '—');
                 $itemRows .= "
                 <tr class='{$uid}-row {$uid}_irow'>
                     <td class='{$uid}-td-primary'>{$date}</td>
+                    <td class='{$uid}-td-muted'>{$office}</td>
                     <td class='{$uid}-td'>{$desc}</td>
                     <td class='{$uid}-td' style='text-align:center;'>{$qty}</td>
                     <td class='{$uid}-td' style='text-align:right;'>{$amount}</td>
@@ -363,14 +364,14 @@ final readonly class VisitHistoryRenderer
         }
 
         if (! $hasItems) {
-            $itemRows = "<tr><td colspan='4' class='{$uid}-empty'>No items distributed yet.</td></tr>";
+            $itemRows = "<tr><td colspan='5' class='{$uid}-empty'>No items distributed yet.</td></tr>";
         }
 
         $totalFormatted = '₱' . number_format($grandTotal, 2);
         $footer = $hasItems ? "
         <tfoot>
             <tr class='{$uid}-tfoot-row'>
-                <td colspan='3' class='{$uid}-tfoot-label'>Total Amount</td>
+                <td colspan='4' class='{$uid}-tfoot-label'>Total Amount</td>
                 <td class='{$uid}-tfoot-value'>{$totalFormatted}</td>
             </tr>
         </tfoot>" : '';
@@ -394,7 +395,7 @@ final readonly class VisitHistoryRenderer
                     🗓️ Visit History
                 </button>
                 <button id='{$uid}_btn_items' class='{$uid}-tab'>
-                    📦 Visit Items
+                    📦 Item Distributed
                 </button>
             </div>
 
@@ -419,6 +420,7 @@ final readonly class VisitHistoryRenderer
                     <thead class='{$uid}-thead'>
                         <tr>
                             <th class='{$uid}-th'>Visit Date</th>
+                            <th class='{$uid}-th'>Office</th>
                             <th class='{$uid}-th'>Item Description</th>
                             <th class='{$uid}-th {$uid}-th-center'>Quantity</th>
                             <th class='{$uid}-th {$uid}-th-right'>Amount</th>

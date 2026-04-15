@@ -15,6 +15,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Builder;
 use Filament\Tables\Table;
+use Spatie\Permission\Models\Role;
 
 class BaranggayNutritionScholarsResource extends Resource
 {
@@ -25,7 +26,11 @@ class BaranggayNutritionScholarsResource extends Resource
     public static ?int $navigationSort = 3;
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::whereHas('user', function ($query){
+        if (! Role::where('name', 'bns')->exists()) {
+            return null;
+        }
+
+        return static::getModel()::whereHas('user', function ($query) {
             $query->role('bns');
         })->count();
     }

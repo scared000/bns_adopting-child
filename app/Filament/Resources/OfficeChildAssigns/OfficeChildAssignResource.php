@@ -49,6 +49,17 @@ class OfficeChildAssignResource extends Resource
     {
         return 'warning';
     }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user = auth()->user();
+        if ($user?->hasRole('officeDistributor') && $user->office_id) {
+            $query->where('office_id', $user->office_id);
+        }
+
+        return $query;
+    }
     public static function form(Schema $schema): Schema
     {
         return $schema

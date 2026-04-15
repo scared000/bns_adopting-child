@@ -59,6 +59,18 @@ class UserForm
             ->description('Assign roles to control what this user can access.')
             ->schema([
                 self::rolesField(),
+                Select::make('office_id')
+                    ->relationship('office', 'office')
+                    ->getOptionLabelFromRecordUsing(fn ($record) => "{$record->office} ({$record->short_name})")
+                    ->searchable()
+                    ->preload()
+                    ->nullable()
+                    ->live()
+                    ->label('Assigned Office')
+                    ->visible(fn (Get $get) => in_array(
+                        Role::where('name', 'office')->value('id'),
+                        (array) $get('roles')
+                    )),
             ]);
     }
 
@@ -93,6 +105,7 @@ class UserForm
             ->columns(2)
             ->searchable()
             ->bulkToggleable()
+            ->live()
             ->getOptionLabelFromRecordUsing(
                 fn (Role $record) => str($record->name)
                     ->replace('_', ' ')

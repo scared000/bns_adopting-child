@@ -34,7 +34,8 @@ class OfficeChildVisit extends Model
         'visit_documentation',
         'height',
         'weight',
-        'status'
+        'status',
+        'visit_type',
     ];
 
     protected $casts = [
@@ -70,4 +71,6 @@ class OfficeChildVisit extends Model
     {
         return $this->hasMany(VisitItems::class, 'visit_id');
     }
+
+
 }
