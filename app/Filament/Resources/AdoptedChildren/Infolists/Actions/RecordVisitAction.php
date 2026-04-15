@@ -155,6 +155,7 @@ final class RecordVisitAction
             'weight'              => $data['weight'],
             'status'              => $data['status'] ?? null,
             'visit_documentation' => $data['visit_documentation'] ?? null,
+            'visit_type'          => 'bns_visit',
         ]);
 
         foreach ($items as $item) {

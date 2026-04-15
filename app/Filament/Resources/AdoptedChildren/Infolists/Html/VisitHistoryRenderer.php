@@ -14,15 +14,36 @@ final readonly class VisitHistoryRenderer
 
     public function render(): HtmlString
     {
-        $visits = $this->record->officeVisits()
+        // OLD: Grabs everything
+        // $visits = $this->record->officeVisits()
+        //     ->with('visitItems', 'bns', 'office')
+        //     ->latest('visit_date')
+        //     ->get();
+
+        // ✅ NEW: Split them into two separate queries
+
+        // 1. Only real BNS visits (has weight/height/status)
+        $bnsVisits = $this->record->officeVisits()
             ->with('visitItems', 'bns', 'office')
+            ->where('visit_type', 'bns_visit') // ← Filter here
             ->latest('visit_date')
             ->get();
 
-        $uid         = 'vt_' . $this->record->id;
-        $historyRows = $this->buildHistoryRows($visits, $uid);
+        // 2. Only office distributions (has items)
+        $distVisits = $this->record->officeVisits()
+            ->with('visitItems', 'bns', 'office')
+            ->where('visit_type', 'office_distribution') // ← Filter here
+            ->whereHas('visitItems') // ← Ensure it actually has items
+            ->latest('visit_date')
+            ->get();
 
-        [$itemRows, $itemsFooter] = $this->buildItemRows($visits, $uid);
+        $uid = 'vt_' . $this->record->id;
+
+        // Pass $bnsVisits to history
+        $historyRows = $this->buildHistoryRows($bnsVisits, $uid);
+
+        // Pass $distVisits to items
+        [$itemRows, $itemsFooter] = $this->buildItemRows($distVisits, $uid);
 
         return new HtmlString(
             $this->buildStyles($uid) .
