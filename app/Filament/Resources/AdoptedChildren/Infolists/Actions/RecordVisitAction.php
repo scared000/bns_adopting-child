@@ -133,33 +133,6 @@ final class RecordVisitAction
                 ->maxFiles(10)
                 ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'application/pdf'])
                 ->helperText('Upload up to 10 images or PDFs'),
-
-            Repeater::make('visitItems')
-                ->label('Items Distributed')
-                ->columns(4)
-                ->addActionLabel('Add Item')
-                ->defaultItems(0)
-                ->schema([
-                    TextInput::make('Item_description')
-                        ->label('Item Description')
-                        ->placeholder('e.g. Rice, Vitamins')
-                        ->required()
-                        ->columnSpan(2),
-
-                    TextInput::make('item_quantity')
-                        ->label('Quantity')
-                        ->numeric()
-                        ->default(1)
-                        ->required()
-                        ->columnSpan(1),
-
-                    TextInput::make('item_amount')
-                        ->label('Amount / Value')
-                        ->numeric()
-                        ->prefix('₱')
-                        ->placeholder('0.00')
-                        ->columnSpan(1),
-                ]),
         ];
     }
 
