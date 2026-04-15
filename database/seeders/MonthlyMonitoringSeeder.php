@@ -21,8 +21,6 @@ class MonthlyMonitoringSeeder extends Seeder
         'WFA: Severely Underweight | HFA: Stunted | WFH: Wasted',
         'WFA: Underweight | HFA: Stunted | WFH: Wasted',
         'WFA: Severely Underweight | HFA: Severely Stunted | WFH: Severely Wasted',
-        'WFA: Underweight | HFA: Stunted | WFH: Normal',
-        'WFA: Severely Underweight | HFA: Normal | WFH: Wasted',
     ];
 
     private string $rehabilitatedStatus = 'WFA: Normal | HFA: Normal | WFH: Normal';
@@ -34,190 +32,247 @@ class MonthlyMonitoringSeeder extends Seeder
         'WFA: Severely Underweight | HFA: Stunted | WFH: Normal',
     ];
 
-    private array $childrenData = [
-        ['firstname' => 'Juan Miguel',   'lastname' => 'Santos',    'sex' => 'male',   'birthdate' => '2022-05-15'],
-        ['firstname' => 'Maria Clara',   'lastname' => 'Reyes',     'sex' => 'female', 'birthdate' => '2022-08-20'],
-        ['firstname' => 'Jose Antonio',  'lastname' => 'Garcia',    'sex' => 'male',   'birthdate' => '2021-11-10'],
-        ['firstname' => 'Ana Rosa',      'lastname' => 'Cruz',      'sex' => 'female', 'birthdate' => '2022-02-28'],
-        ['firstname' => 'Pedro Jose',    'lastname' => 'Mendoza',   'sex' => 'male',   'birthdate' => '2021-07-03'],
-        ['firstname' => 'Luz Maria',     'lastname' => 'Torres',    'sex' => 'female', 'birthdate' => '2022-09-12'],
-        ['firstname' => 'Carlo',         'lastname' => 'Ramos',     'sex' => 'male',   'birthdate' => '2021-04-25'],
-        ['firstname' => 'Rosario',       'lastname' => 'Flores',    'sex' => 'female', 'birthdate' => '2022-01-07'],
-        ['firstname' => 'Miguel',        'lastname' => 'Aquino',    'sex' => 'male',   'birthdate' => '2021-12-19'],
-        ['firstname' => 'Cristina',      'lastname' => 'Bautista',  'sex' => 'female', 'birthdate' => '2022-06-30'],
-        ['firstname' => 'Eduardo',       'lastname' => 'Dela Cruz', 'sex' => 'male',   'birthdate' => '2022-03-14'],
-        ['firstname' => 'Marites',       'lastname' => 'Villanueva','sex' => 'female', 'birthdate' => '2021-10-05'],
+    private array $maleNames = [
+        'Juan Miguel', 'Jose Antonio', 'Pedro Jose', 'Carlo', 'Miguel', 'Eduardo',
+        'Marco', 'Rafael', 'Santiago', 'Andres', 'Gabriel', 'Luis', 'Francis', 'Danilo', 'Fernando',
+        'Rico', 'Bryan', 'Kenneth', 'Jericho', 'Mark'
+    ];
+
+    private array $femaleNames = [
+        'Maria Clara', 'Ana Rosa', 'Luz Maria', 'Rosario', 'Cristina', 'Marites',
+        'Isabella', 'Camille', 'Angelica', 'Patricia', 'Marianne', 'Grace', 'Elena', 'Carmen', 'Rosa',
+        'Mikaela', 'Joy', 'Angela', 'Sarah', 'Jane'
+    ];
+
+    private array $lastNames = [
+        'Santos', 'Reyes', 'Garcia', 'Cruz', 'Mendoza', 'Torres', 'Ramos', 'Flores',
+        'Aquino', 'Bautista', 'Dela Cruz', 'Villanueva', 'Lopez', 'Morales', 'Rivera',
+        'Gonzales', 'Chavez', 'Vergara', 'Medina', 'Castro', 'Pascual', 'Dimaculangan'
     ];
 
     public function run(): void
     {
-        $followUpMonth = now()->month;
-        $followUpYear  = now()->year;
-
-        $this->command->info('Seeding monthly monitoring data for: '
-            . Carbon::createFromDate($followUpYear, $followUpMonth)->format('F Y'));
+        $this->command->warn('Generating realistic 4-year NTP pipeline data (2 visits/mo, 3-4 mos cycle)...');
 
         $officeId         = $this->resolveOfficeId();
         $bnsId            = $this->resolveBnsId();
+
+        if (!$officeId || !$bnsId) {
+            $this->command->error('Seeder aborted: Missing Office or BNS.');
+            return;
+        }
+
         $barangayCode     = DB::table('barangays')->value('brgyCode');
         $municipalityCode = DB::table('municipalities')->value('citymunCode');
 
-        // Discover office_child_assigns columns dynamically
         $assignCols = array_column(
             DB::select("PRAGMA table_info(office_child_assigns)"),
             'name'
         );
-        $this->command->line('  → office_child_assigns columns: ' . implode(', ', $assignCols));
 
+        // Generate exactly 120 unique name combinations to prevent DB collisions
+        $namePool = $this->generateUniqueNames(120);
+
+        $totalChildren = 120;
         $created = 0;
         $skipped = 0;
 
-        foreach ($this->childrenData as $index => $data) {
+        $this->command->getOutput()->progressStart($totalChildren);
 
-            // Create or find child
-            $child = AdoptedChild::firstOrCreate(
-                ['firstname' => $data['firstname'], 'lastname' => $data['lastname']],
-                [
-                    'firstname'          => $data['firstname'],
-                    'lastname'           => $data['lastname'],
-                    'sex'                => $data['sex'],
-                    'birthdate'          => $data['birthdate'],
-                    'purok'              => rand(1, 12),
-                    'barangay_id'        => $barangayCode,
-                    'municipality_id'    => $municipalityCode,
-                    'nutritional_status' => 'Severely Underweight',
-                    'lcr_registered'     => true,
-                    'breastfed'          => (bool) rand(0, 1),
-                ]
-            );
+        DB::transaction(function () use (
+            $namePool, $totalChildren, $officeId, $bnsId,
+            $barangayCode, $municipalityCode, $assignCols, &$created, &$skipped
+        ) {
+            $now = Carbon::now();
 
-            // Resolve assignment (find existing or create)
-            $assignId = $this->resolveAssignId($child->id, $officeId, $bnsId, $assignCols);
+            for ($i = 0; $i < $totalChildren; $i++) {
+                $nameData = $namePool[$i];
 
-            if (! $assignId) {
-                $this->command->error("Could not resolve office_child_assigns for child id={$child->id}. Skipping.");
-                $skipped += 2;
-                continue;
+                // Random duration: 3 to 4 months (Standard NTP maximum monitoring period)
+                $durationMonths = rand(3, 4);
+
+                // Stagger start dates across the last 4 years, ensuring the cycle finishes before NOW
+                $maxStart = $now->subMonths($durationMonths)->startOfMonth();
+                $minStart = $now->copy()->subYears(4)->startOfMonth();
+
+                $startDate = Carbon::createFromTimestamp(
+                    rand($minStart->timestamp, $maxStart->timestamp)
+                )->startOfMonth();
+
+                // Birthdate: Typically 6 months to 5 years old upon entry
+                $birthdate = $startDate->copy()->subMonths(rand(12, 59))->format('Y-m-d');
+
+                $child = AdoptedChild::firstOrCreate(
+                    ['firstname' => $nameData['firstname'], 'lastname' => $nameData['lastname']],
+                    [
+                        'firstname'          => $nameData['firstname'],
+                        'lastname'           => $nameData['lastname'],
+                        'sex'                => $nameData['sex'],
+                        'birthdate'          => $birthdate,
+                        'purok'              => rand(1, 12),
+                        'barangay_id'        => $barangayCode,
+                        'municipality_id'    => $municipalityCode,
+                        'nutritional_status' => 'Severely Underweight',
+                        'lcr_registered'     => (bool) rand(0, 1),
+                        'breastfed'          => (bool) rand(0, 1),
+                    ]
+                );
+
+                $assignId = $this->resolveAssignId(
+                    $child->id, $officeId, $bnsId, $assignCols,
+                    $startDate->format('Y-m-d'),
+                    $startDate->copy()->addMonths($durationMonths)->subDay()->format('Y-m-d')
+                );
+
+                if (!$assignId) {
+                    $skipped += ($durationMonths * 2);
+                    $this->command->getOutput()->progressAdvance();
+                    continue;
+                }
+
+                // Determine final outcome (50% chance of actual rehabilitation in PH NTP reality)
+                $willRehab = rand(1, 10) <= 5;
+
+                // Base metrics at entry (1-2 years old typically)
+                $baseWeight = 7.5 + (rand(-50, 100) / 100);
+                $baseHeight = 72.0 + (rand(-20, 50) / 100);
+
+                // Simulate TWICE A MONTH visits for the duration
+                for ($m = 0; $m < $durationMonths; $m++) {
+                    $currentMonth = $startDate->copy()->addMonths($m);
+
+                    // Visit 1: 1st or 2nd week (Days 5-12)
+                    $visit1Date = $currentMonth->copy()->addDays(rand(4, 12));
+                    // Visit 2: 3rd or 4th week (Days 16-24)
+                    $visit2Date = $currentMonth->copy()->addDays(rand(15, 24));
+
+                    // Realistic weight gain: ~0.15kg per 2 weeks with feeding program
+                    $weightGainPerVisit = 0.12 + (rand(0, 50) / 1000);
+                    $heightGainPerMonth = 0.8 + (rand(0, 20) / 100);
+
+                    // Calculate metrics for this specific month
+                    $monthBaseWeight = $baseWeight + ($m * 0.25) + ($weightGainPerVisit * ($m * 2));
+                    $monthBaseHeight = $baseHeight + ($m * $heightGainPerMonth);
+
+                    // Determine Status for this month
+                    if ($m === 0) {
+                        $status = $this->baselineStatuses[array_rand($this->baselineStatuses)];
+                    } elseif ($m === $durationMonths - 1) {
+                        // Final month (Graduation month)
+                        $status = $willRehab ? $this->rehabilitatedStatus : $this->maintainedStatuses[array_rand($this->maintainedStatuses)];
+                        if ($willRehab) $monthBaseWeight += 0.5; // Boost to hit "Normal" bracket
+                    } else {
+                        // Middle months
+                        $status = $this->maintainedStatuses[array_rand($this->maintainedStatuses)];
+                    }
+
+                    // Insert Visit 1
+                    $created += $this->insertVisit(
+                        $assignId, $child->id, $officeId, $bnsId,
+                        $visit1Date, round($monthBaseWeight, 1), round($monthBaseHeight), $status
+                    );
+
+                    // Insert Visit 2 (Slightly heavier, same status)
+                    $created += $this->insertVisit(
+                        $assignId, $child->id, $officeId, $bnsId,
+                        $visit2Date, round($monthBaseWeight + $weightGainPerVisit, 1), round($monthBaseHeight, 0), $status
+                    );
+                }
+
+                $this->command->getOutput()->progressAdvance();
             }
+        });
 
-            // Baseline visit (~4 months ago)
-            $baselineDate = Carbon::createFromDate($followUpYear, $followUpMonth, rand(1, 28))
-                ->subMonths(4);
-
-            $hasBaseline = OfficeChildVisit::where('adopted_id', $child->id)
-                ->where('visit_date', '<', Carbon::createFromDate($followUpYear, $followUpMonth, 1)->format('Y-m-d'))
-                ->exists();
-
-            if (! $hasBaseline) {
-                OfficeChildVisit::create([
-                    'office_assign_id' => $assignId,
-                    'adopted_id'       => $child->id,
-                    'office_id'        => $officeId,
-                    'bns_id'           => $bnsId,
-                    'visit_date'       => $baselineDate->format('Y-m-d'),
-                    'weight'           => $this->randomWeight(6.0, 10.5),
-                    'height'           => rand(65, 84),
-                    'status'           => $this->baselineStatuses[$index % count($this->baselineStatuses)],
-                    'visit_address'    => 'Purok ' . rand(1, 12),
-                ]);
-                $created++;
-            } else {
-                $skipped++;
-            }
-
-            //  Follow-up visit (current month)
-            $hasFollowUp = OfficeChildVisit::where('adopted_id', $child->id)
-                ->whereMonth('visit_date', $followUpMonth)
-                ->whereYear('visit_date', $followUpYear)
-                ->exists();
-
-            if (! $hasFollowUp) {
-                $isRehabbed = $index < 8;
-
-                OfficeChildVisit::create([
-                    'office_assign_id' => $assignId,
-                    'adopted_id'       => $child->id,
-                    'office_id'        => $officeId,
-                    'bns_id'           => $bnsId,
-                    'visit_date'       => Carbon::createFromDate($followUpYear, $followUpMonth, rand(1, 28))->format('Y-m-d'),
-                    'weight'           => $isRehabbed
-                        ? $this->randomWeight(10.5, 15.0)
-                        : $this->randomWeight(8.0, 11.5),
-                    'height'           => $isRehabbed ? rand(83, 98) : rand(72, 88),
-                    'status'           => $isRehabbed
-                        ? $this->rehabilitatedStatus
-                        : $this->maintainedStatuses[$index % count($this->maintainedStatuses)],
-                    'visit_address'    => 'Purok ' . rand(1, 12),
-                ]);
-                $created++;
-            } else {
-                $skipped++;
-            }
-        }
-
-        $this->command->info("✔ Done — {$created} visit records created, {$skipped} skipped.");
+        $this->command->getOutput()->progressFinish();
+        $this->command->info("✔ Done — {$created} visit records created across staggered 3-4 month cycles.");
         $this->command->line('');
-        $this->command->info('Export from the Dashboard using:');
-        $this->command->line('  Month : ' . Carbon::createFromDate($followUpYear, $followUpMonth)->format('F'));
-        $this->command->line("  Year  : {$followUpYear}");
+        $this->command->info('Realistic NTP behavior simulated:');
+        $this->command->line('  • 2 visits per month');
+        $this->command->line('  • Auto-graduation after 3 or 4 months');
+        $this->command->line('  • Continuous pipeline of new entries over the last 4 years.');
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
 
-    /**
-     * Find or create an office_child_assigns row for this child.
-     * Builds the insert dynamically so it works regardless of your exact schema.
-     */
-    private function resolveAssignId(int $childId, ?int $officeId, ?int $bnsId, array $cols): ?int
+    private function insertVisit($assignId, $childId, $officeId, $bnsId, Carbon $date, $weight, $height, $status): int
     {
-        $existing = DB::table('office_child_assigns')
-            ->where('adopted_id', $childId)
-            ->first();
+        $exists = OfficeChildVisit::where('adopted_id', $childId)
+            ->whereDate('visit_date', $date->format('Y-m-d'))
+            ->exists();
 
-        if ($existing) {
-            return $existing->id;
+        if (!$exists) {
+            OfficeChildVisit::create([
+                'office_assign_id' => $assignId,
+                'adopted_id'       => $childId,
+                'office_id'        => $officeId,
+                'bns_id'           => $bnsId,
+                'visit_date'       => $date->format('Y-m-d'),
+                'weight'           => $weight,
+                'height'           => $height,
+                'status'           => $status,
+                'visit_address'    => 'Purok ' . rand(1, 12),
+            ]);
+            return 1;
         }
+        return 0;
+    }
+
+    private function generateUniqueNames(int $count): array
+    {
+        $pool = [];
+        $used = [];
+
+        while (count($pool) < $count) {
+            $sex = array_rand([0, 1]) === 0 ? 'male' : 'female';
+            $firstname = $sex === 'male'
+                ? $this->maleNames[array_rand($this->maleNames)]
+                : $this->femaleNames[array_rand($this->femaleNames)];
+            $lastname = $this->lastNames[array_rand($this->lastNames)];
+
+            $key = strtolower($firstname . $lastname);
+            if (!in_array($key, $used)) {
+                $used[] = $key;
+                $pool[] = [
+                    'firstname' => $firstname,
+                    'lastname'  => $lastname,
+                    'sex'       => $sex
+                ];
+            }
+        }
+        return $pool;
+    }
+
+    private function resolveAssignId(int $childId, ?int $officeId, ?int $bnsId, array $cols, string $startDate, string $endDate): ?int
+    {
+        $existing = DB::table('office_child_assigns')->where('adopted_id', $childId)->first();
+        if ($existing) return $existing->id;
 
         $row = ['created_at' => now(), 'updated_at' => now()];
-
         if (in_array('adopted_id', $cols))                    $row['adopted_id']    = $childId;
         if (in_array('office_id', $cols)    && $officeId)     $row['office_id']     = $officeId;
         if (in_array('bns_id', $cols)       && $bnsId)        $row['bns_id']        = $bnsId;
-        if (in_array('start_date', $cols))                    $row['start_date']    = now()->subMonths(5)->format('Y-m-d');
-        if (in_array('end_date', $cols))                      $row['end_date']      = now()->addMonths(1)->format('Y-m-d');
-        if (in_array('status', $cols))                        $row['status']        = 'active';
-        if (in_array('assigned_at', $cols))                   $row['assigned_at']   = now()->subMonths(5)->format('Y-m-d');
-        if (in_array('date_assigned', $cols))                 $row['date_assigned'] = now()->subMonths(5)->format('Y-m-d');
-        if (in_array('remarks', $cols))                       $row['remarks']       = 'Seeded for testing';
+        if (in_array('start_date', $cols))                    $row['start_date']    = $startDate;
+        if (in_array('end_date', $cols))                      $row['end_date']      = $endDate;
+        if (in_array('status', $cols))                        $row['status']        = 'graduated'; // Past cycles are graduated
+        if (in_array('assigned_at', $cols))                   $row['assigned_at']   = $startDate;
+        if (in_array('date_assigned', $cols))                 $row['date_assigned'] = $startDate;
+        if (in_array('remarks', $cols))                       $row['remarks']       = 'Seeded: Completed NTP cycle';
 
         try {
             return DB::table('office_child_assigns')->insertGetId($row);
         } catch (\Throwable $e) {
-            $this->command->error('Failed to insert office_child_assigns: ' . $e->getMessage());
-            $this->command->line('  Row attempted: ' . json_encode($row));
             return null;
         }
     }
 
-    private function randomWeight(float $min, float $max): float
-    {
-        return round($min + mt_rand() / mt_getrandmax() * ($max - $min), 1);
-    }
-
     private function resolveOfficeId(): ?int
     {
-        $row = DB::table('offices')->first();
-        if ($row) {
-            $this->command->line('  → Using office id=' . $row->id);
-            return $row->id;
-        }
-        $this->command->error('No rows in [offices] table.');
-        return null;
+        return DB::table('offices')->first()?->id;
     }
 
     private function resolveBnsId(): ?int
     {
-        $row = DB::table('barangay_nutrition_scholars')
+        return DB::table('barangay_nutrition_scholars')
             ->whereNotNull('user_id')
             ->whereExists(function ($query) {
                 $query->select(DB::raw(1))
@@ -226,15 +281,6 @@ class MonthlyMonitoringSeeder extends Seeder
                     ->whereColumn('model_has_roles.model_id', 'barangay_nutrition_scholars.user_id')
                     ->where('model_has_roles.model_type', 'App\\Models\\User')
                     ->where('roles.name', 'bns');
-            })
-            ->first();
-
-        if ($row) {
-            $this->command->line('  → Using BNS id=' . $row->id);
-            return $row->id;
-        }
-
-        $this->command->error('No BNS found with bns role. Please create a user with bns role first.');
-        return null;
+            })->value('id');
     }
 }
