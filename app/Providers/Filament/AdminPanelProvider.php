@@ -8,11 +8,13 @@ use App\Filament\Pages\ChildVisitDetail;
 use App\Filament\Pages\Dashboard;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use App\Filament\Pages\ChildVisitLog;
+use Cmsmaxinc\FilamentErrorPages\FilamentErrorPagesPlugin;
 use Filament\Enums\UserMenuPosition;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Notifications\Notification;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
@@ -38,10 +40,12 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->brandName('Davao de Oro')
             ->login()
+            ->databaseNotifications()
+            ->databaseNotificationsPolling('20')
             ->topNavigation(false)
-            ->topbar(false)
+//            ->topbar(false)
             ->globalSearch(false)
-            ->userMenu(position: UserMenuPosition::Sidebar)
+//            ->userMenu(position: UserMenuPosition::Topbar)
             ->homeUrl(fn () => auth()->user()?->hasRole('super_admin')
                 ? route('filament.admin.pages.dashboard')
                 : route('filament.admin.auth.profile'))
@@ -101,6 +105,11 @@ class AdminPanelProvider extends PanelProvider
                 DispatchServingFilamentEvent::class,
             ])
             ->plugins([
+                // need to fix this route
+                FilamentErrorPagesPlugin::make()
+                    ->routes([
+                        'admin/*',
+                    ]),
                 FilamentApexChartsPlugin::make(),
                 ActivitylogPlugin::make()
                     ->label('Activity log')

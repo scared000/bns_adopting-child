@@ -57,6 +57,7 @@ class OfficeDistributionResource extends Resource
     {
         return [
             'index'  => Pages\ListOfficeDistributions::route('/'),
+//            'create' => Pages\CreateOfficeDistribution::route('/create'),
         ];
     }
 }

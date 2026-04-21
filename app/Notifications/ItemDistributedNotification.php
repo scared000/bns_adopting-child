@@ -1,5 +1,5 @@
 <?php
-// app/Notifications/ItemDistributedNotification.php
+
 namespace App\Notifications;
 
 use App\Models\OfficeChildVisit;
@@ -18,15 +18,19 @@ class ItemDistributedNotification extends Notification
 
     public function toDatabase($notifiable): array
     {
-        $child  = $this->distribution->child;
-        $office = $this->distribution->office;
-        $items  = $this->distribution->visit_items_count ?? $this->distribution->visitItems()->count();
+        $child    = $this->distribution->child;
+        $office   = $this->distribution->office;
+        $items    = $this->distribution->visitItems->count();
+        $itemList = $this->distribution->visitItems
+            ->pluck('Item_description')
+            ->implode(', ');
 
         return FilamentNotification::make()
             ->title('Items Distributed')
             ->body(
                 ($office?->office ?? 'An office') . ' distributed ' .
                 $items . ' ' . str('item')->plural($items) .
+                ' (' . $itemList . ')' .
                 ' to ' . ($child->firstname . ' ' . $child->lastname) . '.'
             )
             ->icon('heroicon-o-gift')

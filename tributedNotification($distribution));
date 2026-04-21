@@ -1,0 +1,21 @@
+[90m= [39m[34;4mApp\Models\User[39;24m {#7792
+    [34mid[39m: [35m1[39m,
+    [34moffice_id[39m: [36mnull[39m,
+    [34mfirstname[39m: "[32mSuper[39m",
+    [34mlastname[39m: "[32mAdmin[39m",
+    [34mmiddlename[39m: [36mnull[39m,
+    [34memail[39m: "[32msuper_admin@gmail.com[39m",
+    [34memail_verified_at[39m: [36mnull[39m,
+    #[33mpassword[39m: "[32m$2y$12$mjCp2Pu8N1APdED74tgYtePszqwZply9OQZQDcjD.iFI/tp0WicOK[39m",
+    [34msuffix[39m: [36mnull[39m,
+    [34mprofile_path[39m: [36mnull[39m,
+    [34mbarangay_code[39m: [36mnull[39m,
+    [34mbarangay_name[39m: [36mnull[39m,
+    [34mpurok[39m: "[32mPurok 1[39m",
+    [34mmunicipality_id[39m: "[32m112317[39m",
+    [34mbarangay_id[39m: "[32m112317032[39m",
+    #[33mremember_token[39m: [36mnull[39m,
+    [34mcreated_at[39m: "[32m2026-04-15 05:32:08[39m",
+    [34mupdated_at[39m: "[32m2026-04-15 05:44:13[39m",
+  }
+
