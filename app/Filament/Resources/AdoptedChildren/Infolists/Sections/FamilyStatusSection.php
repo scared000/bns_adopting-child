@@ -82,8 +82,10 @@ final class FamilyStatusSection
     {
         return TextEntry::make('familyStatus.phil_member')
             ->label(self::bold('PhilHealth Member?'))
-            ->formatStateUsing(fn ($record) => match ($record->familyStatus->first()?->phil_member) {
-                'yes' => 'Yes', 'no' => 'No', default => '—',
+            ->formatStateUsing(function ($record) {
+                $value = $record->familyStatus->first()?->phil_member;
+                if ($value === null) return '—';
+                return $value ? 'Yes' : 'No';
             });
     }
 
@@ -107,8 +109,10 @@ final class FamilyStatusSection
     {
         return TextEntry::make('familyStatus.have_electricity')
             ->label(self::bold('Has Electricity?'))
-            ->formatStateUsing(fn ($record) => match ($record->familyStatus->first()?->have_electricity) {
-                'yes' => 'Yes', 'no' => 'No', default => '—',
+            ->formatStateUsing(function ($record) {
+                $value = $record->familyStatus->first()?->have_electricity;
+                if ($value === null) return '—';
+                return $value ? 'Yes' : 'No';
             });
     }
 
