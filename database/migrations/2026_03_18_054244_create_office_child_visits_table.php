@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('office_child_visits', function (Blueprint $table) {
             $table->id();
-            $table->string('visit_type')->default('bns_visit')->after('id');
+            $table->string('visit_type')->default('bns_visit');
             $table->foreignId('office_assign_id')->nullable()->constrained('office_child_assigns')->cascadeOnDelete();
-            $table->foreignId('office_id')->nullable()->constrained('offices')->cascadeOnDelete();
+            $table->foreignId('office_id')->nullable();
             $table->foreignId('adopted_id')->nullable()->constrained('adopted_children')->cascadeOnDelete();
             $table->foreignId('bns_id')->nullable()->constrained('barangay_nutrition_scholars')->cascadeOnDelete();
             $table->date('visit_date')->nullable();

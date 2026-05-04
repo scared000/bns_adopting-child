@@ -28,11 +28,17 @@ return new class extends Migration
         Schema::table('users', function (Blueprint $table) {
             $table->foreign('office_id')->references('id')->on('offices')->nullOnDelete();
         });
+        Schema::table('office_child_visits', function (Blueprint $table) {
+            $table->foreign('office_id')->references('id')->on('offices')->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
         Schema::table('users', function (Blueprint $table) {
+            $table->dropForeign(['office_id']);
+        });
+        Schema::table('office_child_visits', function (Blueprint $table) {
             $table->dropForeign(['office_id']);
         });
 
