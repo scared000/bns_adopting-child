@@ -16,6 +16,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Builder;
 
 class AdoptedChildResource extends Resource
 {
@@ -27,7 +28,7 @@ class AdoptedChildResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return static::getModel()::count();
+        return static::getEloquentQuery()->count();
     }
 
     public static function getNavigationBadgeColor(): ?string
@@ -44,11 +45,26 @@ class AdoptedChildResource extends Resource
     {
         return AdoptedChildrenTable::configure($table);
     }
+    public static function getEloquentQuery(): Builder
+    {
+        $query = parent::getEloquentQuery();
+        $user  = auth()->user();
+
+        if ($user?->hasRole('bns')) {
+            $bnsId = $user->bnsRecord?->id;
+
+            $query->whereHas('officeAssignments', function (Builder $q) use ($bnsId) {
+                $q->where('bns_id', $bnsId);
+            });
+        }
+
+        return $query;
+    }
 
     public static function getRelations(): array
     {
         return [
-            ActivitiesRelationManager::class,
+//            ActivitiesRelationManager::class,
 //            ImmunizationsChildRelationManager::class,
         ];
     }
