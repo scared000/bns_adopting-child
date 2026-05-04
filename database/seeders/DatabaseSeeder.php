@@ -5,6 +5,8 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class DatabaseSeeder extends Seeder
 {
@@ -21,5 +23,17 @@ class DatabaseSeeder extends Seeder
             PsgcSeeder::class,
             WhoGrowthStandardsSeeder::class,
         ]);
+        Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'bns', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'item_distribute', 'guard_name' => 'web']);
+
+        $user = User::create([
+            'firstname'  => 'Super',
+            'lastname'   => 'Admin',
+            'email'      => 'superadmin@admin.com',
+            'password'   => Hash::make('admin12345'),
+        ]);
+
+        $user->assignRole('super_admin');
     }
 }
