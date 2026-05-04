@@ -25,6 +25,16 @@ return new class extends Migration
             $table->foreign('municipality_id')->references('citymunCode')->on('municipalities')->nullOnDelete();
             $table->foreign('barangay_id')->references('brgyCode')->on('barangays')->nullOnDelete();
         });
+
+        Schema::table('adopted_children', function (Blueprint $table) {
+            $table->foreign('municipality_id')->references('citymunCode')->on('municipalities')->nullOnDelete();
+            $table->foreign('barangay_id')->references('brgyCode')->on('barangays')->nullOnDelete();
+        });
+
+        Schema::table('barangay_nutrition_scholars', function (Blueprint $table) {
+            $table->foreign('municipality_id')->references('citymunCode')->on('municipalities')->nullOnDelete();
+            $table->foreign('barangay_id')->references('brgyCode')->on('barangays')->nullOnDelete();
+        });
     }
 
     /**
@@ -32,6 +42,21 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropForeign(['municipality_id']);
+            $table->dropForeign(['barangay_id']);
+        });
+
+        Schema::table('adopted_children', function (Blueprint $table) {
+            $table->dropForeign(['municipality_id']);
+            $table->dropForeign(['barangay_id']);
+        });
+
+        Schema::table('barangay_nutrition_scholars', function (Blueprint $table) {
+            $table->dropForeign(['municipality_id']);
+            $table->dropForeign(['barangay_id']);
+        });
+
         Schema::dropIfExists('barangays');
     }
 };

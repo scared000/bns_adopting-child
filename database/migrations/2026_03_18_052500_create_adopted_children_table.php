@@ -12,8 +12,6 @@ return new class extends Migration
             $table->id();
             $table->string('municipality_id')->nullable();
             $table->string('barangay_id')->nullable();
-            $table->foreign('municipality_id')->references('citymunCode')->on('municipalities');
-            $table->foreign('barangay_id')->references('brgyCode')->on('barangays');
             $table->string('purok')->nullable();
             $table->string('firstname');
             $table->string('lastname');
