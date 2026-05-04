@@ -20,6 +20,11 @@ return new class extends Migration
             $table->string('citymunCode')->nullable();
             $table->timestamps();
         });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('municipality_id')->references('citymunCode')->on('municipalities')->nullOnDelete();
+            $table->foreign('barangay_id')->references('brgyCode')->on('barangays')->nullOnDelete();
+        });
     }
 
     /**
