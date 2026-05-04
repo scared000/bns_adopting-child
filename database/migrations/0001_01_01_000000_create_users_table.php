@@ -26,7 +26,7 @@ return new class extends Migration
             $table->string('purok')->nullable();
             $table->string('municipality_id')->nullable();
             $table->string('barangay_id')->nullable();
-            $table->foreignId('office_id')->nullable()->constrained('offices')->nullOnDelete();
+            $table->unsignedBigInteger('office_id')->nullable();
             $table->foreign('municipality_id')->references('citymunCode')->on('municipalities');
             $table->foreign('barangay_id')->references('brgyCode')->on('barangays');
             $table->rememberToken();

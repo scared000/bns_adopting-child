@@ -24,10 +24,18 @@ return new class extends Migration
             $table->integer('window_count')->default(0)->nullable();
             $table->timestamps();
         });
+
+        Schema::table('users', function (Blueprint $table) {
+            $table->foreign('office_id')->references('id')->on('offices')->nullOnDelete();
+        });
     }
 
     public function down(): void
     {
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropForeign(['office_id']);
+        });
+
         Schema::dropIfExists('offices');
     }
 };
