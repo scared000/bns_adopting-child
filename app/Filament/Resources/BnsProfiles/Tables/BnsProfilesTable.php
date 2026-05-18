@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\BnsProfiles\Tables;
 
 use App\Models\BnsProfile;
+use App\Models\Municipality;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -19,7 +20,7 @@ class BnsProfilesTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(BnsProfile::query()->with(['municipality', 'barangay']))
+            ->modifyQueryUsing(fn ($query) => $query -> with(['municipality', 'barangay']))
             ->columns([
                 TextColumn::make('full_name')
                     ->label('Full Name')
@@ -27,13 +28,13 @@ class BnsProfilesTable
                     ->sortable(['last_name'])
                     ->weight('bold'),
 
-                TextColumn::make('barangay_assigned')
+                TextColumn::make('barangay.brgyDesc')
                     ->label('Barangay')
                     ->searchable()
                     ->sortable(),
 
                 TextColumn::make('municipality.citymunDesc')
-                ->label('Municipality')
+                    ->label('Municipality')
                     ->searchable()
                     ->sortable()
                     ->toggleable(),
@@ -56,6 +57,7 @@ class BnsProfilesTable
 
                 TextColumn::make('status')
                     ->badge()
+                    ->formatStateUsing(fn ($state) => ($state === 'active') ? 'Active' : 'Inactive')
                     ->color(fn (string $state): string => match ($state) {
                         'active'   => 'success',
                         'inactive' => 'warning',
@@ -86,7 +88,7 @@ class BnsProfilesTable
                 SelectFilter::make('municipality_id')
                 ->label('Municipality')
                     ->options(
-                        fn () => \App\Models\Municipality::query()
+                        fn () => Municipality::query()
                             ->orderBy('citymunDesc')
                             ->pluck('citymunDesc', 'citymunCode')
                             ->toArray()

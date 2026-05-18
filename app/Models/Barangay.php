@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Barangay extends Model
 {
+    protected $primaryKey = 'brgyCode';
+    public $incrementing = false;
+    protected $keyType = 'string';
     protected $fillable = [
         'brgyCode',
         'brgyDesc',
