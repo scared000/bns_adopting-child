@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\AdoptedChildren\Tables;
 
+use App\Filament\Actions\PrintSelectionAction;
 use App\Filament\Resources\AdoptedChildren\Schemas\AdoptedChildForm;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
@@ -139,7 +140,6 @@ class AdoptedChildrenTable
                 ->native(false),
         ];
     }
-
     private static function recordActions(): array
     {
         return [
@@ -150,6 +150,15 @@ class AdoptedChildrenTable
 //                ->badge()
 //                ->iconButton()
 //                ->url(fn ($record) => url('/admin/child-visit-detail?childId=' . $record->id)),
+            PrintSelectionAction::make(),
+//            Action::make('print_child')
+//                ->label('Print Report')
+//                ->icon('heroicon-o-printer')
+//                ->color('success')
+//                ->iconButton()
+//                ->tooltip('Print this child\'s latest report')
+//                ->url(fn ($record) => route('api.print.child', ['id' => $record->id]))
+//                ->openUrlInNewTab(),
 
             ViewAction::make()
                 ->label('Details')
@@ -170,6 +179,23 @@ class AdoptedChildrenTable
     private static function headerActions(): array
     {
         return [
+            Action::make('print_batch')
+                ->label('Print Filtered')
+                ->icon('heroicon-o-printer')
+                ->color('gray')
+                ->outlined()
+                ->url(function (Table $table) {
+                    $ids = $table->getRecords()
+                        ->implode(',');
+
+                    if (empty($ids)) {
+                        return '#';
+                    }
+
+                    return route('api.print.batch', ['ids' => $ids]);
+                })
+                ->openUrlInNewTab(),
+
             CreateAction::make()
                 ->icon('heroicon-s-plus')
                 ->label('New Child')

@@ -78,6 +78,10 @@ class AdminPanelProvider extends PanelProvider
                     </div>
                 "),
             )
+            ->renderHook(
+                PanelsRenderHook::BODY_END,
+                fn (): string => '<div x-data x-on:open-print-tab.window="window.open($event.detail.url, \'_blank\')"></div>',
+            )
             ->userMenuItems([])
             ->sidebarCollapsibleOnDesktop()
             ->breadcrumbs(false)

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Spatie\Activitylog\LogOptions;
 use Spatie\Activitylog\Traits\LogsActivity;
@@ -114,7 +115,18 @@ class AdoptedChild extends Model
         return $this->hasMany(OfficeChildAssign::class, 'adopted_id');
     }
 
-    public function officeVisits(): HasMany {
-        return $this->hasMany(OfficeChildVisit::class, 'adopted_id')->latest();
+    public function officeVisits(): HasMany
+    {
+        return $this->hasMany(OfficeChildVisit::class, 'adopted_id')->orderBy('date_weighing');
+    }
+
+    public function visitItems(): HasManyThrough
+    {
+        return $this->hasManyThrough(
+            VisitItems::class,
+            OfficeChildVisit::class,
+            'adopted_id',
+            'visit_id',
+        );
     }
 }
