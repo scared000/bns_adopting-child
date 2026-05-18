@@ -18,7 +18,7 @@ class OfficeDistributionResource extends Resource
     protected static ?string $modelLabel = 'Distribution';
     protected static ?string $pluralModelLabel = 'Item Distributions';
     protected static string|null|\BackedEnum $navigationIcon = 'heroicon-o-gift';
-    protected static string|null|\UnitEnum $navigationGroup = 'OFFICE ITEM DISTRIBUTIONS';
+    protected static string|null|\UnitEnum $navigationGroup = 'Office Item Distribution';
 
     public static function getNavigationBadge(): ?string
     {

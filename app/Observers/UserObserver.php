@@ -34,4 +34,10 @@ class UserObserver
     {
         BaranggayNutritionScholars::where('user_id', $user->id)->delete();
     }
+    public function created(User $user): void
+    {
+        if ($user->isBns() && ! $user->bnsProfile()->exists()) {
+            session()->put('redirect_to_bns_profile', $user->id);
+        }
+    }
 }

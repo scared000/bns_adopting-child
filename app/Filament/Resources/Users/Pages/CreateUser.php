@@ -9,7 +9,18 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateUser extends CreateRecord
 {
     protected static string $resource = UserResource::class;
+    protected function getRedirectUrl(): string
+    {
+        $user = $this->record;
+        // If the newly created user is a BNS and has no profile yet,
+        // redirect directly to the BNS Profile create form.
+        if ($user->isBns() && ! $user->bnsProfile()->exists()) {
+            return route('filament.admin.resources.bns-profiles.create') .
+                '?user_id=' . $user->id;
+        }
 
+        return $this->getResource()::getUrl('index');
+    }
     protected function afterCreate(): void
     {
         $user = $this->record;

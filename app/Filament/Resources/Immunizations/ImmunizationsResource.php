@@ -29,7 +29,7 @@ class ImmunizationsResource extends Resource
     protected static ?string $model = Immunizations::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-shield-check';
-    protected static string|null|\UnitEnum $navigationGroup = 'MONITORING';
+    protected static string|null|\UnitEnum $navigationGroup = 'Monitoring';
     protected static ?int $navigationSort = 5;
     protected static ?string $navigationLabel = 'Immunization Records';
 

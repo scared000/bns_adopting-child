@@ -93,4 +93,14 @@ class User extends Authenticatable implements HasName
     {
         return $this->belongsTo(Office::class, 'office_id');
     }
+
+    public function bnsProfile(): HasOne
+    {
+        return $this->hasOne(BnsProfile::class);
+    }
+
+    public function isBns(): bool
+    {
+        return $this->hasRole('bns');
+    }
 }
