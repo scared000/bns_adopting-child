@@ -10,11 +10,13 @@ use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Select;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Enums\RecordActionsPosition;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Livewire\Component;
 
 class AdoptedChildrenTable
 {
@@ -188,21 +190,37 @@ class AdoptedChildrenTable
     {
         return [
             Action::make('print_batch')
-                ->label('Print Filtered')
+                ->label('Print by Batch')
                 ->icon('heroicon-o-printer')
                 ->color('gray')
                 ->outlined()
-                ->url(function (Table $table) {
-                    $ids = $table->getRecords()
-                        ->implode(',');
-
-                    if (empty($ids)) {
-                        return '#';
-                    }
-
-                    return route('api.print.batch', ['ids' => $ids]);
+                ->form([
+                    Select::make('batch')
+                        ->label('Select Batch to Print')
+                        ->options(fn (): array =>
+                        \App\Models\AdoptedChild::query()
+                            ->whereNotNull('batch')
+                            ->distinct()
+                            ->pluck('batch', 'batch')
+                            ->sortBy(fn (string $batch): int =>
+                            preg_match('/(\d+)/', $batch, $m) ? (int) $m[1] : 0
+                            )
+                            ->toArray()
+                        )
+                        ->searchable()
+                        ->required(),
+                ])
+                // 2. Handle the Submission
+                ->action(function (array $data, Component $livewire) {
+                    $url = route('print.child.batch.monthly-monitoring', [
+                        'batch' => $data['batch']
+                    ]);
+                    $livewire->js("window.open('{$url}', '_blank');");
                 })
-                ->openUrlInNewTab(),
+                ->modalHeading('Monthly Monitoring Report')
+                ->modalDescription('Select a specific batch to generate the print layout.')
+                ->modalSubmitActionLabel('Generate Report')
+                ->modalWidth('md'),
 
             CreateAction::make()
                 ->icon('heroicon-s-plus')
