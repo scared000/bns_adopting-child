@@ -3,8 +3,10 @@
 namespace App\Filament\Resources\AdoptedChildren\Schemas;
 
 use App\Helpers\NutritionalStatus;
+use App\Models\AdoptedChild;
 use App\Models\Barangay;
 use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
@@ -142,6 +144,7 @@ class AdoptedChildForm
         }
 
         return [
+            'batch'     => $record->batch,
             'firstname' => $record->firstname,
             'middlename' => $record->middlename,
             'lastname' => $record->lastname,
@@ -321,6 +324,39 @@ class AdoptedChildForm
     private static function childInformationFields(): array
     {
         return [
+            Select::make('batch')
+                ->label('Batch')
+                ->helperText('Select an existing batch, or click "+" to auto-assign the next one.')
+                ->options(fn (Get $get): array =>
+                AdoptedChild::query()
+                    ->whereNotNull('batch')
+                    ->distinct()
+                    ->pluck('batch', 'batch')
+                    ->when(
+                        $get('batch'),
+                        fn ($collection, $current) => $collection->put($current, $current)
+                    )
+                    ->sortBy(fn (string $batch): int =>
+                    preg_match('/(\d+)/', $batch, $m) ? (int) $m[1] : 0
+                    )
+                    ->toArray()
+                )
+                ->searchable()
+                ->nullable()
+                ->placeholder('— No batch assigned —')
+                ->suffixAction(
+                    Action::make('assignNextBatch')
+                        ->label('Assign Next Batch')
+                        ->icon('heroicon-o-plus-circle')
+                        ->tooltip(fn (): string =>
+                            'Click to assign: ' . AdoptedChild::getNextBatchName()
+                        )
+                        ->action(function (Set $set): void {
+                            $set('batch', AdoptedChild::getNextBatchName());
+                        })
+                )
+                ->columnSpanFull(),
+
             Grid::make(3)
                 ->schema([
                     TextInput::make('firstname')

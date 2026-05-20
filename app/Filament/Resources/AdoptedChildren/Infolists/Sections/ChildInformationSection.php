@@ -24,6 +24,7 @@ final class ChildInformationSection
                 self::birthplaceEntry(),
                 self::nutritionalStatusEntry(),
                 self::underlyingCauseEntry(),
+                self::batchEntry(),
                 self::addressEntry(),
             ]);
     }
@@ -126,6 +127,16 @@ final class ChildInformationSection
             ->label(self::bold('Underlying Cause'))
             ->placeholder('—')
             ->wrap()
+            ->columnSpan(1);
+    }
+
+    private static function batchEntry(): TextEntry
+    {
+        return TextEntry::make('batch')
+            ->label(self::bold('Batch'))
+            ->badge()
+            ->color('primary')
+            ->placeholder('— Not assigned —')
             ->columnSpan(1);
     }
 

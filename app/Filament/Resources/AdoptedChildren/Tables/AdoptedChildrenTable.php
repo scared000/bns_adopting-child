@@ -58,6 +58,15 @@ class AdoptedChildrenTable
                 ->grow(false)
                 ->width('180px'),
 
+            TextColumn::make('batch')
+                ->label('BATCH')
+                ->badge()
+                ->color('primary')
+                ->sortable()
+                ->grow(false)
+                ->width('110px')
+                ->placeholder('—'),
+
             TextColumn::make('birthdate')
                 ->label('AGE BY YEAR & MONTH')
                 ->sortable()
@@ -122,6 +131,21 @@ class AdoptedChildrenTable
     private static function filters(): array
     {
         return [
+            SelectFilter::make('batch')
+                ->label('Batch')
+                ->options(fn (): array =>
+                \App\Models\AdoptedChild::query()
+                    ->whereNotNull('batch')
+                    ->distinct()
+                    ->pluck('batch', 'batch')
+                    ->sortBy(fn (string $batch): int =>
+                    preg_match('/(\d+)/', $batch, $m) ? (int) $m[1] : 0
+                    )
+                    ->toArray()
+                )
+                ->placeholder('All Batches')
+                ->native(false),
+
             SelectFilter::make('nutritional_status')
                 ->label('Nutritional Status')
                 ->options([
@@ -143,23 +167,7 @@ class AdoptedChildrenTable
     private static function recordActions(): array
     {
         return [
-//            Action::make('visit_log')
-//                ->label('Visit Log')
-//                ->icon('heroicon-o-clock')
-//                ->color('gray')
-//                ->badge()
-//                ->iconButton()
-//                ->url(fn ($record) => url('/admin/child-visit-detail?childId=' . $record->id)),
             PrintSelectionAction::make(),
-//            Action::make('print_child')
-//                ->label('Print Report')
-//                ->icon('heroicon-o-printer')
-//                ->color('success')
-//                ->iconButton()
-//                ->tooltip('Print this child\'s latest report')
-//                ->url(fn ($record) => route('api.print.child', ['id' => $record->id]))
-//                ->openUrlInNewTab(),
-
             ViewAction::make()
                 ->label('Details')
                 ->icon('heroicon-o-eye')

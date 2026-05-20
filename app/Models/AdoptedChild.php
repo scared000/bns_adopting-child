@@ -27,6 +27,7 @@ class AdoptedChild extends Model
     protected $appends = ['age'];
 
     protected $fillable = [
+        'batch',
         'firstname',
         'lastname',
         'middlename',
@@ -56,6 +57,19 @@ class AdoptedChild extends Model
                 ? Carbon::parse($this->birthdate)->age
                 : null,
         );
+    }
+
+    public static function getNextBatchName(): string
+    {
+        $maxNumber = static::query()
+            ->whereNotNull('batch')
+            ->pluck('batch')
+            ->map(fn (string $value): int =>
+            preg_match('/batch\s+(\d+)/i', $value, $m) ? (int) $m[1] : 0
+            )
+            ->max();
+
+        return 'Batch ' . (($maxNumber ?? 0) + 1);
     }
 
     public function familyProfiles(): HasMany
