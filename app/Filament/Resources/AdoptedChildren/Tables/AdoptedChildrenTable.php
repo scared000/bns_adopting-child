@@ -196,7 +196,7 @@ class AdoptedChildrenTable
                 ->outlined()
                 ->form([
                     Select::make('batch')
-                        ->label('Select Batch to Print')
+                        ->label('Select Batch')
                         ->options(fn (): array =>
                         \App\Models\AdoptedChild::query()
                             ->whereNotNull('batch')
